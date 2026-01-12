@@ -19,11 +19,12 @@
         <!-- Header über die ganze Breite -->
         <Border Grid.Row="0">
             <TextBlock x:Name="outputBox" FontSize="20"
-                     Text="{Binding FullText}"
-                    hltb:HighlightTextBlock.HightlightText="{Binding FindString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Text="{Binding FullText, Mode=OneWay}"
+                    hltb:HighlightTextBlock.HightlightText="{Binding FindString, Mode=OneWay}"
                     hltb:HighlightTextBlock.Italic="True"
                     hltb:HighlightTextBlock.HighlightBrush="Yellow" hltb:HighlightTextBlock.HighlightTextBrush="Red"
                     hltb:HighlightTextBlock.Bold="True"/>   
+
         </Border>
 
         <!-- Dein 5x5 Feld bleibt unverändert -->

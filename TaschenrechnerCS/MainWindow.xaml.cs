@@ -22,6 +22,20 @@ namespace TaschenrechnerCS
     {
         Dictionary<string, double> variables = new Dictionary<string, double>();
 
+        private string _fullText = string.Empty;
+        public string FullText
+        {
+            get => _fullText;
+            set
+            {
+                if (_fullText != value)
+                {
+                    _fullText = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         private string _findString = string.Empty;
         public string FindString
         {
@@ -59,17 +73,18 @@ namespace TaschenrechnerCS
         private void Btn_Click(object sender, RoutedEventArgs e)
         {
             var btn = (Button)sender;
-            outputBox.Text += btn.Content;
+            FullText += btn.Content;
         }
 
         private void clearBtn_Click(object sender, RoutedEventArgs e)
         {
-            outputBox.Text = string.Empty;
+            FullText = string.Empty;
+            FindString = string.Empty;
         }
 
         private void auswertenBtn_Click(object sender, RoutedEventArgs e)
         {
-            Tokenizer toki = new Tokenizer(outputBox.Text);
+            Tokenizer toki = new Tokenizer(FullText);
             var temp = toki.getListOrderedByIndex();
             if (temp.Count == 0)
             {
@@ -80,8 +95,8 @@ namespace TaschenrechnerCS
             {
                 var pars = new Parser(temp, variables);
                 var ast = pars.ParseExpression();
-                double ergebnis = ast.Evaluate();
-                outputBox.Text = ergebnis.ToString();
+                double ergebnis = ast.Evaluate(null);
+                FullText = ergebnis.ToString();
             }
             catch (Exception ex)
             {

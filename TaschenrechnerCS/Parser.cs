@@ -103,12 +103,25 @@ namespace TaschenrechnerCS
             {
                 string Name = Consume().Value;
                 if (Match(TokenTypes.Equals)) {
-                    Consume();
-                    string text = Consume().Value;
-                    text = text.Replace(',', '.');
-                    double temp = double.Parse(text, System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture);
-                    variableDict[Name] = temp;
-                    return new VariableNode(Name, variableDict);
+                    Consume(); // =
+                    IExpression left = ParseExpression();
+                    return new AssignNode(Name, variableDict, left);
+                    /*
+                    if (Match(TokenTypes.Number))
+                    {
+                        string text = Consume().Value;
+                        text = text.Replace(',', '.');
+                        double temp = double.Parse(text, System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture);
+                        variableDict[Name] = temp;
+                        return new VariableNode(Name, variableDict);
+                    }
+                    if (Match(TokenTypes.Variables))
+                    {
+                        string text = Consume().Value;
+                        variableDict[Name] = variableDict[text];
+                        return new VariableNode(Name, variableDict);
+                    }*/
+                    
                 }
                 return new VariableNode(Name, variableDict);
             }
