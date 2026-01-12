@@ -13,50 +13,83 @@ using RobotProgrammingComplete.Services;
 
 namespace RobotProgrammingComplete
 {
+    /// <summary>
+    /// Hauptfenster der Roboter-Programmieranwendung.
+    /// Enthält die UI-Logik für Laden, Starten und Stoppen von Programmen.
+    /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly XmlFieldLoader _fieldLoader = new();
-        private readonly Lexer _lexer = new();
-        private readonly Parser _parser = new();
+        // Service zum Laden von Spielfeld-XML-Dateien
+        private readonly XmlFieldLoader fieldLoader = new();
 
-        private List<RobotElement> _originalElements = new();
-        private CancellationTokenSource? _cancellationTokenSource;
-        private bool _isRunning = false;
+        // Lexer für die lexikalische Analyse (Tokenisierung)
+        private readonly Lexer lexer = new();
 
+        // Parser für die Syntaxanalyse (AST-Erstellung)
+        private readonly Parser parser = new();
+
+        // Kopie des Originalzustands für Reset-Funktion
+        private List<RobotElement> originalElements = new();
+
+        // Token-Quelle zum Abbrechen der Programmausführung
+        private CancellationTokenSource? cancellationTokenSource;
+
+        // Flag ob gerade ein Programm ausgeführt wird
+        private bool isRunning = false;
+
+        /// <summary>
+        /// Konstruktor: Initialisiert das Hauptfenster.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Event-Handler: Lädt ein Spielfeld aus einer XML-Datei.
+        /// </summary>
         private void LoadField_Click(object sender, RoutedEventArgs e)
         {
+            // Datei-Dialog für XML-Dateien öffnen
             var dialog = new OpenFileDialog
             {
                 Filter = "XML Dateien (*.xml)|*.xml|Alle Dateien (*.*)|*.*",
                 Title = "Feld laden"
             };
 
+            // Nur fortfahren wenn Benutzer eine Datei ausgewählt hat
             if (dialog.ShowDialog() == true)
             {
                 try
                 {
-                    _fieldLoader.Load(dialog.FileName);
-                    robotMap.SetSize(_fieldLoader.Width, _fieldLoader.Height);
-                    robotMap.SetElements(_fieldLoader.Elements);
+                    // XML-Datei laden und parsen
+                    fieldLoader.Load(dialog.FileName);
+
+                    // Spielfeld-Control aktualisieren
+                    robotMap.SetSize(fieldLoader.Width, fieldLoader.Height);
+                    robotMap.SetElements(fieldLoader.Elements);
+
+                    // Originalzustand für Reset speichern
                     SaveOriginalState();
 
-                    txtStatus.Text = $"Feld geladen: {_fieldLoader.Width}x{_fieldLoader.Height}";
+                    // Status-Anzeige aktualisieren
+                    txtStatus.Text = $"Feld geladen: {fieldLoader.Width}x{fieldLoader.Height}";
                     txtErrors.Text = "";
                 }
                 catch (Exception ex)
                 {
+                    // Fehlermeldung bei Ladeproblemen anzeigen
                     MessageBox.Show($"Fehler beim Laden: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
 
+        /// <summary>
+        /// Event-Handler: Lädt ein Roboter-Programm aus einer Textdatei.
+        /// </summary>
         private void LoadProgram_Click(object sender, RoutedEventArgs e)
         {
+            // Datei-Dialog für Textdateien öffnen
             var dialog = new OpenFileDialog
             {
                 Filter = "Text Dateien (*.txt)|*.txt|Alle Dateien (*.*)|*.*",
@@ -67,6 +100,7 @@ namespace RobotProgrammingComplete
             {
                 try
                 {
+                    // Programmtext in die TextBox laden
                     txtProgram.Text = File.ReadAllText(dialog.FileName);
                     txtStatus.Text = "Programm geladen";
                     txtErrors.Text = "";
@@ -78,90 +112,121 @@ namespace RobotProgrammingComplete
             }
         }
 
+        /// <summary>
+        /// Event-Handler: Beendet die Anwendung.
+        /// </summary>
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
 
+        /// <summary>
+        /// Event-Handler: Startet die Programmausführung.
+        /// Diese Methode ist async, damit die UI während der Ausführung reagiert.
+        /// </summary>
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
-            if (_isRunning) return;
+            // Verhindern dass mehrere Programme gleichzeitig laufen
+            if (isRunning) return;
 
+            // Fehleranzeige zurücksetzen
             txtErrors.Text = "";
 
-            // Parse program
-            var tokens = _lexer.Tokenize(txtProgram.Text);
-            var program = _parser.Parse(tokens);
+            // === Schritt 1: Programm parsen ===
+            // Zuerst den Quelltext in Tokens zerlegen (Lexer)
+            var tokens = lexer.Tokenize(txtProgram.Text);
 
+            // Dann aus den Tokens einen AST erstellen (Parser)
+            var program = parser.Parse(tokens);
+
+            // Bei Syntaxfehlern abbrechen
             if (program == null)
             {
-                txtErrors.Text = string.Join("\n", _parser.Errors);
+                txtErrors.Text = string.Join("\n", parser.Errors);
                 txtStatus.Text = "Syntaxfehler gefunden";
                 return;
             }
 
-            // Reset to original state before running
+            // === Schritt 2: Spielfeld zurücksetzen ===
             ResetField();
 
-            // Find robot position
-            var robot = _fieldLoader.Elements.FirstOrDefault(el => el.Type == ElementType.Robot);
+            // === Schritt 3: Roboter-Position finden ===
+            var robot = fieldLoader.Elements.FirstOrDefault(el => el.Type == ElementType.Robot);
             if (robot == null)
             {
                 txtErrors.Text = "Kein Roboter im Feld gefunden!";
                 return;
             }
 
-            // Create execution context
+            // === Schritt 4: Ausführungskontext erstellen ===
+            // Der Kontext enthält alle Informationen die das Programm braucht
             var context = new RobotProgrammingComplete.Models.ExecutionContext
             {
                 RobotX = robot.X,
                 RobotY = robot.Y,
-                FieldWidth = _fieldLoader.Width,
-                FieldHeight = _fieldLoader.Height,
-                Elements = _fieldLoader.Elements,
-                DelayMs = 1000
+                FieldWidth = fieldLoader.Width,
+                FieldHeight = fieldLoader.Height,
+                Elements = fieldLoader.Elements,
+                DelayMs = 1000  // 1 Sekunde Pause zwischen Schritten
             };
+
+            // Callback für UI-Updates nach jedem Schritt
+            // Dispatcher.Invoke ist nötig weil wir von einem anderen Thread kommen
             context.OnUpdate = () => Dispatcher.Invoke(() =>
             {
-                robotMap.Redraw();
+                robotMap.Redraw();  // Spielfeld neu zeichnen
                 txtCollected.Text = $"Gesammelt: {string.Join(", ", context.CollectedLetters)}";
             });
 
-            _isRunning = true;
-            _cancellationTokenSource = new CancellationTokenSource();
-
+            // === Schritt 5: UI für laufendes Programm anpassen ===
+            isRunning = true;
+            cancellationTokenSource = new CancellationTokenSource();
             btnStart.IsEnabled = false;
             btnStop.IsEnabled = true;
             txtStatus.Text = "Programm läuft...";
 
+            // === Schritt 6: Programm ausführen ===
             try
             {
+                // Programm asynchron ausführen
                 await program.RunAsync(context);
+
+                // Erfolgreich beendet
                 txtStatus.Text = "Programm beendet";
                 txtCollected.Text = $"Gesammelt: {string.Join(", ", context.CollectedLetters)}";
             }
             catch (TaskCanceledException)
             {
+                // Benutzer hat abgebrochen
                 txtStatus.Text = "Programm abgebrochen";
             }
             catch (Exception ex)
             {
+                // Laufzeitfehler anzeigen
                 txtErrors.Text = $"Laufzeitfehler: {ex.Message}";
                 txtStatus.Text = "Fehler bei Ausführung";
             }
             finally
             {
-                _isRunning = false;
+                // UI zurücksetzen egal wie das Programm endete
+                isRunning = false;
                 btnStart.IsEnabled = true;
                 btnStop.IsEnabled = false;
             }
         }
 
+        /// <summary>
+        /// Event-Handler: Stoppt die laufende Programmausführung.
+        /// </summary>
         private void Stop_Click(object sender, RoutedEventArgs e)
         {
-            _cancellationTokenSource?.Cancel();
+            // Abbruch-Signal senden
+            cancellationTokenSource?.Cancel();
         }
 
+        /// <summary>
+        /// Event-Handler: Setzt das Spielfeld auf den Originalzustand zurück.
+        /// </summary>
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
             ResetField();
@@ -169,9 +234,15 @@ namespace RobotProgrammingComplete
             txtStatus.Text = "Feld zurückgesetzt";
         }
 
+        /// <summary>
+        /// Speichert den aktuellen Spielfeldzustand als Kopie.
+        /// Wird für die Reset-Funktion benötigt.
+        /// </summary>
         private void SaveOriginalState()
         {
-            _originalElements = _fieldLoader.Elements.Select(el => new RobotElement
+            // Erstelle tiefe Kopie aller Elemente
+            // (nicht nur Referenzen, sondern neue Objekte)
+            originalElements = fieldLoader.Elements.Select(el => new RobotElement
             {
                 X = el.X,
                 Y = el.Y,
@@ -180,12 +251,18 @@ namespace RobotProgrammingComplete
             }).ToList();
         }
 
+        /// <summary>
+        /// Stellt den Originalzustand des Spielfelds wieder her.
+        /// </summary>
         private void ResetField()
         {
-            _fieldLoader.Elements.Clear();
-            foreach (var el in _originalElements)
+            // Aktuelle Elemente löschen
+            fieldLoader.Elements.Clear();
+
+            // Originale Elemente als Kopien wiederherstellen
+            foreach (var el in originalElements)
             {
-                _fieldLoader.Elements.Add(new RobotElement
+                fieldLoader.Elements.Add(new RobotElement
                 {
                     X = el.X,
                     Y = el.Y,
@@ -193,7 +270,9 @@ namespace RobotProgrammingComplete
                     Type = el.Type
                 });
             }
-            robotMap.SetElements(_fieldLoader.Elements);
+
+            // Spielfeld-Control aktualisieren
+            robotMap.SetElements(fieldLoader.Elements);
         }
     }
 }

@@ -597,6 +597,348 @@
             </div>
 
             <div class="card">
+                <h3>2. Ellipse & Kreis im Detail</h3>
+                <p>Die <code class="inline">Ellipse</code>-Klasse zeichnet ovale oder kreisförmige Formen. Ein <strong>Kreis</strong> ist einfach eine Ellipse mit gleicher Breite und Höhe.</p>
+                
+                <h4>Grundlegende Properties</h4>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Property</th><th>Beschreibung</th></tr></thead>
+                        <tbody>
+                            <tr><td><code class="inline">Width</code></td><td>Breite der Ellipse (horizontaler Durchmesser)</td></tr>
+                            <tr><td><code class="inline">Height</code></td><td>Höhe der Ellipse (vertikaler Durchmesser)</td></tr>
+                            <tr><td><code class="inline">Fill</code></td><td>Füllfarbe (Brush)</td></tr>
+                            <tr><td><code class="inline">Stroke</code></td><td>Randfarbe (Brush)</td></tr>
+                            <tr><td><code class="inline">StrokeThickness</code></td><td>Randstärke in Pixel</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 Kreis vs. Ellipse:</strong> Setze <code class="inline">Width</code> und <code class="inline">Height</code> auf den gleichen Wert, um einen perfekten Kreis zu erhalten!
+                </div>
+
+                <h4>XAML-Beispiele</h4>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">Ellipse & Kreis Beispiele</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="comment">&lt;!-- Einfacher Kreis (Width = Height) --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"100"</span> <span class="attribute">Height</span>=<span class="string">"100"</span>
+         <span class="attribute">Fill</span>=<span class="string">"#6366F1"</span>
+         <span class="attribute">Stroke</span>=<span class="string">"#4F46E5"</span>
+         <span class="attribute">StrokeThickness</span>=<span class="string">"3"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- Ellipse (Width ≠ Height) --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"150"</span> <span class="attribute">Height</span>=<span class="string">"80"</span>
+         <span class="attribute">Fill</span>=<span class="string">"#22C55E"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- Kreis nur mit Rand (kein Fill) --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"80"</span> <span class="attribute">Height</span>=<span class="string">"80"</span>
+         <span class="attribute">Fill</span>=<span class="string">"Transparent"</span>
+         <span class="attribute">Stroke</span>=<span class="string">"#EF4444"</span>
+         <span class="attribute">StrokeThickness</span>=<span class="string">"4"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- Kreis mit Gradient-Füllung --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"120"</span> <span class="attribute">Height</span>=<span class="string">"120"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;Ellipse.Fill&gt;</span>
+        <span class="tag">&lt;RadialGradientBrush&gt;</span>
+            <span class="tag">&lt;GradientStop</span> <span class="attribute">Color</span>=<span class="string">"White"</span> <span class="attribute">Offset</span>=<span class="string">"0"</span><span class="tag">/&gt;</span>
+            <span class="tag">&lt;GradientStop</span> <span class="attribute">Color</span>=<span class="string">"#6366F1"</span> <span class="attribute">Offset</span>=<span class="string">"1"</span><span class="tag">/&gt;</span>
+        <span class="tag">&lt;/RadialGradientBrush&gt;</span>
+    <span class="tag">&lt;/Ellipse.Fill&gt;</span>
+<span class="tag">&lt;/Ellipse&gt;</span>
+
+<span class="comment">&lt;!-- Kreis mit gestricheltem Rand --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"100"</span> <span class="attribute">Height</span>=<span class="string">"100"</span>
+         <span class="attribute">Fill</span>=<span class="string">"Transparent"</span>
+         <span class="attribute">Stroke</span>=<span class="string">"#F59E0B"</span>
+         <span class="attribute">StrokeThickness</span>=<span class="string">"3"</span>
+         <span class="attribute">StrokeDashArray</span>=<span class="string">"4,2"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- Positionierung im Canvas --&gt;</span>
+<span class="tag">&lt;Canvas&gt;</span>
+    <span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"60"</span> <span class="attribute">Height</span>=<span class="string">"60"</span>
+             <span class="attribute">Fill</span>=<span class="string">"Orange"</span>
+             <span class="attribute">Canvas.Left</span>=<span class="string">"50"</span>
+             <span class="attribute">Canvas.Top</span>=<span class="string">"30"</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;/Canvas&gt;</span></code></pre>
+                </div>
+
+                <h4>Programmatisch mit DrawingContext</h4>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">Ellipse/Kreis zeichnen</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="keyword">protected override void</span> OnRender(<span class="type">DrawingContext</span> dc)
+{
+    <span class="comment">// Brushes und Pens definieren</span>
+    <span class="keyword">var</span> fillBrush = <span class="keyword">new</span> <span class="type">SolidColorBrush</span>(<span class="type">Color</span>.FromRgb(<span class="value">99</span>, <span class="value">102</span>, <span class="value">241</span>));
+    <span class="keyword">var</span> strokePen = <span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.White, <span class="value">3</span>);
+
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="comment">// DrawEllipse(brush, pen, center, radiusX, radiusY)</span>
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+
+    <span class="comment">// Kreis: radiusX = radiusY</span>
+    dc.DrawEllipse(
+        fillBrush,                      <span class="comment">// Füllung (null = keine)</span>
+        strokePen,                      <span class="comment">// Rand (null = keiner)</span>
+        <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">100</span>, <span class="value">100</span>),           <span class="comment">// Mittelpunkt</span>
+        <span class="value">50</span>,                             <span class="comment">// RadiusX (halbe Breite)</span>
+        <span class="value">50</span>                              <span class="comment">// RadiusY (halbe Höhe)</span>
+    );
+
+    <span class="comment">// Ellipse: radiusX ≠ radiusY</span>
+    dc.DrawEllipse(
+        <span class="type">Brushes</span>.LimeGreen,
+        <span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.DarkGreen, <span class="value">2</span>),
+        <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">250</span>, <span class="value">100</span>),           <span class="comment">// Mittelpunkt</span>
+        <span class="value">80</span>,                             <span class="comment">// RadiusX (breit)</span>
+        <span class="value">40</span>                              <span class="comment">// RadiusY (flach)</span>
+    );
+
+    <span class="comment">// Nur Umriss (kein Fill)</span>
+    dc.DrawEllipse(
+        <span class="keyword">null</span>,                           <span class="comment">// Keine Füllung</span>
+        <span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.Red, <span class="value">4</span>),
+        <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">400</span>, <span class="value">100</span>),
+        <span class="value">45</span>, <span class="value">45</span>
+    );
+
+    <span class="comment">// Mit Gradient</span>
+    <span class="keyword">var</span> gradientBrush = <span class="keyword">new</span> <span class="type">RadialGradientBrush</span>
+    {
+        GradientOrigin = <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">0.3</span>, <span class="value">0.3</span>),
+        Center = <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">0.5</span>, <span class="value">0.5</span>),
+        RadiusX = <span class="value">0.5</span>,
+        RadiusY = <span class="value">0.5</span>
+    };
+    gradientBrush.GradientStops.Add(<span class="keyword">new</span> <span class="type">GradientStop</span>(<span class="type">Colors</span>.White, <span class="value">0</span>));
+    gradientBrush.GradientStops.Add(<span class="keyword">new</span> <span class="type">GradientStop</span>(<span class="type">Colors</span>.Orange, <span class="value">1</span>));
+
+    dc.DrawEllipse(gradientBrush, <span class="keyword">null</span>, <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">100</span>, <span class="value">220</span>), <span class="value">60</span>, <span class="value">60</span>);
+}</code></pre>
+                </div>
+
+                <h4>EllipseGeometry für komplexere Szenarien</h4>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">EllipseGeometry</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="comment">&lt;!-- Path mit EllipseGeometry --&gt;</span>
+<span class="tag">&lt;Path</span> <span class="attribute">Fill</span>=<span class="string">"#6366F1"</span> <span class="attribute">Stroke</span>=<span class="string">"White"</span> <span class="attribute">StrokeThickness</span>=<span class="string">"2"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;Path.Data&gt;</span>
+        <span class="tag">&lt;EllipseGeometry</span> <span class="attribute">Center</span>=<span class="string">"100,100"</span>
+                         <span class="attribute">RadiusX</span>=<span class="string">"50"</span>
+                         <span class="attribute">RadiusY</span>=<span class="string">"30"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;/Path.Data&gt;</span>
+<span class="tag">&lt;/Path&gt;</span>
+
+<span class="comment">&lt;!-- Mehrere Ellipsen kombinieren --&gt;</span>
+<span class="tag">&lt;Path</span> <span class="attribute">Fill</span>=<span class="string">"#22C55E"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;Path.Data&gt;</span>
+        <span class="tag">&lt;GeometryGroup&gt;</span>
+            <span class="tag">&lt;EllipseGeometry</span> <span class="attribute">Center</span>=<span class="string">"50,50"</span> <span class="attribute">RadiusX</span>=<span class="string">"40"</span> <span class="attribute">RadiusY</span>=<span class="string">"40"</span><span class="tag">/&gt;</span>
+            <span class="tag">&lt;EllipseGeometry</span> <span class="attribute">Center</span>=<span class="string">"100,50"</span> <span class="attribute">RadiusX</span>=<span class="string">"40"</span> <span class="attribute">RadiusY</span>=<span class="string">"40"</span><span class="tag">/&gt;</span>
+        <span class="tag">&lt;/GeometryGroup&gt;</span>
+    <span class="tag">&lt;/Path.Data&gt;</span>
+<span class="tag">&lt;/Path&gt;</span>
+
+<span class="comment">&lt;!-- Ellipse als Clipping-Maske --&gt;</span>
+<span class="tag">&lt;Image</span> <span class="attribute">Source</span>=<span class="string">"foto.jpg"</span> <span class="attribute">Width</span>=<span class="string">"200"</span> <span class="attribute">Height</span>=<span class="string">"200"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;Image.Clip&gt;</span>
+        <span class="tag">&lt;EllipseGeometry</span> <span class="attribute">Center</span>=<span class="string">"100,100"</span> <span class="attribute">RadiusX</span>=<span class="string">"100"</span> <span class="attribute">RadiusY</span>=<span class="string">"100"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;/Image.Clip&gt;</span>
+<span class="tag">&lt;/Image&gt;</span></code></pre>
+                </div>
+
+                <h4>Programmatisch mit EllipseGeometry</h4>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">EllipseGeometry im Code</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="comment">// EllipseGeometry erstellen</span>
+<span class="keyword">var</span> ellipseGeometry = <span class="keyword">new</span> <span class="type">EllipseGeometry</span>
+{
+    Center = <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">100</span>, <span class="value">100</span>),
+    RadiusX = <span class="value">50</span>,
+    RadiusY = <span class="value">30</span>
+};
+
+<span class="comment">// Mit DrawingContext zeichnen</span>
+dc.DrawGeometry(
+    <span class="type">Brushes</span>.Purple,                 <span class="comment">// Fill</span>
+    <span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.White, <span class="value">2</span>),      <span class="comment">// Stroke</span>
+    ellipseGeometry
+);
+
+<span class="comment">// Kreis dynamisch erstellen</span>
+<span class="keyword">public</span> <span class="type">Ellipse</span> CreateCircle(<span class="type">double</span> diameter, <span class="type">Brush</span> fill)
+{
+    <span class="keyword">return new</span> <span class="type">Ellipse</span>
+    {
+        Width = diameter,
+        Height = diameter,
+        Fill = fill
+    };
+}</code></pre>
+                </div>
+
+                <div class="info-box success">
+                    <strong>✨ Tipp:</strong> Verwende <code class="inline">EllipseGeometry</code> wenn du Ellipsen in Geometrie-Gruppen kombinieren, als Clipping-Masken nutzen oder Hit-Testing durchführen möchtest.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>2. Ellipse & Kreis im Detail</h3>
+                <p>Die <code class="inline">Ellipse</code>-Klasse wird sowohl für Ellipsen als auch für Kreise verwendet. Ein Kreis ist einfach eine Ellipse mit gleicher Breite und Höhe.</p>
+                
+                <h4>Kreis (Width = Height)</h4>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">Kreis erstellen</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="comment">&lt;!-- Einfacher Kreis --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"100"</span> <span class="attribute">Height</span>=<span class="string">"100"</span> <span class="attribute">Fill</span>=<span class="string">"#6366F1"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- Kreis mit Rand --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"100"</span> <span class="attribute">Height</span>=<span class="string">"100"</span>
+         <span class="attribute">Fill</span>=<span class="string">"#22C55E"</span>
+         <span class="attribute">Stroke</span>=<span class="string">"#16A34A"</span>
+         <span class="attribute">StrokeThickness</span>=<span class="string">"4"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- Nur Umriss (kein Fill) --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"100"</span> <span class="attribute">Height</span>=<span class="string">"100"</span>
+         <span class="attribute">Fill</span>=<span class="string">"Transparent"</span>
+         <span class="attribute">Stroke</span>=<span class="string">"#EF4444"</span>
+         <span class="attribute">StrokeThickness</span>=<span class="string">"3"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- Gestrichelter Kreis --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"100"</span> <span class="attribute">Height</span>=<span class="string">"100"</span>
+         <span class="attribute">Stroke</span>=<span class="string">"#F59E0B"</span>
+         <span class="attribute">StrokeThickness</span>=<span class="string">"3"</span>
+         <span class="attribute">StrokeDashArray</span>=<span class="string">"4,2"</span><span class="tag">/&gt;</span></code></pre>
+                </div>
+
+                <h4>Ellipse (Width ≠ Height)</h4>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">Ellipse erstellen</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="comment">&lt;!-- Horizontale Ellipse --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"150"</span> <span class="attribute">Height</span>=<span class="string">"80"</span> <span class="attribute">Fill</span>=<span class="string">"#8B5CF6"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- Vertikale Ellipse --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"80"</span> <span class="attribute">Height</span>=<span class="string">"150"</span> <span class="attribute">Fill</span>=<span class="string">"#EC4899"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- Ellipse mit Gradient-Füllung --&gt;</span>
+<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"150"</span> <span class="attribute">Height</span>=<span class="string">"100"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;Ellipse.Fill&gt;</span>
+        <span class="tag">&lt;RadialGradientBrush</span> <span class="attribute">GradientOrigin</span>=<span class="string">"0.3,0.3"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;GradientStop</span> <span class="attribute">Color</span>=<span class="string">"White"</span> <span class="attribute">Offset</span>=<span class="string">"0"</span><span class="tag">/&gt;</span>
+            <span class="tag">&lt;GradientStop</span> <span class="attribute">Color</span>=<span class="string">"#6366F1"</span> <span class="attribute">Offset</span>=<span class="string">"1"</span><span class="tag">/&gt;</span>
+        <span class="tag">&lt;/RadialGradientBrush&gt;</span>
+    <span class="tag">&lt;/Ellipse.Fill&gt;</span>
+<span class="tag">&lt;/Ellipse&gt;</span></code></pre>
+                </div>
+
+                <h4>Wichtige Properties</h4>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Property</th><th>Beschreibung</th><th>Beispiel</th></tr></thead>
+                        <tbody>
+                            <tr><td><code class="inline">Width</code></td><td>Breite der Ellipse</td><td>100</td></tr>
+                            <tr><td><code class="inline">Height</code></td><td>Höhe der Ellipse</td><td>100 (= Kreis)</td></tr>
+                            <tr><td><code class="inline">Fill</code></td><td>Füllfarbe/-brush</td><td>#6366F1, Brushes.Blue</td></tr>
+                            <tr><td><code class="inline">Stroke</code></td><td>Randfarbe</td><td>#000000</td></tr>
+                            <tr><td><code class="inline">StrokeThickness</code></td><td>Randdicke in Pixel</td><td>2</td></tr>
+                            <tr><td><code class="inline">StrokeDashArray</code></td><td>Strichmuster (Linie, Lücke)</td><td>"4,2" oder "5,2,2,2"</td></tr>
+                            <tr><td><code class="inline">Opacity</code></td><td>Transparenz (0-1)</td><td>0.5</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>Positionierung im Canvas</h4>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">Positionierung</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="tag">&lt;Canvas</span> <span class="attribute">Width</span>=<span class="string">"400"</span> <span class="attribute">Height</span>=<span class="string">"300"</span><span class="tag">&gt;</span>
+    <span class="comment">&lt;!-- Position über Canvas.Left/Top --&gt;</span>
+    <span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"60"</span> <span class="attribute">Height</span>=<span class="string">"60"</span> <span class="attribute">Fill</span>=<span class="string">"Red"</span>
+             <span class="attribute">Canvas.Left</span>=<span class="string">"50"</span> <span class="attribute">Canvas.Top</span>=<span class="string">"30"</span><span class="tag">/&gt;</span>
+    
+    <span class="comment">&lt;!-- Mehrere Kreise --&gt;</span>
+    <span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"80"</span> <span class="attribute">Height</span>=<span class="string">"80"</span> <span class="attribute">Fill</span>=<span class="string">"Green"</span>
+             <span class="attribute">Canvas.Left</span>=<span class="string">"150"</span> <span class="attribute">Canvas.Top</span>=<span class="string">"100"</span><span class="tag">/&gt;</span>
+    
+    <span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"100"</span> <span class="attribute">Height</span>=<span class="string">"50"</span> <span class="attribute">Fill</span>=<span class="string">"Blue"</span>
+             <span class="attribute">Canvas.Left</span>=<span class="string">"280"</span> <span class="attribute">Canvas.Top</span>=<span class="string">"200"</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;/Canvas&gt;</span></code></pre>
+                </div>
+
+                <h4>Programmatisches Zeichnen mit DrawingContext</h4>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">Ellipse/Kreis mit DrawingContext</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="keyword">protected override void</span> OnRender(<span class="type">DrawingContext</span> dc)
+{
+    <span class="comment">// Brushes und Pens</span>
+    <span class="keyword">var</span> fillBrush = <span class="keyword">new</span> <span class="type">SolidColorBrush</span>(<span class="type">Color</span>.FromRgb(<span class="value">99</span>, <span class="value">102</span>, <span class="value">241</span>));
+    <span class="keyword">var</span> strokePen = <span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.White, <span class="value">3</span>);
+
+    <span class="comment">// Kreis zeichnen (radiusX = radiusY)</span>
+    dc.DrawEllipse(
+        fillBrush,                    <span class="comment">// Füllung</span>
+        strokePen,                    <span class="comment">// Rand</span>
+        <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">100</span>, <span class="value">100</span>),          <span class="comment">// Mittelpunkt</span>
+        <span class="value">50</span>,                           <span class="comment">// RadiusX</span>
+        <span class="value">50</span>                            <span class="comment">// RadiusY (gleich = Kreis)</span>
+    );
+
+    <span class="comment">// Ellipse zeichnen (radiusX ≠ radiusY)</span>
+    dc.DrawEllipse(
+        <span class="type">Brushes</span>.LimeGreen,
+        <span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.DarkGreen, <span class="value">2</span>),
+        <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">250</span>, <span class="value">100</span>),          <span class="comment">// Mittelpunkt</span>
+        <span class="value">80</span>,                           <span class="comment">// RadiusX (horizontal)</span>
+        <span class="value">40</span>                            <span class="comment">// RadiusY (vertikal)</span>
+    );
+
+    <span class="comment">// Nur Umriss (Fill = null)</span>
+    dc.DrawEllipse(
+        <span class="keyword">null</span>,                         <span class="comment">// Keine Füllung</span>
+        <span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.Orange, <span class="value">4</span>),
+        <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">400</span>, <span class="value">100</span>),
+        <span class="value">60</span>, <span class="value">60</span>
+    );
+}</code></pre>
+                </div>
+
+                <h4>EllipseGeometry für Clipping & Pfade</h4>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">EllipseGeometry</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="comment">&lt;!-- Bild kreisförmig zuschneiden --&gt;</span>
+<span class="tag">&lt;Image</span> <span class="attribute">Source</span>=<span class="string">"foto.jpg"</span> <span class="attribute">Width</span>=<span class="string">"200"</span> <span class="attribute">Height</span>=<span class="string">"200"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;Image.Clip&gt;</span>
+        <span class="tag">&lt;EllipseGeometry</span> <span class="attribute">Center</span>=<span class="string">"100,100"</span> <span class="attribute">RadiusX</span>=<span class="string">"100"</span> <span class="attribute">RadiusY</span>=<span class="string">"100"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;/Image.Clip&gt;</span>
+<span class="tag">&lt;/Image&gt;</span>
+
+<span class="comment">&lt;!-- Ellipse über Path/Geometry --&gt;</span>
+<span class="tag">&lt;Path</span> <span class="attribute">Fill</span>=<span class="string">"#6366F1"</span> <span class="attribute">Stroke</span>=<span class="string">"White"</span> <span class="attribute">StrokeThickness</span>=<span class="string">"2"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;Path.Data&gt;</span>
+        <span class="tag">&lt;EllipseGeometry</span> <span class="attribute">Center</span>=<span class="string">"75,50"</span> <span class="attribute">RadiusX</span>=<span class="string">"75"</span> <span class="attribute">RadiusY</span>=<span class="string">"50"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;/Path.Data&gt;</span>
+<span class="tag">&lt;/Path&gt;</span>
+
+<span class="comment">&lt;!-- Kombinierte Geometrien --&gt;</span>
+<span class="tag">&lt;Path</span> <span class="attribute">Fill</span>=<span class="string">"#22C55E"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;Path.Data&gt;</span>
+        <span class="tag">&lt;CombinedGeometry</span> <span class="attribute">GeometryCombineMode</span>=<span class="string">"Union"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;CombinedGeometry.Geometry1&gt;</span>
+                <span class="tag">&lt;EllipseGeometry</span> <span class="attribute">Center</span>=<span class="string">"50,50"</span> <span class="attribute">RadiusX</span>=<span class="string">"40"</span> <span class="attribute">RadiusY</span>=<span class="string">"40"</span><span class="tag">/&gt;</span>
+            <span class="tag">&lt;/CombinedGeometry.Geometry1&gt;</span>
+            <span class="tag">&lt;CombinedGeometry.Geometry2&gt;</span>
+                <span class="tag">&lt;EllipseGeometry</span> <span class="attribute">Center</span>=<span class="string">"90,50"</span> <span class="attribute">RadiusX</span>=<span class="string">"40"</span> <span class="attribute">RadiusY</span>=<span class="string">"40"</span><span class="tag">/&gt;</span>
+            <span class="tag">&lt;/CombinedGeometry.Geometry2&gt;</span>
+        <span class="tag">&lt;/CombinedGeometry&gt;</span>
+    <span class="tag">&lt;/Path.Data&gt;</span>
+<span class="tag">&lt;/Path&gt;</span></code></pre>
+                </div>
+
+                <div class="info-box success">
+                    <strong>💡 Tipp:</strong> Für einen perfekten Kreis setze <code class="inline">Width</code> und <code class="inline">Height</code> auf den gleichen Wert. Bei <code class="inline">DrawEllipse()</code> müssen <code class="inline">radiusX</code> und <code class="inline">radiusY</code> identisch sein.
+                </div>
+            </div>
+
+            <div class="card">
                 <h3>2. Path & Geometrien</h3>
                 <div class="table-container">
                     <table>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Beispiel-XML für die Robot-Sprache
+    Aufgabe 3: Diese Datei kann mit dem "Load" Button geladen werden
+    
+    Kreise können entweder Hindernisse (IsGoal="false") oder 
+    das Ziel (IsGoal="true") sein.
+-->
+<Obstacles>
+    <!-- Hindernisse (rot dargestellt) -->
+    <Circle X="200" Y="150" Radius="40" IsGoal="false"/>
+    <Circle X="350" Y="250" Radius="35" IsGoal="false"/>
+    <Circle X="150" Y="350" Radius="30" IsGoal="false"/>
+    
+    <!-- Ziel (grün dargestellt) -->
+    <Circle X="500" Y="300" Radius="50" IsGoal="true"/>
+</Obstacles>

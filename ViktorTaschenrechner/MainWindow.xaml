@@ -1,0 +1,67 @@
+﻿<Window x:Class="Russiantechnerrr.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Russiantechnerrr"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition>
+            </RowDefinition>
+            <RowDefinition>
+            </RowDefinition>
+            <RowDefinition>
+            </RowDefinition>
+            <RowDefinition>
+            </RowDefinition>
+            <RowDefinition>
+            </RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+
+        </Grid.ColumnDefinitions>
+        <TextBox x:Name="inptb" Grid.Row="0" Grid.ColumnSpan="2"></TextBox>
+        <Button Grid.Row="0" Grid.Column="2" Content="=" x:Name="auswertbutton" Click="auswertbutton_Click"></Button>
+        <Button Grid.Row="0" Grid.Column="3" Content="del" x:Name="del" Click="del_Click"></Button>
+        <Button Grid.Column="4" Grid.Row="0" Content="." x:Name="kommabtn" Click="kommabtn_Click"></Button>
+        <Button Grid.Row="1" Grid.Column="0" Content="1" x:Name="btn1" Click="btn1_Click" ></Button>
+        <Button Grid.Row="1" Grid.Column="1" Content="2" x:Name="btn2" Click="btn2_Click" ></Button>
+        <Button Grid.Row="1" Grid.Column="2" Content="3" x:Name="btn3" Click="btn3_Click" ></Button>
+        <Button Grid.Row="2" Grid.Column="0" Content="4" x:Name="btn4" Click="btn4_Click" ></Button>
+        <Button Grid.Row="2" Grid.Column="1" Content="5" x:Name="btn5" Click="btn5_Click" ></Button>
+        <Button Grid.Row="2" Grid.Column="2" Content="6" x:Name="btn6" Click="btn6_Click" ></Button>
+        <Button Grid.Row="3" Grid.Column="0" Content="7" x:Name="btn7" Click="btn7_Click" ></Button>
+        <Button Grid.Row="3" Grid.Column="1" Content="8" x:Name="btn8" Click="btn8_Click" ></Button>
+        <Button Grid.Row="3" Grid.Column="2" Content="9" x:Name="btn9" Click="btn9_Click" ></Button>
+        <Button Grid.Row="4" Grid.Column="1" Content="0" x:Name="btn0" ></Button>
+        <Button Grid.Row="1" Grid.Column="3" Content="+" x:Name="plusbtn" Click="plusbtn_Click"></Button>
+        <Button Grid.Row="1" Grid.Column="4" Content="-" x:Name="minusbtn" Click="minusbtn_Click"></Button>
+        <Button Grid.Row="2" Grid.Column="3" Content="x" x:Name="malbtn" Click="malbtn_Click"></Button>
+        <Button Grid.Row="2" Grid.Column="4" Content="/" x:Name="divbtn" Click="divbtn_Click"></Button>
+        <Button Grid.Row="3" Grid.Column="3" Content="^" x:Name="hochtbn" Click="hochtbn_Click"></Button>
+        <Button Grid.Row="3" Grid.Column="4" Content="z" x:Name="zbtn" Click="zbtn_Click"></Button>
+        <Button Grid.Row="4" Grid.Column="3" Content="x" x:Name="xtbn" Click="xtbn_Click"></Button>
+        <Button Grid.Row="4" Grid.Column="4" Content="y" x:Name="ybtn" Click="ybtn_Click"></Button>
+        <Button Grid.Row="4" Grid.Column="2" Content=")" x:Name="klzubtn" Click="klzubtn_Click"></Button>
+        <Button Grid.Row="4" Grid.Column="0" Content="(" x:Name="klaufbtn" Click="klaufbtn_Click"></Button>
+        <Button Grid.Row="5" Grid.ColumnSpan="5" Content="edit variable" x:Name="editvar" Click="editvar_Click"></Button>
+
+
+
+
+
+
+
+
+
+
+    </Grid>
+</Window>

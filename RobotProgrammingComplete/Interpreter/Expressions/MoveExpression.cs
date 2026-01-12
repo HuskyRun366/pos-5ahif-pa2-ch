@@ -4,35 +4,51 @@ using RobotProgrammingComplete.Models;
 
 namespace RobotProgrammingComplete.Interpreter.Expressions
 {
+    /// <summary>
+    /// Repräsentiert einen MOVE-Befehl.
+    /// Bewegt den Roboter um ein Feld in die angegebene Richtung.
+    /// </summary>
     public class MoveExpression : IExpression
     {
-        private readonly Direction _direction;
+        // Die Bewegungsrichtung (UP, DOWN, LEFT, RIGHT)
+        private readonly Direction direction;
 
-        public MoveExpression(Direction direction)
+        /// <summary>
+        /// Erstellt einen neuen Bewegungsbefehl.
+        /// </summary>
+        /// <param name="dir">Die Richtung in die sich der Roboter bewegen soll</param>
+        public MoveExpression(Direction dir)
         {
-            _direction = direction;
+            direction = dir;
         }
 
+        /// <summary>
+        /// Führt die Bewegung aus, falls kein Hindernis im Weg ist.
+        /// </summary>
         public async Task RunAsync(ExecutionContext context)
         {
-            var (dx, dy) = context.GetDirectionOffset(_direction);
+            // Berechne die Zielposition basierend auf der Richtung
+            var (dx, dy) = context.GetDirectionOffset(direction);
             int newX = context.RobotX + dx;
             int newY = context.RobotY + dy;
 
-            // Check for collision with wall or obstacle
+            // Prüfe ob die Zielposition frei ist (keine Wand oder Hindernis)
             if (!context.IsObstacle(newX, newY))
             {
-                // Update robot position in elements list
+                // Finde das Roboter-Element in der Element-Liste
                 var robot = context.Elements.FirstOrDefault(e => e.Type == ElementType.Robot);
                 if (robot != null)
                 {
+                    // Aktualisiere die Roboterposition
                     robot.X = newX;
                     robot.Y = newY;
                     context.RobotX = newX;
                     context.RobotY = newY;
                 }
             }
+            // Falls blockiert: Roboter bleibt stehen (keine Fehlermeldung)
 
+            // UI-Update auslösen und kurz warten für Animation
             context.OnUpdate?.Invoke();
             await Task.Delay(context.DelayMs);
         }

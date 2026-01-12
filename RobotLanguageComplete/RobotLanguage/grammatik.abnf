@@ -1,0 +1,60 @@
+; ============================================
+; Aufgabe 2: Grammatik in ABNF-Notation
+; für die Robot-Sprache
+; ============================================
+;
+; TODO: Vervollständige diese Grammatik!
+;
+; Hinweise zur ABNF-Syntax:
+; - Regeln werden mit "=" definiert
+; - "/" bedeutet Alternative (oder)
+; - *element bedeutet 0 oder mehr Wiederholungen
+; - 1*element bedeutet 1 oder mehr Wiederholungen
+; - [element] bedeutet optional (0 oder 1 mal)
+; - Terminale in Anführungszeichen: "FORWARD"
+; - Zahlen mit %d für Dezimal: %d48-57 für Ziffern 0-9
+;
+; ============================================
+
+; Programm besteht aus mehreren Statements
+program         = *statement
+
+; Statement ist ein Befehl gefolgt von Zeilenende
+statement       = command [newline]
+
+; Befehle der Robot-Sprache
+command         = forward-cmd / backward-cmd / left-cmd / right-cmd
+
+; TODO: Aufgabe 2 - Regeln vervollständigen
+
+; FORWARD-Befehl: bewegt den Roboter vorwärts
+forward-cmd     = "FORWARD" ws number
+
+; BACKWARD-Befehl: bewegt den Roboter rückwärts
+backward-cmd    = "BACKWARD" ws number
+
+; LEFT-Befehl: dreht den Roboter nach links
+left-cmd        = "LEFT" ws number
+
+; RIGHT-Befehl: dreht den Roboter nach rechts
+right-cmd       = "RIGHT" ws number
+
+; Zahl (Distanz oder Winkel)
+number          = 1*digit ["." 1*digit]
+
+; Hilfsdefinitionen
+digit           = %d48-57          ; 0-9
+ws              = 1*(%d32 / %d9)   ; Whitespace (Leerzeichen oder Tab)
+newline         = %d13.10 / %d10   ; CRLF oder LF
+
+; ============================================
+; Beispiele für gültige Programme:
+;
+; FORWARD 100
+; RIGHT 90
+; FORWARD 50
+;
+; FORWARD 100
+; LEFT 45
+; BACKWARD 30
+; ============================================

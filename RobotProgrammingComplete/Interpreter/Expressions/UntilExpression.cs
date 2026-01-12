@@ -4,23 +4,41 @@ using RobotProgrammingComplete.Models;
 
 namespace RobotProgrammingComplete.Interpreter.Expressions
 {
+    /// <summary>
+    /// Repräsentiert eine UNTIL-Schleife.
+    /// Wiederholt einen Block solange bis die Bedingung erfüllt ist.
+    /// Syntax: UNTIL condition { ... }
+    /// </summary>
     public class UntilExpression : IExpression
     {
-        private readonly Condition _condition;
-        private readonly List<IExpression> _body;
+        // Die Abbruchbedingung (z.B. "UP IS-A OBSTACLE")
+        private readonly Condition condition;
 
-        public UntilExpression(Condition condition, List<IExpression> body)
+        // Die zu wiederholenden Anweisungen
+        private readonly List<IExpression> body;
+
+        /// <summary>
+        /// Erstellt eine neue UNTIL-Schleife.
+        /// </summary>
+        /// <param name="cond">Die Bedingung zum Beenden der Schleife</param>
+        /// <param name="statements">Die Anweisungen im Schleifenkörper</param>
+        public UntilExpression(Condition cond, List<IExpression> statements)
         {
-            _condition = condition;
-            _body = body;
+            condition = cond;
+            body = statements;
         }
 
+        /// <summary>
+        /// Führt den Schleifenkörper aus, bis die Bedingung wahr wird.
+        /// </summary>
         public async Task RunAsync(ExecutionContext context)
         {
-            // Execute body until condition becomes true
-            while (!_condition.Evaluate(context))
+            // Wiederhole solange die Bedingung NICHT erfüllt ist
+            // (UNTIL = bis die Bedingung wahr wird, also while NOT condition)
+            while (!condition.Evaluate(context))
             {
-                foreach (var statement in _body)
+                // Führe jede Anweisung im Block aus
+                foreach (var statement in body)
                 {
                     await statement.RunAsync(context);
                 }

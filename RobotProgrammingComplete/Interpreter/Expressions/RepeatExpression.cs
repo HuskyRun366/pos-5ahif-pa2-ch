@@ -4,22 +4,40 @@ using RobotProgrammingComplete.Models;
 
 namespace RobotProgrammingComplete.Interpreter.Expressions
 {
+    /// <summary>
+    /// Repräsentiert eine REPEAT-Schleife.
+    /// Wiederholt einen Block von Anweisungen n-mal.
+    /// Syntax: REPEAT n { ... }
+    /// </summary>
     public class RepeatExpression : IExpression
     {
-        private readonly int _count;
-        private readonly List<IExpression> _body;
+        // Anzahl der Wiederholungen
+        private readonly int count;
 
-        public RepeatExpression(int count, List<IExpression> body)
+        // Die zu wiederholenden Anweisungen
+        private readonly List<IExpression> body;
+
+        /// <summary>
+        /// Erstellt eine neue REPEAT-Schleife.
+        /// </summary>
+        /// <param name="n">Anzahl der Wiederholungen</param>
+        /// <param name="statements">Die Anweisungen im Schleifenkörper</param>
+        public RepeatExpression(int n, List<IExpression> statements)
         {
-            _count = count;
-            _body = body;
+            count = n;
+            body = statements;
         }
 
+        /// <summary>
+        /// Führt den Schleifenkörper n-mal aus.
+        /// </summary>
         public async Task RunAsync(ExecutionContext context)
         {
-            for (int i = 0; i < _count; i++)
+            // Wiederhole den Block count-mal
+            for (int i = 0; i < count; i++)
             {
-                foreach (var statement in _body)
+                // Führe jede Anweisung im Block aus
+                foreach (var statement in body)
                 {
                     await statement.RunAsync(context);
                 }

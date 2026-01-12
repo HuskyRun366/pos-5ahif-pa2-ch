@@ -1,0 +1,61 @@
+<Window x:Class="RobotLanguage.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:RobotLanguage"
+        Title="Robot Language - 2. Praktische Arbeit 5CHIF" 
+        Height="700" Width="1000"
+        WindowStartupLocation="CenterScreen">
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Linke Seite: Code-Editor und Buttons -->
+        <Grid Grid.Column="0" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Titel -->
+            <TextBlock Grid.Row="0" Text="Robot Code:" FontWeight="Bold" Margin="0,0,0,5"/>
+
+            <!-- Code-Eingabe -->
+            <TextBox Grid.Row="1" 
+                     x:Name="txtCode" 
+                     AcceptsReturn="True" 
+                     AcceptsTab="True"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     FontFamily="Consolas"
+                     FontSize="14"
+                     Text="// Beispiel-Code:&#x0a;FORWARD 100&#x0a;RIGHT 90&#x0a;FORWARD 50&#x0a;LEFT 45&#x0a;FORWARD 75"/>
+
+            <!-- Buttons für XML -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,10">
+                <Button x:Name="btnLoad" Content="Load XML" Width="100" Margin="0,0,10,0" Click="BtnLoad_Click"/>
+                <Button x:Name="btnClear" Content="Clear" Width="100" Click="BtnClear_Click"/>
+            </StackPanel>
+
+            <!-- Run Button -->
+            <Button Grid.Row="3" 
+                    x:Name="btnRun" 
+                    Content="▶ Run" 
+                    Height="40" 
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Background="#4CAF50"
+                    Foreground="White"
+                    Click="BtnRun_Click"/>
+        </Grid>
+
+        <!-- Rechte Seite: Custom Widget für Zeichnung -->
+        <Border Grid.Column="1" Margin="10" BorderBrush="Gray" BorderThickness="1">
+            <local:RobotCanvas x:Name="robotCanvas" Background="White"/>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Schwierigeres Level: Der Roboter muss durch einen Parcours navigieren
+-->
+<Obstacles>
+    <!-- Hindernisse bilden einen Parcours -->
+    <Circle X="150" Y="200" Radius="45" IsGoal="false"/>
+    <Circle X="150" Y="400" Radius="45" IsGoal="false"/>
+    <Circle X="300" Y="100" Radius="40" IsGoal="false"/>
+    <Circle X="300" Y="300" Radius="40" IsGoal="false"/>
+    <Circle X="300" Y="500" Radius="40" IsGoal="false"/>
+    <Circle X="450" Y="200" Radius="35" IsGoal="false"/>
+    <Circle X="450" Y="400" Radius="35" IsGoal="false"/>
+    
+    <!-- Ziel am Ende des Parcours -->
+    <Circle X="550" Y="300" Radius="60" IsGoal="true"/>
+</Obstacles>
