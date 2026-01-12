@@ -1,0 +1,2962 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pratt Parsing in C# — Interaktive Lernunterlage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-highlight: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --accent-purple: #a371f7;
+            --accent-cyan: #39c5cf;
+            --border-color: #30363d;
+            --code-bg: #1a1f26;
+            --gradient-start: #58a6ff;
+            --gradient-end: #a371f7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Work Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 17px;
+        }
+
+        /* Header & Navigation */
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 0.75rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-blue);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(88, 166, 255, 0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .hero h1 {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.8rem 1.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(88, 166, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .toc h2 {
+            font-family: 'Source Serif 4', serif;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--accent-blue);
+        }
+
+        .toc ol {
+            list-style: none;
+            counter-reset: toc-counter;
+        }
+
+        .toc > ol > li {
+            counter-increment: toc-counter;
+            margin-bottom: 0.5rem;
+        }
+
+        .toc > ol > li > a::before {
+            content: counter(toc-counter) ". ";
+            color: var(--accent-blue);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+
+        .toc a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: var(--accent-blue);
+        }
+
+        .toc ol ol {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .toc ol ol li {
+            font-size: 0.9rem;
+        }
+
+        /* Section Styling */
+        .section {
+            margin-bottom: 5rem;
+            scroll-margin-top: 5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--bg-primary);
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+        }
+
+        .section h2 {
+            font-family: 'Source Serif 4', serif;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .section h3 {
+            font-family: 'Source Serif 4', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 2.5rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        .section h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--accent-cyan);
+        }
+
+        .section p {
+            margin-bottom: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        .section p strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Info Boxes */
+        .info-box {
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+            border-left: 4px solid;
+        }
+
+        .info-box.concept {
+            background: rgba(88, 166, 255, 0.08);
+            border-color: var(--accent-blue);
+        }
+
+        .info-box.tip {
+            background: rgba(63, 185, 80, 0.08);
+            border-color: var(--accent-green);
+        }
+
+        .info-box.warning {
+            background: rgba(210, 153, 34, 0.08);
+            border-color: var(--accent-orange);
+        }
+
+        .info-box.important {
+            background: rgba(163, 113, 247, 0.08);
+            border-color: var(--accent-purple);
+        }
+
+        .info-box-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-box.concept .info-box-title { color: var(--accent-blue); }
+        .info-box.tip .info-box-title { color: var(--accent-green); }
+        .info-box.warning .info-box-title { color: var(--accent-orange); }
+        .info-box.important .info-box-title { color: var(--accent-purple); }
+
+        .info-box p {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .info-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: var(--bg-tertiary);
+            padding: 0.6rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-language {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .code-filename {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .code-copy-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .code-copy-btn:hover {
+            background: var(--bg-highlight);
+            color: var(--text-primary);
+        }
+
+        .code-copy-btn.copied {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        pre {
+            padding: 1.25rem;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Syntax Highlighting */
+        .keyword { color: #ff7b72; }
+        .type { color: #79c0ff; }
+        .string { color: #a5d6ff; }
+        .number { color: #ffa657; }
+        .comment { color: #8b949e; font-style: italic; }
+        .method { color: #d2a8ff; }
+        .property { color: #7ee787; }
+        .operator { color: #ff7b72; }
+        .punctuation { color: #c9d1d9; }
+
+        /* Inline Code */
+        code:not(pre code) {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88em;
+            background: var(--bg-tertiary);
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+            color: var(--accent-cyan);
+        }
+
+        /* Interactive Demo */
+        .demo-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .demo-header {
+            background: var(--bg-tertiary);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .demo-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .demo-title::before {
+            content: '▶';
+            color: var(--accent-green);
+            font-size: 0.8rem;
+        }
+
+        .demo-body {
+            padding: 1.5rem;
+        }
+
+        .demo-input-group {
+            margin-bottom: 1rem;
+        }
+
+        .demo-input-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .demo-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .demo-btn {
+            padding: 0.7rem 1.5rem;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .demo-btn:hover {
+            background: #4393e8;
+        }
+
+        .demo-output {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            min-height: 100px;
+        }
+
+        .demo-output-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* AST Tree Visualization */
+        .ast-tree {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .ast-node {
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .ast-node::before {
+            content: '├─';
+            position: absolute;
+            left: 0;
+            color: var(--text-muted);
+        }
+
+        .ast-node:last-child::before {
+            content: '└─';
+        }
+
+        .ast-operator {
+            color: var(--accent-orange);
+            font-weight: 600;
+        }
+
+        .ast-number {
+            color: var(--accent-green);
+        }
+
+        .ast-variable {
+            color: var(--accent-purple);
+        }
+
+        .ast-function {
+            color: var(--accent-cyan);
+        }
+
+        /* Step Visualization */
+        .step-visualizer {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .step-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .step-btn:hover {
+            background: var(--bg-highlight);
+            color: var(--text-primary);
+        }
+
+        .step-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .step-display {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .step-info {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .token-stream {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .token {
+            padding: 0.3rem 0.7rem;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .token.current {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+            transform: scale(1.1);
+        }
+
+        .token.consumed {
+            opacity: 0.4;
+        }
+
+        .token-type {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        /* Precedence Table */
+        .precedence-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .precedence-table th,
+        .precedence-table td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .precedence-table th {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .precedence-table td {
+            color: var(--text-secondary);
+        }
+
+        .precedence-table tr:hover td {
+            background: var(--bg-secondary);
+        }
+
+        .precedence-table code {
+            color: var(--accent-orange);
+        }
+
+        /* Comparison Cards */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .comparison-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .comparison-card h4 {
+            margin: 0 0 1rem;
+            color: var(--text-primary);
+        }
+
+        .comparison-card ul {
+            list-style: none;
+        }
+
+        .comparison-card li {
+            padding: 0.4rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .comparison-card li::before {
+            content: '•';
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .comparison-card.pro li::before {
+            content: '✓';
+            color: var(--accent-green);
+        }
+
+        .comparison-card.con li::before {
+            content: '✗';
+            color: var(--accent-red);
+        }
+
+        /* Tabs */
+        .tabs {
+            margin: 2rem 0;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            padding: 0.8rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .tab-content {
+            padding: 1.5rem 0;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Diagrams */
+        .diagram {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .diagram svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .diagram-caption {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Flow diagram */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+        }
+
+        .flow-box {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            font-weight: 500;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .flow-box.highlight {
+            border-color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .flow-arrow {
+            color: var(--accent-blue);
+            font-size: 1.5rem;
+        }
+
+        .flow-decision {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent-orange);
+            transform: rotate(45deg);
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flow-decision span {
+            transform: rotate(-45deg);
+            font-size: 0.9rem;
+        }
+
+        /* Lists */
+        .section ul, .section ol {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .section li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        .main-footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 3rem 2rem;
+            margin-top: 5rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer-content p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-blue);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-header {
+                padding: 0.75rem 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 6rem 1rem 3rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .code-header {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+
+            pre {
+                font-size: 0.8rem;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-buttons {
+                flex-wrap: wrap;
+            }
+
+            .tab-btn {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-highlight);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            width: 0%;
+            z-index: 999;
+            transition: width 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo">PrattParser.cs</div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#einfuehrung">Einführung</a></li>
+                    <li><a href="#grundlagen">Grundlagen</a></li>
+                    <li><a href="#algorithmus">Algorithmus</a></li>
+                    <li><a href="#implementierung">Implementierung</a></li>
+                    <li><a href="#erweiterung">Erweiterung</a></li>
+                    <li><a href="#demo">Demo</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <span class="hero-badge">📚 Interaktive Lernunterlage</span>
+        <h1>Pratt Parsing<br>in <span>C#</span></h1>
+        <p class="hero-subtitle">
+            Lerne den elegantesten Algorithmus für Ausdruck-Parsing — Schritt für Schritt erklärt, 
+            mit interaktiven Beispielen und vollständiger C#-Implementierung.
+        </p>
+        <div class="hero-cta">
+            <a href="#einfuehrung" class="btn btn-primary">Jetzt Lernen</a>
+            <a href="#demo" class="btn btn-secondary">Zur Demo</a>
+        </div>
+    </section>
+
+    <main class="main-content">
+        <!-- Inhaltsverzeichnis -->
+        <nav class="toc">
+            <h2>
+                <svg class="toc-icon" viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm0 7h12v2H3v-2zm0 7h18v2H3v-2z"/></svg>
+                Inhaltsverzeichnis
+            </h2>
+            <ol>
+                <li>
+                    <a href="#einfuehrung">Einführung</a>
+                    <ol>
+                        <li><a href="#was-ist-pratt">Was ist Pratt Parsing?</a></li>
+                        <li><a href="#warum-pratt">Warum Pratt Parsing?</a></li>
+                    </ol>
+                </li>
+                <li>
+                    <a href="#grundlagen">Grundlagen</a>
+                    <ol>
+                        <li><a href="#tokens">Tokens & Lexer</a></li>
+                        <li><a href="#praezedenz">Präzedenz</a></li>
+                        <li><a href="#assoziativitaet">Assoziativität</a></li>
+                    </ol>
+                </li>
+                <li>
+                    <a href="#algorithmus">Der Algorithmus</a>
+                    <ol>
+                        <li><a href="#kernidee">Die Kernidee</a></li>
+                        <li><a href="#parselets">Prefix & Infix Parselets</a></li>
+                        <li><a href="#ablauf">Ablauf Schritt für Schritt</a></li>
+                    </ol>
+                </li>
+                <li>
+                    <a href="#implementierung">Implementierung in C#</a>
+                    <ol>
+                        <li><a href="#token-klassen">Token-Klassen</a></li>
+                        <li><a href="#lexer-impl">Lexer</a></li>
+                        <li><a href="#ast-nodes">AST-Knoten</a></li>
+                        <li><a href="#parselets-impl">Parselets</a></li>
+                        <li><a href="#parser-impl">Parser</a></li>
+                    </ol>
+                </li>
+                <li>
+                    <a href="#erweiterung">Erweiterung & Anpassung</a>
+                    <ol>
+                        <li><a href="#neue-operatoren">Neue Operatoren</a></li>
+                        <li><a href="#funktionen">Funktionsaufrufe</a></li>
+                        <li><a href="#eigene-sprache">Eigene Sprache</a></li>
+                    </ol>
+                </li>
+                <li><a href="#demo">Interaktive Demo</a></li>
+            </ol>
+        </nav>
+
+        <!-- Section 1: Einführung -->
+        <section id="einfuehrung" class="section">
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2>Einführung</h2>
+            </div>
+
+            <h3 id="was-ist-pratt">Was ist Pratt Parsing?</h3>
+            <p>
+                <strong>Pratt Parsing</strong> (auch "Top-Down Operator Precedence Parsing" genannt) ist ein Parsing-Algorithmus, 
+                der 1973 von <strong>Vaughan Pratt</strong> entwickelt wurde. Er bietet eine elegante Lösung für das 
+                Parsen von Ausdrücken mit verschiedenen Operatoren und Präzedenzstufen.
+            </p>
+
+            <div class="info-box concept">
+                <div class="info-box-title">💡 Kernkonzept</div>
+                <p>
+                    Pratt Parsing verbindet die Einfachheit von rekursivem Abstieg mit der Mächtigkeit von 
+                    Operator-Präzedenz-Parsing. Jeder Token-Typ "weiß", wie er sich selbst parsen soll.
+                </p>
+            </div>
+
+            <p>
+                Stell dir vor, du möchtest den Ausdruck <code>2 + 3 * 4</code> parsen. Der Algorithmus muss verstehen, 
+                dass <code>*</code> eine höhere Priorität hat als <code>+</code>, also zuerst <code>3 * 4</code> 
+                berechnet werden muss.
+            </p>
+
+            <div class="diagram">
+                <div class="flow-container">
+                    <div class="flow-box">Input: 2 + 3 * 4</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box highlight">Pratt Parser</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">AST: +(2, *(3, 4))</div>
+                </div>
+                <p class="diagram-caption">Der Parser erzeugt einen Abstract Syntax Tree (AST), der die korrekte Operatorpriorität widerspiegelt.</p>
+            </div>
+
+            <h3 id="warum-pratt">Warum Pratt Parsing?</h3>
+
+            <div class="comparison-grid">
+                <div class="comparison-card pro">
+                    <h4>✅ Vorteile</h4>
+                    <ul>
+                        <li>Sehr einfach zu verstehen und implementieren</li>
+                        <li>Leicht erweiterbar für neue Operatoren</li>
+                        <li>Keine komplizierte Grammatik nötig</li>
+                        <li>Elegant handhabt Präzedenz & Assoziativität</li>
+                        <li>Performant mit O(n) Zeitkomplexität</li>
+                    </ul>
+                </div>
+                <div class="comparison-card con">
+                    <h4>⚠️ Einschränkungen</h4>
+                    <ul>
+                        <li>Primär für Ausdrücke geeignet</li>
+                        <li>Nicht ideal für komplexe Statement-Grammatiken</li>
+                        <li>Benötigt zusätzliche Logik für Kontextsensitivität</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box tip">
+                <div class="info-box-title">🎯 Anwendungsgebiete</div>
+                <p>
+                    Pratt Parsing wird häufig eingesetzt in: Programmiersprachen (JavaScript V8, Rust, Swift), 
+                    Konfigurationssprachen, Mathematik-Parsern, SQL-Parsern für Ausdrücke und Template-Engines.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 2: Grundlagen -->
+        <section id="grundlagen" class="section">
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2>Grundlagen</h2>
+            </div>
+
+            <p>
+                Bevor wir in den Algorithmus eintauchen, müssen wir einige grundlegende Konzepte verstehen. 
+                Diese bilden das Fundament für Pratt Parsing.
+            </p>
+
+            <h3 id="tokens">Tokens & Lexer</h3>
+
+            <p>
+                Ein <strong>Token</strong> ist die kleinste bedeutungsvolle Einheit in einem Ausdruck. 
+                Der <strong>Lexer</strong> (auch Scanner genannt) verwandelt einen Text in eine Sequenz von Tokens.
+            </p>
+
+            <div class="demo-container">
+                <div class="demo-header">
+                    <span class="demo-title">Token-Visualisierung</span>
+                </div>
+                <div class="demo-body">
+                    <div class="demo-input-group">
+                        <label>Gib einen Ausdruck ein:</label>
+                        <input type="text" class="demo-input" id="tokenInput" value="2 + 3 * (4 - 1)" placeholder="z.B. 2 + 3 * 4">
+                    </div>
+                    <button class="demo-btn" onclick="tokenizeDemo()">Tokenisieren</button>
+                    <div class="demo-output">
+                        <div class="demo-output-label">Tokens</div>
+                        <div class="token-stream" id="tokenOutput"></div>
+                    </div>
+                </div>
+            </div>
+
+            <p>Die wichtigsten Token-Typen für mathematische Ausdrücke sind:</p>
+
+            <table class="precedence-table">
+                <thead>
+                    <tr>
+                        <th>Token-Typ</th>
+                        <th>Beispiele</th>
+                        <th>Beschreibung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>NUMBER</code></td>
+                        <td>42, 3.14, 0</td>
+                        <td>Numerische Literale</td>
+                    </tr>
+                    <tr>
+                        <td><code>IDENTIFIER</code></td>
+                        <td>x, foo, PI</td>
+                        <td>Variablennamen</td>
+                    </tr>
+                    <tr>
+                        <td><code>OPERATOR</code></td>
+                        <td>+, -, *, /</td>
+                        <td>Rechenoperatoren</td>
+                    </tr>
+                    <tr>
+                        <td><code>LPAREN</code></td>
+                        <td>(</td>
+                        <td>Öffnende Klammer</td>
+                    </tr>
+                    <tr>
+                        <td><code>RPAREN</code></td>
+                        <td>)</td>
+                        <td>Schließende Klammer</td>
+                    </tr>
+                    <tr>
+                        <td><code>EOF</code></td>
+                        <td>—</td>
+                        <td>Ende des Ausdrucks</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="praezedenz">Präzedenz (Bindungsstärke)</h3>
+
+            <p>
+                <strong>Präzedenz</strong> (auch Bindungsstärke oder Priorität) bestimmt, welche Operatoren zuerst 
+                ausgewertet werden. Höhere Präzedenz bedeutet stärkere Bindung.
+            </p>
+
+            <div class="info-box important">
+                <div class="info-box-title">🔑 Schlüsselkonzept</div>
+                <p>
+                    In <code>2 + 3 * 4</code> hat <code>*</code> höhere Präzedenz als <code>+</code>. 
+                    Deshalb wird <code>3 * 4 = 12</code> zuerst berechnet, dann <code>2 + 12 = 14</code>.
+                </p>
+            </div>
+
+            <table class="precedence-table">
+                <thead>
+                    <tr>
+                        <th>Präzedenz</th>
+                        <th>Operatoren</th>
+                        <th>Beschreibung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1 (niedrigste)</td>
+                        <td><code>=</code></td>
+                        <td>Zuweisung</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><code>||</code></td>
+                        <td>Logisches ODER</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><code>&&</code></td>
+                        <td>Logisches UND</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><code>+ -</code></td>
+                        <td>Addition, Subtraktion</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><code>* /</code></td>
+                        <td>Multiplikation, Division</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td><code>^</code></td>
+                        <td>Potenz</td>
+                    </tr>
+                    <tr>
+                        <td>7 (höchste)</td>
+                        <td><code>- !</code> (unär)</td>
+                        <td>Negation, NOT</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="assoziativitaet">Assoziativität</h3>
+
+            <p>
+                <strong>Assoziativität</strong> bestimmt die Auswertungsreihenfolge bei Operatoren mit gleicher Präzedenz.
+            </p>
+
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h4>Links-assoziativ</h4>
+                    <ul>
+                        <li><code>1 - 2 - 3</code> = <code>(1 - 2) - 3</code> = -4</li>
+                        <li>Von links nach rechts gruppiert</li>
+                        <li>Die meisten Operatoren: +, -, *, /</li>
+                    </ul>
+                </div>
+                <div class="comparison-card">
+                    <h4>Rechts-assoziativ</h4>
+                    <ul>
+                        <li><code>2 ^ 3 ^ 2</code> = <code>2 ^ (3 ^ 2)</code> = 512</li>
+                        <li>Von rechts nach links gruppiert</li>
+                        <li>Zuweisung (=), Potenz (^)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box tip">
+                <div class="info-box-title">💡 Merke</div>
+                <p>
+                    Im Pratt Parser steuern wir die Assoziativität über die <strong>Bindungsstärke</strong>: 
+                    Bei links-assoziativen Operatoren erhöhen wir die Präzedenz beim rekursiven Aufruf um 1, 
+                    bei rechts-assoziativen nicht.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 3: Der Algorithmus -->
+        <section id="algorithmus" class="section">
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2>Der Algorithmus</h2>
+            </div>
+
+            <h3 id="kernidee">Die Kernidee</h3>
+
+            <p>
+                Das Herzstück von Pratt Parsing ist überraschend simpel: Jeder Token kann zwei Rollen spielen — 
+                als <strong>Prefix</strong> (am Anfang eines Ausdrucks) oder als <strong>Infix</strong> 
+                (zwischen zwei Ausdrücken).
+            </p>
+
+            <div class="info-box concept">
+                <div class="info-box-title">💡 Die zentrale Erkenntnis</div>
+                <p>
+                    Der Algorithmus fragt bei jedem Token: "Soll ich dich als Teil meines aktuellen Ausdrucks 
+                    behandeln?" Die Antwort hängt von der <strong>Präzedenz</strong> ab: Nur wenn der nächste 
+                    Operator stärker bindet, wird er zum aktuellen Ausdruck hinzugefügt.
+                </p>
+            </div>
+
+            <p>Der Hauptalgorithmus in Pseudocode:</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">Pseudocode</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">Kopieren</button>
+                </div>
+<pre><span class="keyword">function</span> <span class="method">ParseExpression</span>(precedence):
+    <span class="comment">// 1. Parse den Prefix-Teil (Zahl, Variable, Klammer, -x, ...)</span>
+    token = consume()
+    left = token.prefixParselet.parse(token)
+    
+    <span class="comment">// 2. Solange der nächste Operator stärker bindet...</span>
+    <span class="keyword">while</span> precedence < nextToken.precedence:
+        token = consume()
+        left = token.infixParselet.parse(left, token)
+    
+    <span class="keyword">return</span> left</pre>
+            </div>
+
+            <h3 id="parselets">Prefix & Infix Parselets</h3>
+
+            <p>
+                Ein <strong>Parselet</strong> ist ein kleines Objekt, das weiß, wie ein bestimmter Token-Typ 
+                geparst werden soll. Es gibt zwei Arten:
+            </p>
+
+            <div class="tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('prefix-tab')">Prefix Parselets</button>
+                    <button class="tab-btn" onclick="switchTab('infix-tab')">Infix Parselets</button>
+                </div>
+                
+                <div class="tab-content">
+                    <div id="prefix-tab" class="tab-pane active">
+                        <p>
+                            <strong>Prefix Parselets</strong> werden aufgerufen, wenn ein Token am Anfang eines 
+                            Ausdrucks steht (oder nach einem Operator).
+                        </p>
+                        
+                        <table class="precedence-table">
+                            <thead>
+                                <tr>
+                                    <th>Token</th>
+                                    <th>Beispiel</th>
+                                    <th>Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Zahl</td>
+                                    <td><code>42</code></td>
+                                    <td>Erzeuge NumberNode(42)</td>
+                                </tr>
+                                <tr>
+                                    <td>Identifier</td>
+                                    <td><code>x</code></td>
+                                    <td>Erzeuge VariableNode("x")</td>
+                                </tr>
+                                <tr>
+                                    <td>Minus (unär)</td>
+                                    <td><code>-5</code></td>
+                                    <td>Erzeuge UnaryNode("-", parse())</td>
+                                </tr>
+                                <tr>
+                                    <td>Klammer auf</td>
+                                    <td><code>(</code></td>
+                                    <td>Parse Inhalt, erwarte ")"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="infix-tab" class="tab-pane">
+                        <p>
+                            <strong>Infix Parselets</strong> werden aufgerufen, wenn ein Token zwischen zwei 
+                            Ausdrücken steht. Sie erhalten den bereits geparsten linken Ausdruck.
+                        </p>
+                        
+                        <table class="precedence-table">
+                            <thead>
+                                <tr>
+                                    <th>Token</th>
+                                    <th>Beispiel</th>
+                                    <th>Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Plus</td>
+                                    <td><code>a + b</code></td>
+                                    <td>BinaryNode(left, "+", parseRight())</td>
+                                </tr>
+                                <tr>
+                                    <td>Mal</td>
+                                    <td><code>a * b</code></td>
+                                    <td>BinaryNode(left, "*", parseRight())</td>
+                                </tr>
+                                <tr>
+                                    <td>Klammer auf</td>
+                                    <td><code>f(x)</code></td>
+                                    <td>CallNode(left, parseArgs())</td>
+                                </tr>
+                                <tr>
+                                    <td>Fragezeichen</td>
+                                    <td><code>a ? b : c</code></td>
+                                    <td>TernaryNode(left, then, else)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <h3 id="ablauf">Ablauf Schritt für Schritt</h3>
+
+            <p>
+                Lass uns den Algorithmus an einem konkreten Beispiel durchspielen. Wir parsen <code>1 + 2 * 3</code>:
+            </p>
+
+            <div class="step-visualizer">
+                <div class="step-controls">
+                    <button class="step-btn" id="prevStep" onclick="prevStep()" disabled>← Zurück</button>
+                    <button class="step-btn" id="nextStep" onclick="nextStep()">Weiter →</button>
+                    <button class="step-btn" onclick="resetSteps()">⟲ Reset</button>
+                </div>
+                
+                <div class="token-stream" id="stepTokens"></div>
+                
+                <div class="step-display">
+                    <div class="step-info" id="stepInfo">Schritt 0 von 8</div>
+                    <div class="step-description" id="stepDescription">
+                        Klicke "Weiter" um den Algorithmus zu starten.
+                    </div>
+                </div>
+                
+                <div class="demo-output" style="margin-top: 1rem;">
+                    <div class="demo-output-label">Aktueller AST</div>
+                    <div class="ast-tree" id="stepAst">—</div>
+                </div>
+            </div>
+
+            <div class="info-box warning">
+                <div class="info-box-title">⚠️ Wichtig zu verstehen</div>
+                <p>
+                    Der Trick ist die <strong>while-Schleife</strong>: Sie "sammelt" alle Operatoren auf, 
+                    die stärker binden als der aktuelle Kontext. Sobald ein schwächerer Operator kommt, 
+                    wird der bisherige Ausdruck zurückgegeben.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 4: Implementierung -->
+        <section id="implementierung" class="section">
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2>Implementierung in C#</h2>
+            </div>
+
+            <p>
+                Jetzt implementieren wir einen vollständigen Pratt Parser in C#. Wir bauen alle Komponenten 
+                Schritt für Schritt auf.
+            </p>
+
+            <h3 id="token-klassen">Token-Klassen</h3>
+
+            <p>Zuerst definieren wir die Token-Typen und die Token-Klasse:</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">C#</span>
+                    <span class="code-filename">Token.cs</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">Kopieren</button>
+                </div>
+<pre><span class="keyword">public</span> <span class="keyword">enum</span> <span class="type">TokenType</span>
+{
+    <span class="comment">// Literale</span>
+    <span class="property">Number</span>,
+    <span class="property">Identifier</span>,
+    
+    <span class="comment">// Operatoren</span>
+    <span class="property">Plus</span>,
+    <span class="property">Minus</span>,
+    <span class="property">Star</span>,
+    <span class="property">Slash</span>,
+    <span class="property">Caret</span>,        <span class="comment">// ^ (Potenz)</span>
+    <span class="property">Equals</span>,       <span class="comment">// =</span>
+    
+    <span class="comment">// Klammern</span>
+    <span class="property">LeftParen</span>,
+    <span class="property">RightParen</span>,
+    <span class="property">Comma</span>,
+    
+    <span class="comment">// Sonstiges</span>
+    <span class="property">Eof</span>
+}
+
+<span class="keyword">public</span> <span class="keyword">record</span> <span class="type">Token</span>(
+    <span class="type">TokenType</span> <span class="property">Type</span>, 
+    <span class="type">string</span> <span class="property">Value</span>, 
+    <span class="type">int</span> <span class="property">Position</span>
+)
+{
+    <span class="keyword">public</span> <span class="keyword">override</span> <span class="type">string</span> <span class="method">ToString</span>() => 
+        <span class="string">$"</span>{Type}<span class="string">(</span>{Value}<span class="string">)"</span>;
+}</pre>
+            </div>
+
+            <h3 id="lexer-impl">Lexer</h3>
+
+            <p>Der Lexer zerlegt den Eingabetext in Tokens:</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">C#</span>
+                    <span class="code-filename">Lexer.cs</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">Kopieren</button>
+                </div>
+<pre><span class="keyword">public</span> <span class="keyword">class</span> <span class="type">Lexer</span>
+{
+    <span class="keyword">private</span> <span class="keyword">readonly</span> <span class="type">string</span> _text;
+    <span class="keyword">private</span> <span class="type">int</span> _position;
+    
+    <span class="keyword">public</span> <span class="method">Lexer</span>(<span class="type">string</span> text)
+    {
+        _text = text;
+        _position = <span class="number">0</span>;
+    }
+    
+    <span class="keyword">private</span> <span class="type">char</span> <span class="property">Current</span> => 
+        _position >= _text.Length ? <span class="string">'\0'</span> : _text[_position];
+    
+    <span class="keyword">private</span> <span class="keyword">void</span> <span class="method">Advance</span>() => _position++;
+    
+    <span class="keyword">public</span> <span class="type">List</span>&lt;<span class="type">Token</span>&gt; <span class="method">Tokenize</span>()
+    {
+        <span class="keyword">var</span> tokens = <span class="keyword">new</span> <span class="type">List</span>&lt;<span class="type">Token</span>&gt;();
+        
+        <span class="keyword">while</span> (Current != <span class="string">'\0'</span>)
+        {
+            <span class="comment">// Whitespace überspringen</span>
+            <span class="keyword">if</span> (<span class="type">char</span>.IsWhiteSpace(Current))
+            {
+                <span class="method">Advance</span>();
+                <span class="keyword">continue</span>;
+            }
+            
+            <span class="comment">// Zahlen</span>
+            <span class="keyword">if</span> (<span class="type">char</span>.IsDigit(Current))
+            {
+                tokens.Add(<span class="method">ReadNumber</span>());
+                <span class="keyword">continue</span>;
+            }
+            
+            <span class="comment">// Identifier (Variablen, Funktionen)</span>
+            <span class="keyword">if</span> (<span class="type">char</span>.IsLetter(Current))
+            {
+                tokens.Add(<span class="method">ReadIdentifier</span>());
+                <span class="keyword">continue</span>;
+            }
+            
+            <span class="comment">// Einzelzeichen-Tokens</span>
+            <span class="keyword">var</span> start = _position;
+            <span class="keyword">var</span> token = Current <span class="keyword">switch</span>
+            {
+                <span class="string">'+'</span> => <span class="keyword">new</span> <span class="type">Token</span>(TokenType.Plus, <span class="string">"+"</span>, start),
+                <span class="string">'-'</span> => <span class="keyword">new</span> <span class="type">Token</span>(TokenType.Minus, <span class="string">"-"</span>, start),
+                <span class="string">'*'</span> => <span class="keyword">new</span> <span class="type">Token</span>(TokenType.Star, <span class="string">"*"</span>, start),
+                <span class="string">'/'</span> => <span class="keyword">new</span> <span class="type">Token</span>(TokenType.Slash, <span class="string">"/"</span>, start),
+                <span class="string">'^'</span> => <span class="keyword">new</span> <span class="type">Token</span>(TokenType.Caret, <span class="string">"^"</span>, start),
+                <span class="string">'='</span> => <span class="keyword">new</span> <span class="type">Token</span>(TokenType.Equals, <span class="string">"="</span>, start),
+                <span class="string">'('</span> => <span class="keyword">new</span> <span class="type">Token</span>(TokenType.LeftParen, <span class="string">"("</span>, start),
+                <span class="string">')'</span> => <span class="keyword">new</span> <span class="type">Token</span>(TokenType.RightParen, <span class="string">")"</span>, start),
+                <span class="string">','</span> => <span class="keyword">new</span> <span class="type">Token</span>(TokenType.Comma, <span class="string">","</span>, start),
+                _ => <span class="keyword">throw new</span> <span class="type">Exception</span>(<span class="string">$"Unbekanntes Zeichen: {Current}"</span>)
+            };
+            
+            tokens.Add(token);
+            <span class="method">Advance</span>();
+        }
+        
+        tokens.Add(<span class="keyword">new</span> <span class="type">Token</span>(TokenType.Eof, <span class="string">""</span>, _position));
+        <span class="keyword">return</span> tokens;
+    }
+    
+    <span class="keyword">private</span> <span class="type">Token</span> <span class="method">ReadNumber</span>()
+    {
+        <span class="keyword">var</span> start = _position;
+        <span class="keyword">while</span> (<span class="type">char</span>.IsDigit(Current) || Current == <span class="string">'.'</span>)
+            <span class="method">Advance</span>();
+        
+        <span class="keyword">return new</span> <span class="type">Token</span>(
+            TokenType.Number, 
+            _text[start.._position], 
+            start
+        );
+    }
+    
+    <span class="keyword">private</span> <span class="type">Token</span> <span class="method">ReadIdentifier</span>()
+    {
+        <span class="keyword">var</span> start = _position;
+        <span class="keyword">while</span> (<span class="type">char</span>.IsLetterOrDigit(Current))
+            <span class="method">Advance</span>();
+        
+        <span class="keyword">return new</span> <span class="type">Token</span>(
+            TokenType.Identifier, 
+            _text[start.._position], 
+            start
+        );
+    }
+}</pre>
+            </div>
+
+            <h3 id="ast-nodes">AST-Knoten</h3>
+
+            <p>Der Abstract Syntax Tree (AST) repräsentiert die Struktur des geparsten Ausdrucks:</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">C#</span>
+                    <span class="code-filename">AstNodes.cs</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">Kopieren</button>
+                </div>
+<pre><span class="comment">// Basis-Interface für alle AST-Knoten</span>
+<span class="keyword">public</span> <span class="keyword">interface</span> <span class="type">IExpression</span>
+{
+    <span class="type">string</span> <span class="method">ToPrettyString</span>(<span class="type">int</span> indent = <span class="number">0</span>);
+}
+
+<span class="comment">// Zahl: 42, 3.14</span>
+<span class="keyword">public</span> <span class="keyword">record</span> <span class="type">NumberExpression</span>(<span class="type">double</span> Value) : <span class="type">IExpression</span>
+{
+    <span class="keyword">public</span> <span class="type">string</span> <span class="method">ToPrettyString</span>(<span class="type">int</span> indent = <span class="number">0</span>) =>
+        <span class="keyword">new</span> <span class="type">string</span>(<span class="string">' '</span>, indent) + <span class="string">$"Number({Value})"</span>;
+}
+
+<span class="comment">// Variable: x, foo</span>
+<span class="keyword">public</span> <span class="keyword">record</span> <span class="type">VariableExpression</span>(<span class="type">string</span> Name) : <span class="type">IExpression</span>
+{
+    <span class="keyword">public</span> <span class="type">string</span> <span class="method">ToPrettyString</span>(<span class="type">int</span> indent = <span class="number">0</span>) =>
+        <span class="keyword">new</span> <span class="type">string</span>(<span class="string">' '</span>, indent) + <span class="string">$"Variable({Name})"</span>;
+}
+
+<span class="comment">// Unärer Ausdruck: -x, !flag</span>
+<span class="keyword">public</span> <span class="keyword">record</span> <span class="type">UnaryExpression</span>(<span class="type">string</span> Operator, <span class="type">IExpression</span> Operand) : <span class="type">IExpression</span>
+{
+    <span class="keyword">public</span> <span class="type">string</span> <span class="method">ToPrettyString</span>(<span class="type">int</span> indent = <span class="number">0</span>)
+    {
+        <span class="keyword">var</span> pad = <span class="keyword">new</span> <span class="type">string</span>(<span class="string">' '</span>, indent);
+        <span class="keyword">return</span> <span class="string">$"{pad}Unary({Operator})\n{Operand.ToPrettyString(indent + 2)}"</span>;
+    }
+}
+
+<span class="comment">// Binärer Ausdruck: a + b, x * y</span>
+<span class="keyword">public</span> <span class="keyword">record</span> <span class="type">BinaryExpression</span>(
+    <span class="type">IExpression</span> Left, 
+    <span class="type">string</span> Operator, 
+    <span class="type">IExpression</span> Right
+) : <span class="type">IExpression</span>
+{
+    <span class="keyword">public</span> <span class="type">string</span> <span class="method">ToPrettyString</span>(<span class="type">int</span> indent = <span class="number">0</span>)
+    {
+        <span class="keyword">var</span> pad = <span class="keyword">new</span> <span class="type">string</span>(<span class="string">' '</span>, indent);
+        <span class="keyword">return</span> <span class="string">$"{pad}Binary({Operator})\n"</span> +
+               <span class="string">$"{Left.ToPrettyString(indent + 2)}\n"</span> +
+               <span class="string">$"{Right.ToPrettyString(indent + 2)}"</span>;
+    }
+}
+
+<span class="comment">// Funktionsaufruf: sin(x), max(a, b)</span>
+<span class="keyword">public</span> <span class="keyword">record</span> <span class="type">CallExpression</span>(
+    <span class="type">IExpression</span> Function, 
+    <span class="type">List</span>&lt;<span class="type">IExpression</span>&gt; Arguments
+) : <span class="type">IExpression</span>
+{
+    <span class="keyword">public</span> <span class="type">string</span> <span class="method">ToPrettyString</span>(<span class="type">int</span> indent = <span class="number">0</span>)
+    {
+        <span class="keyword">var</span> pad = <span class="keyword">new</span> <span class="type">string</span>(<span class="string">' '</span>, indent);
+        <span class="keyword">var</span> args = <span class="type">string</span>.Join(<span class="string">"\n"</span>, 
+            Arguments.Select(a => a.ToPrettyString(indent + <span class="number">2</span>)));
+        <span class="keyword">return</span> <span class="string">$"{pad}Call\n{Function.ToPrettyString(indent + 2)}\n{args}"</span>;
+    }
+}
+
+<span class="comment">// Zuweisung: x = 5</span>
+<span class="keyword">public</span> <span class="keyword">record</span> <span class="type">AssignmentExpression</span>(
+    <span class="type">string</span> Name, 
+    <span class="type">IExpression</span> Value
+) : <span class="type">IExpression</span>
+{
+    <span class="keyword">public</span> <span class="type">string</span> <span class="method">ToPrettyString</span>(<span class="type">int</span> indent = <span class="number">0</span>)
+    {
+        <span class="keyword">var</span> pad = <span class="keyword">new</span> <span class="type">string</span>(<span class="string">' '</span>, indent);
+        <span class="keyword">return</span> <span class="string">$"{pad}Assign({Name})\n{Value.ToPrettyString(indent + 2)}"</span>;
+    }
+}</pre>
+            </div>
+
+            <h3 id="parselets-impl">Parselets</h3>
+
+            <p>
+                Jetzt kommen wir zum Kern: Die Parselets. Jedes Parselet ist für einen bestimmten Token-Typ 
+                in einer bestimmten Position (Prefix oder Infix) zuständig.
+            </p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">C#</span>
+                    <span class="code-filename">Parselets.cs</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">Kopieren</button>
+                </div>
+<pre><span class="comment">// Interface für Prefix-Parselets</span>
+<span class="keyword">public</span> <span class="keyword">interface</span> <span class="type">IPrefixParselet</span>
+{
+    <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">Token</span> token);
+}
+
+<span class="comment">// Interface für Infix-Parselets</span>
+<span class="keyword">public</span> <span class="keyword">interface</span> <span class="type">IInfixParselet</span>
+{
+    <span class="type">int</span> <span class="property">Precedence</span> { <span class="keyword">get</span>; }
+    <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">IExpression</span> left, <span class="type">Token</span> token);
+}
+
+<span class="comment">// ═══════════════════════════════════════════════</span>
+<span class="comment">// PREFIX PARSELETS</span>
+<span class="comment">// ═══════════════════════════════════════════════</span>
+
+<span class="comment">// Zahlen: 42, 3.14</span>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">NumberParselet</span> : <span class="type">IPrefixParselet</span>
+{
+    <span class="keyword">public</span> <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">Token</span> token) =>
+        <span class="keyword">new</span> <span class="type">NumberExpression</span>(<span class="type">double</span>.Parse(token.Value));
+}
+
+<span class="comment">// Variablen/Identifier: x, foo</span>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">IdentifierParselet</span> : <span class="type">IPrefixParselet</span>
+{
+    <span class="keyword">public</span> <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">Token</span> token) =>
+        <span class="keyword">new</span> <span class="type">VariableExpression</span>(token.Value);
+}
+
+<span class="comment">// Unäre Operatoren: -x, +x</span>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">PrefixOperatorParselet</span> : <span class="type">IPrefixParselet</span>
+{
+    <span class="keyword">private</span> <span class="keyword">readonly</span> <span class="type">int</span> _precedence;
+    
+    <span class="keyword">public</span> <span class="method">PrefixOperatorParselet</span>(<span class="type">int</span> precedence)
+    {
+        _precedence = precedence;
+    }
+    
+    <span class="keyword">public</span> <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">Token</span> token)
+    {
+        <span class="comment">// Parse den Operanden mit unserer Präzedenz</span>
+        <span class="keyword">var</span> operand = parser.ParseExpression(_precedence);
+        <span class="keyword">return new</span> <span class="type">UnaryExpression</span>(token.Value, operand);
+    }
+}
+
+<span class="comment">// Gruppierung: (expression)</span>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">GroupParselet</span> : <span class="type">IPrefixParselet</span>
+{
+    <span class="keyword">public</span> <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">Token</span> token)
+    {
+        <span class="comment">// Parse den Inhalt der Klammer</span>
+        <span class="keyword">var</span> expression = parser.ParseExpression(<span class="number">0</span>);
+        
+        <span class="comment">// Erwarte schließende Klammer</span>
+        parser.Consume(TokenType.RightParen);
+        
+        <span class="keyword">return</span> expression;
+    }
+}
+
+<span class="comment">// ═══════════════════════════════════════════════</span>
+<span class="comment">// INFIX PARSELETS</span>
+<span class="comment">// ═══════════════════════════════════════════════</span>
+
+<span class="comment">// Binäre Operatoren: a + b, a * b</span>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">BinaryOperatorParselet</span> : <span class="type">IInfixParselet</span>
+{
+    <span class="keyword">public</span> <span class="type">int</span> <span class="property">Precedence</span> { <span class="keyword">get</span>; }
+    <span class="keyword">private</span> <span class="keyword">readonly</span> <span class="type">bool</span> _isRightAssociative;
+    
+    <span class="keyword">public</span> <span class="method">BinaryOperatorParselet</span>(<span class="type">int</span> precedence, <span class="type">bool</span> isRightAssociative = <span class="keyword">false</span>)
+    {
+        Precedence = precedence;
+        _isRightAssociative = isRightAssociative;
+    }
+    
+    <span class="keyword">public</span> <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">IExpression</span> left, <span class="type">Token</span> token)
+    {
+        <span class="comment">// Bei rechts-assoziativen Operatoren: gleiche Präzedenz</span>
+        <span class="comment">// Bei links-assoziativen: Präzedenz + 1 (damit gleicher Op nicht bindet)</span>
+        <span class="keyword">var</span> rightPrecedence = _isRightAssociative ? Precedence : Precedence + <span class="number">1</span>;
+        <span class="keyword">var</span> right = parser.ParseExpression(rightPrecedence);
+        
+        <span class="keyword">return new</span> <span class="type">BinaryExpression</span>(left, token.Value, right);
+    }
+}
+
+<span class="comment">// Funktionsaufruf: func(a, b, c)</span>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">CallParselet</span> : <span class="type">IInfixParselet</span>
+{
+    <span class="keyword">public</span> <span class="type">int</span> <span class="property">Precedence</span> => <span class="number">8</span>; <span class="comment">// Höchste Präzedenz</span>
+    
+    <span class="keyword">public</span> <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">IExpression</span> left, <span class="type">Token</span> token)
+    {
+        <span class="keyword">var</span> arguments = <span class="keyword">new</span> <span class="type">List</span>&lt;<span class="type">IExpression</span>&gt;();
+        
+        <span class="comment">// Prüfe auf leere Argumentliste</span>
+        <span class="keyword">if</span> (!parser.Check(TokenType.RightParen))
+        {
+            <span class="keyword">do</span>
+            {
+                arguments.Add(parser.ParseExpression(<span class="number">0</span>));
+            } <span class="keyword">while</span> (parser.Match(TokenType.Comma));
+        }
+        
+        parser.Consume(TokenType.RightParen);
+        <span class="keyword">return new</span> <span class="type">CallExpression</span>(left, arguments);
+    }
+}
+
+<span class="comment">// Zuweisung: x = value (rechts-assoziativ)</span>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">AssignmentParselet</span> : <span class="type">IInfixParselet</span>
+{
+    <span class="keyword">public</span> <span class="type">int</span> <span class="property">Precedence</span> => <span class="number">1</span>; <span class="comment">// Niedrigste Präzedenz</span>
+    
+    <span class="keyword">public</span> <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">IExpression</span> left, <span class="type">Token</span> token)
+    {
+        <span class="comment">// Linke Seite muss eine Variable sein</span>
+        <span class="keyword">if</span> (left <span class="keyword">is not</span> <span class="type">VariableExpression</span> variable)
+            <span class="keyword">throw new</span> <span class="type">Exception</span>(<span class="string">"Zuweisung nur an Variablen möglich"</span>);
+        
+        <span class="comment">// Rechts-assoziativ: gleiche Präzedenz beim rekursiven Aufruf</span>
+        <span class="keyword">var</span> value = parser.ParseExpression(Precedence);
+        
+        <span class="keyword">return new</span> <span class="type">AssignmentExpression</span>(variable.Name, value);
+    }
+}</pre>
+            </div>
+
+            <div class="info-box tip">
+                <div class="info-box-title">💡 Assoziativität in Aktion</div>
+                <p>
+                    Beachte den Unterschied bei <code>rightPrecedence</code>: Links-assoziative Operatoren 
+                    verwenden <code>Precedence + 1</code>, rechts-assoziative nur <code>Precedence</code>. 
+                    Das kleine +1 verhindert, dass ein gleich starker Operator "gestohlen" wird.
+                </p>
+            </div>
+
+            <h3 id="parser-impl">Der Parser</h3>
+
+            <p>Nun setzen wir alles zusammen im Hauptparser:</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">C#</span>
+                    <span class="code-filename">Parser.cs</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">Kopieren</button>
+                </div>
+<pre><span class="keyword">public</span> <span class="keyword">class</span> <span class="type">Parser</span>
+{
+    <span class="keyword">private</span> <span class="keyword">readonly</span> <span class="type">List</span>&lt;<span class="type">Token</span>&gt; _tokens;
+    <span class="keyword">private</span> <span class="type">int</span> _position;
+    
+    <span class="comment">// Registrierung der Parselets</span>
+    <span class="keyword">private</span> <span class="keyword">readonly</span> <span class="type">Dictionary</span>&lt;<span class="type">TokenType</span>, <span class="type">IPrefixParselet</span>&gt; _prefixParselets = <span class="keyword">new</span>();
+    <span class="keyword">private</span> <span class="keyword">readonly</span> <span class="type">Dictionary</span>&lt;<span class="type">TokenType</span>, <span class="type">IInfixParselet</span>&gt; _infixParselets = <span class="keyword">new</span>();
+    
+    <span class="keyword">public</span> <span class="method">Parser</span>(<span class="type">List</span>&lt;<span class="type">Token</span>&gt; tokens)
+    {
+        _tokens = tokens;
+        _position = <span class="number">0</span>;
+        
+        <span class="comment">// ═══════════════════════════════════════════════</span>
+        <span class="comment">// PREFIX PARSELETS REGISTRIEREN</span>
+        <span class="comment">// ═══════════════════════════════════════════════</span>
+        
+        <span class="comment">// Literale</span>
+        Register(TokenType.Number, <span class="keyword">new</span> <span class="type">NumberParselet</span>());
+        Register(TokenType.Identifier, <span class="keyword">new</span> <span class="type">IdentifierParselet</span>());
+        
+        <span class="comment">// Unäre Operatoren (Präzedenz 7)</span>
+        Register(TokenType.Minus, <span class="keyword">new</span> <span class="type">PrefixOperatorParselet</span>(<span class="number">7</span>));
+        Register(TokenType.Plus, <span class="keyword">new</span> <span class="type">PrefixOperatorParselet</span>(<span class="number">7</span>));
+        
+        <span class="comment">// Gruppierung</span>
+        Register(TokenType.LeftParen, <span class="keyword">new</span> <span class="type">GroupParselet</span>());
+        
+        <span class="comment">// ═══════════════════════════════════════════════</span>
+        <span class="comment">// INFIX PARSELETS REGISTRIEREN</span>
+        <span class="comment">// ═══════════════════════════════════════════════</span>
+        
+        <span class="comment">// Zuweisung (Präzedenz 1, rechts-assoziativ)</span>
+        Register(TokenType.Equals, <span class="keyword">new</span> <span class="type">AssignmentParselet</span>());
+        
+        <span class="comment">// Addition/Subtraktion (Präzedenz 4, links-assoziativ)</span>
+        Register(TokenType.Plus, <span class="keyword">new</span> <span class="type">BinaryOperatorParselet</span>(<span class="number">4</span>));
+        Register(TokenType.Minus, <span class="keyword">new</span> <span class="type">BinaryOperatorParselet</span>(<span class="number">4</span>));
+        
+        <span class="comment">// Multiplikation/Division (Präzedenz 5, links-assoziativ)</span>
+        Register(TokenType.Star, <span class="keyword">new</span> <span class="type">BinaryOperatorParselet</span>(<span class="number">5</span>));
+        Register(TokenType.Slash, <span class="keyword">new</span> <span class="type">BinaryOperatorParselet</span>(<span class="number">5</span>));
+        
+        <span class="comment">// Potenz (Präzedenz 6, rechts-assoziativ!)</span>
+        Register(TokenType.Caret, <span class="keyword">new</span> <span class="type">BinaryOperatorParselet</span>(<span class="number">6</span>, isRightAssociative: <span class="keyword">true</span>));
+        
+        <span class="comment">// Funktionsaufruf</span>
+        Register(TokenType.LeftParen, <span class="keyword">new</span> <span class="type">CallParselet</span>());
+    }
+    
+    <span class="comment">// Registrierungsmethoden</span>
+    <span class="keyword">private</span> <span class="keyword">void</span> <span class="method">Register</span>(<span class="type">TokenType</span> type, <span class="type">IPrefixParselet</span> parselet) =>
+        _prefixParselets[type] = parselet;
+    
+    <span class="keyword">private</span> <span class="keyword">void</span> <span class="method">Register</span>(<span class="type">TokenType</span> type, <span class="type">IInfixParselet</span> parselet) =>
+        _infixParselets[type] = parselet;
+    
+    <span class="comment">// ═══════════════════════════════════════════════</span>
+    <span class="comment">// DER KERN-ALGORITHMUS</span>
+    <span class="comment">// ═══════════════════════════════════════════════</span>
+    
+    <span class="keyword">public</span> <span class="type">IExpression</span> <span class="method">ParseExpression</span>(<span class="type">int</span> precedence = <span class="number">0</span>)
+    {
+        <span class="comment">// 1. Hole den aktuellen Token und das passende Prefix-Parselet</span>
+        <span class="keyword">var</span> token = Consume();
+        
+        <span class="keyword">if</span> (!_prefixParselets.TryGetValue(token.Type, <span class="keyword">out</span> <span class="keyword">var</span> prefix))
+            <span class="keyword">throw new</span> <span class="type">Exception</span>(<span class="string">$"Kein Prefix-Parselet für {token.Type}"</span>);
+        
+        <span class="comment">// 2. Parse den Prefix-Teil (Zahl, Variable, unärer Op, ...)</span>
+        <span class="keyword">var</span> left = prefix.Parse(<span class="keyword">this</span>, token);
+        
+        <span class="comment">// 3. Solange der nächste Operator stärker bindet als unser Kontext...</span>
+        <span class="keyword">while</span> (precedence < GetPrecedence())
+        {
+            <span class="comment">// ... hole den Operator und das Infix-Parselet</span>
+            token = Consume();
+            <span class="keyword">var</span> infix = _infixParselets[token.Type];
+            
+            <span class="comment">// ... und erweitere unseren Ausdruck</span>
+            left = infix.Parse(<span class="keyword">this</span>, left, token);
+        }
+        
+        <span class="keyword">return</span> left;
+    }
+    
+    <span class="comment">// Hilfsmethode: Präzedenz des nächsten Tokens</span>
+    <span class="keyword">private</span> <span class="type">int</span> <span class="method">GetPrecedence</span>()
+    {
+        <span class="keyword">if</span> (_infixParselets.TryGetValue(Current.Type, <span class="keyword">out</span> <span class="keyword">var</span> parselet))
+            <span class="keyword">return</span> parselet.Precedence;
+        <span class="keyword">return</span> <span class="number">0</span>;
+    }
+    
+    <span class="comment">// ═══════════════════════════════════════════════</span>
+    <span class="comment">// HILFSMETHODEN</span>
+    <span class="comment">// ═══════════════════════════════════════════════</span>
+    
+    <span class="keyword">private</span> <span class="type">Token</span> <span class="property">Current</span> => _tokens[_position];
+    
+    <span class="keyword">private</span> <span class="type">Token</span> <span class="method">Consume</span>()
+    {
+        <span class="keyword">var</span> token = Current;
+        _position++;
+        <span class="keyword">return</span> token;
+    }
+    
+    <span class="keyword">public</span> <span class="type">Token</span> <span class="method">Consume</span>(<span class="type">TokenType</span> expected)
+    {
+        <span class="keyword">if</span> (Current.Type != expected)
+            <span class="keyword">throw new</span> <span class="type">Exception</span>(<span class="string">$"Erwartet {expected}, aber {Current.Type} gefunden"</span>);
+        <span class="keyword">return</span> Consume();
+    }
+    
+    <span class="keyword">public</span> <span class="type">bool</span> <span class="method">Check</span>(<span class="type">TokenType</span> type) => Current.Type == type;
+    
+    <span class="keyword">public</span> <span class="type">bool</span> <span class="method">Match</span>(<span class="type">TokenType</span> type)
+    {
+        <span class="keyword">if</span> (!Check(type)) <span class="keyword">return</span> <span class="keyword">false</span>;
+        Consume();
+        <span class="keyword">return</span> <span class="keyword">true</span>;
+    }
+}
+
+<span class="comment">// ═══════════════════════════════════════════════</span>
+<span class="comment">// BEISPIEL-NUTZUNG</span>
+<span class="comment">// ═══════════════════════════════════════════════</span>
+
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="type">Program</span>
+{
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="method">Main</span>()
+    {
+        <span class="keyword">var</span> expressions = <span class="keyword">new</span>[]
+        {
+            <span class="string">"1 + 2 * 3"</span>,
+            <span class="string">"2 ^ 3 ^ 2"</span>,
+            <span class="string">"-5 + 3"</span>,
+            <span class="string">"sin(x) + cos(y)"</span>,
+            <span class="string">"x = y = 5"</span>
+        };
+        
+        <span class="keyword">foreach</span> (<span class="keyword">var</span> expr <span class="keyword">in</span> expressions)
+        {
+            <span class="type">Console</span>.WriteLine(<span class="string">$"Input: {expr}"</span>);
+            
+            <span class="keyword">var</span> lexer = <span class="keyword">new</span> <span class="type">Lexer</span>(expr);
+            <span class="keyword">var</span> tokens = lexer.Tokenize();
+            
+            <span class="keyword">var</span> parser = <span class="keyword">new</span> <span class="type">Parser</span>(tokens);
+            <span class="keyword">var</span> ast = parser.ParseExpression();
+            
+            <span class="type">Console</span>.WriteLine(ast.ToPrettyString());
+            <span class="type">Console</span>.WriteLine();
+        }
+    }
+}</pre>
+            </div>
+        </section>
+
+        <!-- Section 5: Erweiterung -->
+        <section id="erweiterung" class="section">
+            <div class="section-header">
+                <span class="section-number">05</span>
+                <h2>Erweiterung & Anpassung</h2>
+            </div>
+
+            <p>
+                Die wahre Stärke von Pratt Parsing zeigt sich bei Erweiterungen. Neue Operatoren hinzufügen 
+                ist trivial — ohne die bestehende Grammatik zu ändern.
+            </p>
+
+            <h3 id="neue-operatoren">Neue Operatoren hinzufügen</h3>
+
+            <p>
+                Um einen neuen Operator hinzuzufügen, brauchst du nur drei Schritte:
+            </p>
+
+            <div class="info-box tip">
+                <div class="info-box-title">📝 Rezept für neue Operatoren</div>
+                <p>
+                    <strong>1.</strong> Token-Typ in <code>TokenType</code> hinzufügen<br>
+                    <strong>2.</strong> Lexer anpassen (Zeichen erkennen)<br>
+                    <strong>3.</strong> Parselet registrieren mit passender Präzedenz
+                </p>
+            </div>
+
+            <h4>Beispiel: Modulo-Operator (%)</h4>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">C#</span>
+                    <span class="code-filename">Modulo hinzufügen</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">Kopieren</button>
+                </div>
+<pre><span class="comment">// 1. Token-Typ hinzufügen</span>
+<span class="keyword">public</span> <span class="keyword">enum</span> <span class="type">TokenType</span>
+{
+    <span class="comment">// ... bestehende Types ...</span>
+    <span class="property">Percent</span>,  <span class="comment">// NEU!</span>
+}
+
+<span class="comment">// 2. Im Lexer erkennen</span>
+<span class="string">'%'</span> => <span class="keyword">new</span> <span class="type">Token</span>(TokenType.Percent, <span class="string">"%"</span>, start),
+
+<span class="comment">// 3. Im Parser registrieren (gleiche Präzedenz wie * und /)</span>
+Register(TokenType.Percent, <span class="keyword">new</span> <span class="type">BinaryOperatorParselet</span>(<span class="number">5</span>));</pre>
+            </div>
+
+            <h4>Beispiel: Ternärer Operator (? :)</h4>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">C#</span>
+                    <span class="code-filename">TernaryParselet.cs</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">Kopieren</button>
+                </div>
+<pre><span class="comment">// AST-Knoten für ternären Ausdruck</span>
+<span class="keyword">public</span> <span class="keyword">record</span> <span class="type">TernaryExpression</span>(
+    <span class="type">IExpression</span> Condition,
+    <span class="type">IExpression</span> ThenBranch,
+    <span class="type">IExpression</span> ElseBranch
+) : <span class="type">IExpression</span>;
+
+<span class="comment">// Parselet für a ? b : c</span>
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">TernaryParselet</span> : <span class="type">IInfixParselet</span>
+{
+    <span class="keyword">public</span> <span class="type">int</span> <span class="property">Precedence</span> => <span class="number">2</span>; <span class="comment">// Niedrige Präzedenz</span>
+    
+    <span class="keyword">public</span> <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">IExpression</span> condition, <span class="type">Token</span> token)
+    {
+        <span class="comment">// Parse den "then"-Teil</span>
+        <span class="keyword">var</span> thenBranch = parser.ParseExpression(<span class="number">0</span>);
+        
+        <span class="comment">// Erwarte den Doppelpunkt</span>
+        parser.Consume(TokenType.Colon);
+        
+        <span class="comment">// Parse den "else"-Teil (rechts-assoziativ)</span>
+        <span class="keyword">var</span> elseBranch = parser.ParseExpression(Precedence);
+        
+        <span class="keyword">return new</span> <span class="type">TernaryExpression</span>(condition, thenBranch, elseBranch);
+    }
+}
+
+<span class="comment">// Registrierung</span>
+Register(TokenType.Question, <span class="keyword">new</span> <span class="type">TernaryParselet</span>());</pre>
+            </div>
+
+            <h3 id="funktionen">Funktionsaufrufe erweitern</h3>
+
+            <p>
+                Das bestehende <code>CallParselet</code> unterstützt bereits Funktionsaufrufe. 
+                Hier ein Beispiel für erweiterte Syntax mit benannten Argumenten:
+            </p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">C#</span>
+                    <span class="code-filename">NamedArgumentCallParselet.cs</span>
+                    <button class="code-copy-btn" onclick="copyCode(this)">Kopieren</button>
+                </div>
+<pre><span class="comment">// Unterstützt: func(x: 10, y: 20)</span>
+<span class="keyword">public</span> <span class="keyword">record</span> <span class="type">NamedArgument</span>(<span class="type">string</span>? Name, <span class="type">IExpression</span> Value);
+
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">AdvancedCallParselet</span> : <span class="type">IInfixParselet</span>
+{
+    <span class="keyword">public</span> <span class="type">int</span> <span class="property">Precedence</span> => <span class="number">8</span>;
+    
+    <span class="keyword">public</span> <span class="type">IExpression</span> <span class="method">Parse</span>(<span class="type">Parser</span> parser, <span class="type">IExpression</span> left, <span class="type">Token</span> token)
+    {
+        <span class="keyword">var</span> arguments = <span class="keyword">new</span> <span class="type">List</span>&lt;<span class="type">NamedArgument</span>&gt;();
+        
+        <span class="keyword">if</span> (!parser.Check(TokenType.RightParen))
+        {
+            <span class="keyword">do</span>
+            {
+                <span class="type">string</span>? name = <span class="keyword">null</span>;
+                
+                <span class="comment">// Prüfe auf "name:"</span>
+                <span class="keyword">if</span> (parser.Check(TokenType.Identifier))
+                {
+                    <span class="keyword">var</span> nameToken = parser.Peek();
+                    <span class="keyword">if</span> (parser.PeekNext().Type == TokenType.Colon)
+                    {
+                        name = parser.Consume().Value;
+                        parser.Consume(TokenType.Colon);
+                    }
+                }
+                
+                <span class="keyword">var</span> value = parser.ParseExpression(<span class="number">0</span>);
+                arguments.Add(<span class="keyword">new</span> <span class="type">NamedArgument</span>(name, value));
+                
+            } <span class="keyword">while</span> (parser.Match(TokenType.Comma));
+        }
+        
+        parser.Consume(TokenType.RightParen);
+        <span class="keyword">return new</span> <span class="type">AdvancedCallExpression</span>(left, arguments);
+    }
+}</pre>
+            </div>
+
+            <h3 id="eigene-sprache">Eigene Sprache erstellen</h3>
+
+            <p>
+                Pratt Parsing eignet sich hervorragend als Basis für Domain-Specific Languages (DSLs). 
+                Hier ist eine Checkliste für deine eigene Sprache:
+            </p>
+
+            <div class="info-box important">
+                <div class="info-box-title">🚀 Checkliste: Eigene Sprache</div>
+                <p>
+                    <strong>□ Token-Typen definieren</strong> — Welche Symbole/Schlüsselwörter gibt es?<br>
+                    <strong>□ Präzedenz-Tabelle erstellen</strong> — Welche Operatoren binden wie stark?<br>
+                    <strong>□ Assoziativität festlegen</strong> — Links oder rechts?<br>
+                    <strong>□ AST-Knoten designen</strong> — Welche Ausdrücke gibt es?<br>
+                    <strong>□ Parselets implementieren</strong> — Ein Parselet pro Konstrukt<br>
+                    <strong>□ Fehlerbehandlung einbauen</strong> — Aussagekräftige Fehlermeldungen
+                </p>
+            </div>
+
+            <p>Beispiel-Präzedenztabelle für eine erweiterte Sprache:</p>
+
+            <table class="precedence-table">
+                <thead>
+                    <tr>
+                        <th>Präzedenz</th>
+                        <th>Operatoren</th>
+                        <th>Assoziativität</th>
+                        <th>Beschreibung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td><code>=</code></td>
+                        <td>Rechts</td>
+                        <td>Zuweisung</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><code>? :</code></td>
+                        <td>Rechts</td>
+                        <td>Ternär</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><code>||</code></td>
+                        <td>Links</td>
+                        <td>Logisches ODER</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><code>&&</code></td>
+                        <td>Links</td>
+                        <td>Logisches UND</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><code>== !=</code></td>
+                        <td>Links</td>
+                        <td>Gleichheit</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td><code>< > <= >=</code></td>
+                        <td>Links</td>
+                        <td>Vergleiche</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td><code>+ -</code></td>
+                        <td>Links</td>
+                        <td>Addition</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td><code>* / %</code></td>
+                        <td>Links</td>
+                        <td>Multiplikation</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td><code>^</code></td>
+                        <td>Rechts</td>
+                        <td>Potenz</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td><code>- ! ~</code> (unär)</td>
+                        <td>—</td>
+                        <td>Unäre Prefix</td>
+                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td><code>++ --</code> (postfix)</td>
+                        <td>—</td>
+                        <td>Postfix</td>
+                    </tr>
+                    <tr>
+                        <td>12</td>
+                        <td><code>() [] .</code></td>
+                        <td>Links</td>
+                        <td>Aufruf/Zugriff</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Section 6: Demo -->
+        <section id="demo" class="section">
+            <div class="section-header">
+                <span class="section-number">06</span>
+                <h2>Interaktive Demo</h2>
+            </div>
+
+            <p>
+                Probiere den Pratt Parser selbst aus! Gib einen mathematischen Ausdruck ein und sieh, 
+                wie er in einen Abstract Syntax Tree (AST) umgewandelt wird.
+            </p>
+
+            <div class="demo-container">
+                <div class="demo-header">
+                    <span class="demo-title">Pratt Parser Demo</span>
+                </div>
+                <div class="demo-body">
+                    <div class="demo-input-group">
+                        <label>Mathematischer Ausdruck:</label>
+                        <input type="text" class="demo-input" id="parserInput" 
+                               value="1 + 2 * 3 ^ 2" 
+                               placeholder="z.B. 1 + 2 * 3, -5 + sin(x), a = b = 5">
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        <button class="demo-btn" onclick="runParser()">Parsen</button>
+                        <button class="demo-btn" style="background: var(--accent-green);" onclick="evaluateExpr()">Auswerten</button>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">Beispiele:</span>
+                        <button class="step-btn" onclick="setExample('1 + 2 * 3')">1 + 2 * 3</button>
+                        <button class="step-btn" onclick="setExample('2 ^ 3 ^ 2')">2 ^ 3 ^ 2</button>
+                        <button class="step-btn" onclick="setExample('-5 + 3 * 2')">-5 + 3 * 2</button>
+                        <button class="step-btn" onclick="setExample('(1 + 2) * 3')">(1 + 2) * 3</button>
+                        <button class="step-btn" onclick="setExample('sin(3.14)')">sin(3.14)</button>
+                        <button class="step-btn" onclick="setExample('max(1, 2, 3)')">max(1, 2, 3)</button>
+                    </div>
+                    
+                    <div class="demo-output">
+                        <div class="demo-output-label">Tokens</div>
+                        <div class="token-stream" id="demoTokens"></div>
+                    </div>
+                    
+                    <div class="demo-output" style="margin-top: 1rem;">
+                        <div class="demo-output-label">Abstract Syntax Tree (AST)</div>
+                        <div class="ast-tree" id="demoAst">—</div>
+                    </div>
+                    
+                    <div class="demo-output" style="margin-top: 1rem;">
+                        <div class="demo-output-label">Ergebnis</div>
+                        <div id="demoResult" style="font-size: 1.5rem; font-weight: 600; color: var(--accent-green);">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box concept">
+                <div class="info-box-title">💡 Unterstützte Features</div>
+                <p>
+                    <strong>Operatoren:</strong> + - * / ^ (Potenz)<br>
+                    <strong>Klammern:</strong> ( )<br>
+                    <strong>Zahlen:</strong> Ganzzahlen und Dezimalzahlen<br>
+                    <strong>Funktionen:</strong> sin, cos, tan, sqrt, abs, min, max, log<br>
+                    <strong>Konstanten:</strong> pi, e
+                </p>
+            </div>
+        </section>
+
+        <!-- Zusammenfassung -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-number">∑</span>
+                <h2>Zusammenfassung</h2>
+            </div>
+
+            <p>
+                Du hast jetzt alle Werkzeuge, um Pratt Parsing zu verstehen und anzuwenden. 
+                Hier sind die wichtigsten Punkte:
+            </p>
+
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h4>🎯 Kernkonzepte</h4>
+                    <ul>
+                        <li>Tokens können Prefix oder Infix sein</li>
+                        <li>Präzedenz steuert die Bindungsstärke</li>
+                        <li>Assoziativität bestimmt die Gruppierung</li>
+                        <li>Parselets kapseln die Parse-Logik</li>
+                    </ul>
+                </div>
+                <div class="comparison-card">
+                    <h4>⚡ Vorteile nutzen</h4>
+                    <ul>
+                        <li>Einfach neue Operatoren hinzufügen</li>
+                        <li>Klare Trennung von Zuständigkeiten</li>
+                        <li>Keine komplexe Grammatik nötig</li>
+                        <li>Ideal für DSLs und Ausdrücke</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box tip">
+                <div class="info-box-title">📚 Weiterführende Ressourcen</div>
+                <p>
+                    <strong>Original-Paper:</strong> "Top Down Operator Precedence" von Vaughan Pratt (1973)<br>
+                    <strong>Artikel:</strong> "Pratt Parsers: Expression Parsing Made Easy" von Bob Nystrom<br>
+                    <strong>Buch:</strong> "Crafting Interpreters" — Kapitel über Ausdrucks-Parsing
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>Pratt Parsing in C# — Interaktive Lernunterlage</p>
+            <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+                Erstellt mit ❤️ für alle, die Parser verstehen wollen.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // ═══════════════════════════════════════════════
+        // TOKENIZER
+        // ═══════════════════════════════════════════════
+        
+        const TokenType = {
+            NUMBER: 'NUMBER',
+            IDENTIFIER: 'IDENTIFIER',
+            PLUS: 'PLUS',
+            MINUS: 'MINUS',
+            STAR: 'STAR',
+            SLASH: 'SLASH',
+            CARET: 'CARET',
+            EQUALS: 'EQUALS',
+            LPAREN: 'LPAREN',
+            RPAREN: 'RPAREN',
+            COMMA: 'COMMA',
+            EOF: 'EOF'
+        };
+
+        function lexerTokenize(text) {
+            const tokens = [];
+            let pos = 0;
+            
+            while (pos < text.length) {
+                const char = text[pos];
+                
+                if (/\s/.test(char)) {
+                    pos++;
+                    continue;
+                }
+                
+                if (/\d/.test(char)) {
+                    let num = '';
+                    while (pos < text.length && /[\d.]/.test(text[pos])) {
+                        num += text[pos++];
+                    }
+                    tokens.push({ type: TokenType.NUMBER, value: num });
+                    continue;
+                }
+                
+                if (/[a-zA-Z_]/.test(char)) {
+                    let id = '';
+                    while (pos < text.length && /[a-zA-Z0-9_]/.test(text[pos])) {
+                        id += text[pos++];
+                    }
+                    tokens.push({ type: TokenType.IDENTIFIER, value: id });
+                    continue;
+                }
+                
+                const singleChar = {
+                    '+': TokenType.PLUS,
+                    '-': TokenType.MINUS,
+                    '*': TokenType.STAR,
+                    '/': TokenType.SLASH,
+                    '^': TokenType.CARET,
+                    '=': TokenType.EQUALS,
+                    '(': TokenType.LPAREN,
+                    ')': TokenType.RPAREN,
+                    ',': TokenType.COMMA
+                };
+                
+                if (singleChar[char]) {
+                    tokens.push({ type: singleChar[char], value: char });
+                    pos++;
+                } else {
+                    throw new Error(`Unbekanntes Zeichen: ${char}`);
+                }
+            }
+            
+            tokens.push({ type: TokenType.EOF, value: '' });
+            return tokens;
+        }
+
+        // ═══════════════════════════════════════════════
+        // PRATT PARSER
+        // ═══════════════════════════════════════════════
+        
+        class Parser {
+            constructor(tokens) {
+                this.tokens = tokens;
+                this.pos = 0;
+                
+                // Präzedenzen
+                this.precedences = {
+                    [TokenType.EQUALS]: 1,
+                    [TokenType.PLUS]: 4,
+                    [TokenType.MINUS]: 4,
+                    [TokenType.STAR]: 5,
+                    [TokenType.SLASH]: 5,
+                    [TokenType.CARET]: 6,
+                    [TokenType.LPAREN]: 8  // Für Funktionsaufrufe
+                };
+                
+                // Rechts-assoziative Operatoren
+                this.rightAssoc = new Set([TokenType.CARET, TokenType.EQUALS]);
+            }
+            
+            current() {
+                return this.tokens[this.pos];
+            }
+            
+            consume() {
+                return this.tokens[this.pos++];
+            }
+            
+            expect(type) {
+                const token = this.current();
+                if (token.type !== type) {
+                    throw new Error(`Erwartet ${type}, aber ${token.type} gefunden`);
+                }
+                return this.consume();
+            }
+            
+            getPrecedence() {
+                const token = this.current();
+                return this.precedences[token.type] || 0;
+            }
+            
+            parse(precedence = 0) {
+                // Prefix
+                let token = this.consume();
+                let left = this.parsePrefix(token);
+                
+                // Infix
+                while (precedence < this.getPrecedence()) {
+                    token = this.consume();
+                    left = this.parseInfix(left, token);
+                }
+                
+                return left;
+            }
+            
+            parsePrefix(token) {
+                switch (token.type) {
+                    case TokenType.NUMBER:
+                        return { type: 'Number', value: parseFloat(token.value) };
+                    
+                    case TokenType.IDENTIFIER:
+                        return { type: 'Variable', name: token.value };
+                    
+                    case TokenType.MINUS:
+                    case TokenType.PLUS:
+                        const operand = this.parse(7); // Unäre Präzedenz
+                        return { type: 'Unary', operator: token.value, operand };
+                    
+                    case TokenType.LPAREN:
+                        const expr = this.parse(0);
+                        this.expect(TokenType.RPAREN);
+                        return expr;
+                    
+                    default:
+                        throw new Error(`Unerwarteter Token: ${token.type}`);
+                }
+            }
+            
+            parseInfix(left, token) {
+                switch (token.type) {
+                    case TokenType.PLUS:
+                    case TokenType.MINUS:
+                    case TokenType.STAR:
+                    case TokenType.SLASH:
+                    case TokenType.CARET:
+                        const prec = this.precedences[token.type];
+                        const rightPrec = this.rightAssoc.has(token.type) ? prec : prec + 1;
+                        const right = this.parse(rightPrec);
+                        return { type: 'Binary', operator: token.value, left, right };
+                    
+                    case TokenType.EQUALS:
+                        if (left.type !== 'Variable') {
+                            throw new Error('Zuweisung nur an Variablen möglich');
+                        }
+                        const value = this.parse(1); // Rechts-assoziativ
+                        return { type: 'Assignment', name: left.name, value };
+                    
+                    case TokenType.LPAREN:
+                        // Funktionsaufruf
+                        const args = [];
+                        if (this.current().type !== TokenType.RPAREN) {
+                            do {
+                                args.push(this.parse(0));
+                            } while (this.current().type === TokenType.COMMA && this.consume());
+                        }
+                        this.expect(TokenType.RPAREN);
+                        return { type: 'Call', callee: left, arguments: args };
+                    
+                    default:
+                        throw new Error(`Unerwarteter Infix-Token: ${token.type}`);
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════
+        // AST PRETTY PRINTING
+        // ═══════════════════════════════════════════════
+        
+        function astToString(node, indent = 0) {
+            const pad = '  '.repeat(indent);
+            const childPad = '  '.repeat(indent + 1);
+            
+            switch (node.type) {
+                case 'Number':
+                    return `<span class="ast-number">${pad}Number(${node.value})</span>`;
+                
+                case 'Variable':
+                    return `<span class="ast-variable">${pad}Variable(${node.name})</span>`;
+                
+                case 'Unary':
+                    return `<span class="ast-operator">${pad}Unary(${node.operator})</span>\n` +
+                           `${astToString(node.operand, indent + 1)}`;
+                
+                case 'Binary':
+                    return `<span class="ast-operator">${pad}Binary(${node.operator})</span>\n` +
+                           `${astToString(node.left, indent + 1)}\n` +
+                           `${astToString(node.right, indent + 1)}`;
+                
+                case 'Call':
+                    const args = node.arguments.map(a => astToString(a, indent + 2)).join('\n');
+                    return `<span class="ast-function">${pad}Call</span>\n` +
+                           `${astToString(node.callee, indent + 1)}\n` +
+                           `${childPad}Arguments:\n${args}`;
+                
+                case 'Assignment':
+                    return `<span class="ast-operator">${pad}Assign(${node.name})</span>\n` +
+                           `${astToString(node.value, indent + 1)}`;
+                
+                default:
+                    return `${pad}Unknown(${JSON.stringify(node)})`;
+            }
+        }
+
+        // ═══════════════════════════════════════════════
+        // EVALUATOR
+        // ═══════════════════════════════════════════════
+        
+        const builtins = {
+            sin: Math.sin,
+            cos: Math.cos,
+            tan: Math.tan,
+            sqrt: Math.sqrt,
+            abs: Math.abs,
+            log: Math.log,
+            min: Math.min,
+            max: Math.max,
+            pi: Math.PI,
+            e: Math.E
+        };
+
+        function evaluate(node, env = {}) {
+            switch (node.type) {
+                case 'Number':
+                    return node.value;
+                
+                case 'Variable':
+                    if (node.name in env) return env[node.name];
+                    if (node.name in builtins) return builtins[node.name];
+                    throw new Error(`Unbekannte Variable: ${node.name}`);
+                
+                case 'Unary':
+                    const operand = evaluate(node.operand, env);
+                    switch (node.operator) {
+                        case '-': return -operand;
+                        case '+': return +operand;
+                    }
+                    break;
+                
+                case 'Binary':
+                    const left = evaluate(node.left, env);
+                    const right = evaluate(node.right, env);
+                    switch (node.operator) {
+                        case '+': return left + right;
+                        case '-': return left - right;
+                        case '*': return left * right;
+                        case '/': return left / right;
+                        case '^': return Math.pow(left, right);
+                    }
+                    break;
+                
+                case 'Call':
+                    const fn = evaluate(node.callee, env);
+                    const args = node.arguments.map(a => evaluate(a, env));
+                    if (typeof fn !== 'function') {
+                        throw new Error(`${node.callee.name} ist keine Funktion`);
+                    }
+                    return fn(...args);
+                
+                case 'Assignment':
+                    const value = evaluate(node.value, env);
+                    env[node.name] = value;
+                    return value;
+            }
+            
+            throw new Error(`Unbekannter Knotentyp: ${node.type}`);
+        }
+
+        // ═══════════════════════════════════════════════
+        // UI FUNCTIONS
+        // ═══════════════════════════════════════════════
+        
+        function tokenizeDemo() {
+            const input = document.getElementById('tokenInput').value;
+            const output = document.getElementById('tokenOutput');
+            
+            try {
+                const tokens = lexerTokenize(input);
+                output.innerHTML = tokens
+                    .filter(t => t.type !== TokenType.EOF)
+                    .map(t => `<div class="token"><span class="token-type">${t.type}</span>${t.value}</div>`)
+                    .join('');
+            } catch (e) {
+                output.innerHTML = `<span style="color: var(--accent-red);">Fehler: ${e.message}</span>`;
+            }
+        }
+
+        function runParser() {
+            const input = document.getElementById('parserInput').value;
+            const tokenOutput = document.getElementById('demoTokens');
+            const astOutput = document.getElementById('demoAst');
+            const resultOutput = document.getElementById('demoResult');
+            
+            try {
+                const tokens = lexerTokenize(input);
+                tokenOutput.innerHTML = tokens
+                    .filter(t => t.type !== TokenType.EOF)
+                    .map(t => `<div class="token"><span class="token-type">${t.type}</span>${t.value}</div>`)
+                    .join('');
+                
+                const parser = new Parser(tokens);
+                const ast = parser.parse();
+                
+                astOutput.innerHTML = astToString(ast);
+                resultOutput.textContent = '—';
+            } catch (e) {
+                astOutput.innerHTML = `<span style="color: var(--accent-red);">Fehler: ${e.message}</span>`;
+                resultOutput.textContent = '—';
+            }
+        }
+
+        function evaluateExpr() {
+            const input = document.getElementById('parserInput').value;
+            const resultOutput = document.getElementById('demoResult');
+            
+            try {
+                const tokens = lexerTokenize(input);
+                const parser = new Parser(tokens);
+                const ast = parser.parse();
+                const result = evaluate(ast);
+                
+                resultOutput.textContent = typeof result === 'number' 
+                    ? (Number.isInteger(result) ? result : result.toFixed(6))
+                    : result;
+                resultOutput.style.color = 'var(--accent-green)';
+            } catch (e) {
+                resultOutput.textContent = `Fehler: ${e.message}`;
+                resultOutput.style.color = 'var(--accent-red)';
+            }
+        }
+
+        function setExample(expr) {
+            document.getElementById('parserInput').value = expr;
+            runParser();
+        }
+
+        // ═══════════════════════════════════════════════
+        // STEP-BY-STEP VISUALIZATION
+        // ═══════════════════════════════════════════════
+        
+        const parsingSteps = [
+            {
+                description: "Startposition. Wir parsen den Ausdruck <code>1 + 2 * 3</code> mit Präzedenz 0.",
+                currentToken: -1,
+                ast: "—"
+            },
+            {
+                description: "<strong>Schritt 1:</strong> Konsumiere Token <code>1</code>. Es ist eine Zahl, also erstelle NumberNode(1). Das ist unser initialer <code>left</code>-Ausdruck.",
+                currentToken: 0,
+                ast: "<span class='ast-number'>Number(1)</span>"
+            },
+            {
+                description: "<strong>Schritt 2:</strong> Prüfe: Ist die Präzedenz von <code>+</code> (=4) größer als unsere aktuelle Präzedenz (=0)? <strong>Ja!</strong> Also geht die while-Schleife weiter.",
+                currentToken: 1,
+                ast: "<span class='ast-number'>Number(1)</span>"
+            },
+            {
+                description: "<strong>Schritt 3:</strong> Konsumiere <code>+</code>. Rufe das Infix-Parselet auf. Es ruft rekursiv <code>parseExpression(5)</code> auf (Präzedenz + 1, weil links-assoziativ).",
+                currentToken: 1,
+                ast: "<span class='ast-operator'>Binary(+)</span>\n  <span class='ast-number'>Number(1)</span>\n  <span style='color: var(--text-muted)'>... parsing right ...</span>"
+            },
+            {
+                description: "<strong>Schritt 4 (rekursiv):</strong> Im rekursiven Aufruf: Konsumiere <code>2</code>, erstelle NumberNode(2). Das ist der neue <code>left</code>.",
+                currentToken: 2,
+                ast: "<span class='ast-operator'>Binary(+)</span>\n  <span class='ast-number'>Number(1)</span>\n  <span style='color: var(--text-muted)'>... [</span><span class='ast-number'>Number(2)</span><span style='color: var(--text-muted)'>] ...</span>"
+            },
+            {
+                description: "<strong>Schritt 5:</strong> Prüfe: Ist Präzedenz von <code>*</code> (=5) > unsere Präzedenz (=5)? <strong>Nein!</strong> 5 ist nicht größer als 5. Aber warte — hier passiert das Entscheidende: Die <code>*</code>-Operation \"stiehlt\" die 2!",
+                currentToken: 3,
+                ast: "<span class='ast-operator'>Binary(+)</span>\n  <span class='ast-number'>Number(1)</span>\n  <span style='color: var(--text-muted)'>... prüfe * ...</span>"
+            },
+            {
+                description: "<strong>Schritt 6:</strong> Ups, Korrektur: Wir sind noch im äußeren Kontext mit Präzedenz 0. <code>*</code> hat Präzedenz 5 > 0, also konsumieren wir <code>*</code> und parsen rekursiv mit Präzedenz 6.",
+                currentToken: 3,
+                ast: "<span class='ast-operator'>Binary(+)</span>\n  <span class='ast-number'>Number(1)</span>\n  <span class='ast-operator'>Binary(*)</span>\n    <span class='ast-number'>Number(2)</span>\n    <span style='color: var(--text-muted)'>... parsing ...</span>"
+            },
+            {
+                description: "<strong>Schritt 7:</strong> Konsumiere <code>3</code>. Der nächste Token ist EOF (Präzedenz 0). 0 < 6? Nein! Die while-Schleife endet. Wir geben NumberNode(3) zurück.",
+                currentToken: 4,
+                ast: "<span class='ast-operator'>Binary(+)</span>\n  <span class='ast-number'>Number(1)</span>\n  <span class='ast-operator'>Binary(*)</span>\n    <span class='ast-number'>Number(2)</span>\n    <span class='ast-number'>Number(3)</span>"
+            },
+            {
+                description: "<strong>Fertig!</strong> Der AST ist komplett. Die Multiplikation bindet stärker als die Addition, genau wie gewünscht. Das Ergebnis von <code>1 + 2 * 3</code> ist <code>1 + 6 = 7</code>.",
+                currentToken: 5,
+                ast: "<span class='ast-operator'>Binary(+)</span>\n  <span class='ast-number'>Number(1)</span>\n  <span class='ast-operator'>Binary(*)</span>\n    <span class='ast-number'>Number(2)</span>\n    <span class='ast-number'>Number(3)</span>"
+            }
+        ];
+
+        let currentStep = 0;
+        const stepTokens = ['1', '+', '2', '*', '3', 'EOF'];
+
+        function updateStepDisplay() {
+            const step = parsingSteps[currentStep];
+            
+            // Token-Anzeige
+            document.getElementById('stepTokens').innerHTML = stepTokens
+                .map((t, i) => {
+                    let classes = 'token';
+                    if (i < step.currentToken) classes += ' consumed';
+                    if (i === step.currentToken) classes += ' current';
+                    return `<div class="${classes}">${t}</div>`;
+                })
+                .join('');
+            
+            // Info & Beschreibung
+            document.getElementById('stepInfo').textContent = `Schritt ${currentStep} von ${parsingSteps.length - 1}`;
+            document.getElementById('stepDescription').innerHTML = step.description;
+            document.getElementById('stepAst').innerHTML = step.ast;
+            
+            // Buttons
+            document.getElementById('prevStep').disabled = currentStep === 0;
+            document.getElementById('nextStep').disabled = currentStep === parsingSteps.length - 1;
+        }
+
+        function nextStep() {
+            if (currentStep < parsingSteps.length - 1) {
+                currentStep++;
+                updateStepDisplay();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStepDisplay();
+            }
+        }
+
+        function resetSteps() {
+            currentStep = 0;
+            updateStepDisplay();
+        }
+
+        // ═══════════════════════════════════════════════
+        // TABS
+        // ═══════════════════════════════════════════════
+        
+        function switchTab(tabId) {
+            // Deaktiviere alle Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            // Aktiviere gewählten Tab
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // ═══════════════════════════════════════════════
+        // COPY CODE
+        // ═══════════════════════════════════════════════
+        
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block');
+            const code = codeBlock.querySelector('pre').textContent;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = 'Kopiert!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = 'Kopieren';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // ═══════════════════════════════════════════════
+        // PROGRESS BAR
+        // ═══════════════════════════════════════════════
+        
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progressBar').style.width = scrolled + '%';
+        });
+
+        // ═══════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStepDisplay();
+            tokenizeDemo();
+            runParser();
+        });
+        
+        // Enter-Taste für Inputs
+        document.getElementById('parserInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') runParser();
+        });
+        
+        document.getElementById('tokenInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') tokenizeDemo();
+        });
+    </script>
+</body>
+</html>

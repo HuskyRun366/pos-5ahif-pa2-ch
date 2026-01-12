@@ -1,0 +1,77 @@
+﻿<Window x:Class="TaschenrechnerCS.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TaschenrechnerCS"
+        xmlns:hltb="clr-namespace:HighlightTextBlock;assembly=HighlightTextBlock"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <!-- Äußeres Layout -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.3*"/>
+            <!-- Header -->
+            <RowDefinition Height="*"/>
+            <!-- 5x5 Feld -->
+        </Grid.RowDefinitions>
+
+        <!-- Header über die ganze Breite -->
+        <Border Grid.Row="0">
+            <TextBlock x:Name="outputBox" FontSize="20"
+                     Text="{Binding FullText}"
+                    hltb:HighlightTextBlock.HightlightText="{Binding FindString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    hltb:HighlightTextBlock.Italic="True"
+                    hltb:HighlightTextBlock.HighlightBrush="Yellow" hltb:HighlightTextBlock.HighlightTextBrush="Red"
+                    hltb:HighlightTextBlock.Bold="True"/>   
+        </Border>
+
+        <!-- Dein 5x5 Feld bleibt unverändert -->
+        <Grid Grid.Row="1" x:Name="btnGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="-" Grid.Column="3"   Grid.Row="1" />
+            <Button Grid.Column="3" Content="+" Grid.Row="2"/>
+            <Button Grid.Column="3" Content="/" Grid.Row="3"/>
+            <Button Grid.Column="3" Content="*" />
+            <Button Content="7" Grid.Row="1" />
+            <Button Grid.Column="1" Content="8" Grid.Row="1" />
+            <Button Grid.Column="2" Content="9" Grid.Row="1"/>
+            <Button Content="4" Grid.Row="2"/>
+            <Button Grid.Column="1"  Grid.Row="2" Content="5"/>
+            <Button Grid.Column="2" Content="6"  Grid.Row="2"/>
+            <Button Content="1" Grid.Row="3" />
+            <Button Grid.Column="1" Content="2"  Grid.Row="3"/>
+            <Button Grid.Column="1" Content="0" Grid.Row="4" />
+            <Button Grid.Column="2" Content="3" Grid.Row="3" />
+            <Button Content="("/>
+            <Button Grid.Column="1" Content=")" />
+            <Button Grid.Column="2" Content="^"/>
+            <Button Content="," Grid.Row="4"/>
+            <Button Grid.Column="2" Content="x" Grid.Row="4"/>
+            <Button Grid.Column="3" Content="y" Grid.Row="4"/>
+            <Button Grid.Column="4" Content="=" />
+            <Button Grid.Column="4" Content="AC" x:Name="clearBtn" Grid.Row="1" Click="clearBtn_Click"/>
+            <Button Grid.Column="4" Content="z" Grid.Row="4"/>
+            <Button Grid.Column="4" Content="Auswerten" Grid.Row="3" x:Name="auswertenBtn" Click="auswertenBtn_Click"/>
+            <Button Grid.Column="4" Content="%" Grid.Row="2"/>
+
+        </Grid>
+    </Grid>
+
+
+
+</Window>

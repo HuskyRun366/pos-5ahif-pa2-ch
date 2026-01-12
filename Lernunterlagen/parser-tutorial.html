@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taschenrechner-Parser Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9fafb;
+            padding: 1rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(to right, #2563eb, #1e40af);
+            color: white;
+            padding: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #bfdbfe;
+        }
+
+        .tabs {
+            display: flex;
+            background-color: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #6b7280;
+            transition: all 0.3s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        .tab.active {
+            background-color: white;
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        h4 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+            border-left: 4px solid;
+        }
+
+        .info-box.blue {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+        }
+
+        .info-box.yellow {
+            background-color: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .info-box.green {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .info-box.red {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .info-box.purple {
+            background-color: #f3e8ff;
+            border-color: #a855f7;
+        }
+
+        .info-box.orange {
+            background-color: #ffedd5;
+            border-color: #f97316;
+        }
+
+        .step-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            transition: border-color 0.3s;
+        }
+
+        .step-box:hover {
+            border-color: #60a5fa;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .code-block {
+            background-color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+
+        .code-inline {
+            background-color: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .token {
+            display: inline-block;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            margin: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .token.number {
+            background-color: #bbf7d0;
+        }
+
+        .token.operator {
+            background-color: #fef08a;
+        }
+
+        .token.variable {
+            background-color: #e9d5ff;
+        }
+
+        .token.paren {
+            background-color: #e5e7eb;
+        }
+
+        .tree-diagram {
+            background-color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+            font-size: 0.85em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-secondary {
+            background-color: #d1d5db;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background-color: #9ca3af;
+        }
+
+        .example-buttons {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .example-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
+            background: white;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+
+        .example-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .example-btn:hover {
+            border-color: #3b82f6;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .comparison-box {
+            border: 2px solid;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        .comparison-box.good {
+            border-color: #10b981;
+            background-color: #d1fae5;
+        }
+
+        .comparison-box.bad {
+            border-color: #ef4444;
+            background-color: #fee2e2;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: #3b82f6;
+            margin: 1rem 0;
+        }
+
+        ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        li {
+            margin: 0.5rem 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            margin: 0;
+        }
+
+        .phase-box {
+            background-color: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .eval-step {
+            background-color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .numbered-list {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>Taschenrechner-Parser Tutorial</h1>
+                <p>Von der Eingabe zum Ergebnis - Schritt für Schritt erklärt</p>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('overview')">
+                    📖 1. Überblick
+                </button>
+                <button class="tab" onclick="showTab('grammar')">
+                    📝 2. Grammatik
+                </button>
+                <button class="tab" onclick="showTab('tokenizing')">
+                    🔍 3. Tokenizing
+                </button>
+                <button class="tab" onclick="showTab('parsing')">
+                    🌳 4. Parsing
+                </button>
+                <button class="tab" onclick="showTab('interpreter')">
+                    ⚡ 5. Interpreter
+                </button>
+                <button class="tab" onclick="showTab('complete')">
+                    🎯 6. Zusammenspiel
+                </button>
+            </div>
+
+            <div class="content">
+                <!-- OVERVIEW TAB -->
+                <div id="overview" class="content-section active">
+                    <h2>Der große Überblick: Von der Eingabe zum Ergebnis</h2>
+                    
+                    <div class="info-box blue">
+                        <p style="font-size: 1.1rem;">
+                            Stell dir vor, du gibst <code class="code-inline">2 + 3 * 4</code> in deinen Taschenrechner ein. 
+                            Was muss passieren, damit der Computer das richtig versteht und ausrechnet?
+                        </p>
+                    </div>
+
+                    <h3>Die 5 Schritte:</h3>
+
+                    <div class="step-box">
+                        <div class="step-header">
+                            <span class="step-number">1</span>
+                            <div>
+                                <h4>Eingabe: Ein String</h4>
+                                <div class="code-block">"2 + 3 * 4"</div>
+                                <p style="color: #6b7280;">Das ist einfach nur Text - der Computer versteht noch nicht, was das bedeutet.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="arrow">↓</div>
+
+                    <div class="step-box">
+                        <div class="step-header">
+                            <span class="step-number">2</span>
+                            <div>
+                                <h4>Tokenizing: String → Token-Liste</h4>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0;">
+                                    <span class="token number">NUMBER(2)</span>
+                                    <span class="token operator">PLUS</span>
+                                    <span class="token number">NUMBER(3)</span>
+                                    <span class="token operator">MULT</span>
+                                    <span class="token number">NUMBER(4)</span>
+                                </div>
+                                <p style="color: #6b7280;">Mit <strong>Regex</strong> zerteilen wir den String in "Tokens" - erkennbare Teile wie Zahlen und Operatoren.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="arrow">↓</div>
+
+                    <div class="step-box">
+                        <div class="step-header">
+                            <span class="step-number">3</span>
+                            <div>
+                                <h4>Parsing: Token-Liste → Syntaxbaum</h4>
+                                <div class="tree-diagram">        +
+       / \
+      2   *
+         / \
+        3   4</div>
+                                <p style="color: #6b7280;">Die <strong>Grammatik</strong> sagt uns, wie wir die Tokens in einen Baum umwandeln. Der Baum kennt die Priorität: * kommt vor +!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="arrow">↓</div>
+
+                    <div class="step-box">
+                        <div class="step-header">
+                            <span class="step-number">4</span>
+                            <div>
+                                <h4>Interpreter-Pattern: Baum auswerten</h4>
+                                <div class="code-block">3 * 4 = 12
+2 + 12 = <strong style="color: #10b981;">14</strong></div>
+                                <p style="color: #6b7280;">Jeder Knoten im Baum weiß, wie er sich selbst auswertet. Das ist das <strong>Interpreter-Pattern</strong>!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="arrow">↓</div>
+
+                    <div class="step-box" style="background-color: #d1fae5; border-color: #10b981;">
+                        <div class="step-header">
+                            <span class="step-number" style="background-color: #10b981;">5</span>
+                            <div>
+                                <h4>Ergebnis!</h4>
+                                <div style="background: white; padding: 1rem; border-radius: 0.5rem; text-align: center; font-size: 2rem; font-weight: bold; color: #10b981;">
+                                    14
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box yellow">
+                        <h4>💡 Wichtig zu verstehen:</h4>
+                        <ul>
+                            <li>Jeder Schritt hat eine <strong>klare Aufgabe</strong></li>
+                            <li>Die Schritte bauen <strong>aufeinander auf</strong></li>
+                            <li>Der Computer "versteht" erst am Ende, was gerechnet werden soll</li>
+                            <li>Die <strong>Grammatik</strong> ist wie ein Regelwerk, das alles zusammenhält</li>
+                        </ul>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="showTab('grammar')">
+                            Weiter zu Schritt 2: Grammatik verstehen →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GRAMMAR TAB -->
+                <div id="grammar" class="content-section">
+                    <h2>Grammatik: Die Regeln für gültige Formeln</h2>
+                    
+                    <div class="info-box blue">
+                        <p style="font-size: 1.1rem;">
+                            Eine Grammatik ist wie ein Kochrezept: Sie sagt uns genau, welche Zutaten (Tokens) wir in welcher Reihenfolge kombinieren dürfen.
+                        </p>
+                    </div>
+
+                    <h3>Was ist eine Grammatik?</h3>
+                    
+                    <p>Eine Grammatik besteht aus <strong>Regeln</strong>, die beschreiben, wie man gültige Ausdrücke bildet. Für deinen Taschenrechner könnte sie so aussehen:</p>
+                    
+                    <div class="code-block" style="background: white; border: 2px solid #e5e7eb;">
+<strong style="color: #2563eb;">Expression</strong> → Term (('+' | '-') Term)*
+<strong style="color: #2563eb;">Term</strong>       → Factor (('*' | '/') Factor)*
+<strong style="color: #2563eb;">Factor</strong>     → Power ('^' Power)*
+<strong style="color: #2563eb;">Power</strong>      → Number | Variable | '(' Expression ')'</div>
+
+                    <div class="info-box yellow">
+                        <h4>🤔 Was bedeutet das?</h4>
+                        <p style="margin-bottom: 1rem;">Lass uns die erste Regel zerlegen:</p>
+                        <div class="code-block">Expression → Term (('+' | '-') Term)*</div>
+                        <ul>
+                            <li><code class="code-inline">Expression</code> = Das ist ein gültiger mathematischer Ausdruck</li>
+                            <li><code class="code-inline">Term</code> = Ein Teil des Ausdrucks (z.B. eine Multiplikation)</li>
+                            <li><code class="code-inline">(('+' | '-') Term)*</code> = Danach können beliebig viele + oder - mit weiteren Terms folgen</li>
+                            <li><code class="code-inline">*</code> = "null oder mehrfach"</li>
+                            <li><code class="code-inline">|</code> = "oder"</li>
+                        </ul>
+                    </div>
+
+                    <h3>Warum ist die Reihenfolge wichtig?</h3>
+                    
+                    <div class="grid grid-2">
+                        <div class="comparison-box good">
+                            <h4 style="color: #10b981;">✓ Mit richtiger Grammatik</h4>
+                            <div class="code-block">2 + 3 * 4</div>
+                            <p><strong>Wird verstanden als:</strong></p>
+                            <div class="tree-diagram">    +
+   / \
+  2   *
+     / \
+    3   4</div>
+                            <p style="color: #10b981; font-weight: bold;">Ergebnis: 2 + 12 = 14 ✓</p>
+                        </div>
+
+                        <div class="comparison-box bad">
+                            <h4 style="color: #ef4444;">✗ Ohne richtige Grammatik</h4>
+                            <div class="code-block">2 + 3 * 4</div>
+                            <p><strong>Könnte werden zu:</strong></p>
+                            <div class="tree-diagram">      *
+     / \
+    +   4
+   / \
+  2   3</div>
+                            <p style="color: #ef4444; font-weight: bold;">Ergebnis: 5 * 4 = 20 ✗</p>
+                        </div>
+                    </div>
+
+                    <div class="info-box blue">
+                        <h4>💡 Die Grammatik sorgt für:</h4>
+                        <ul>
+                            <li><strong>Operator-Priorität</strong>: * und / vor + und -</li>
+                            <li><strong>Klammern-Regeln</strong>: Was in Klammern steht, wird zuerst berechnet</li>
+                            <li><strong>Gültige Struktur</strong>: "2 + + 3" ist nicht erlaubt</li>
+                            <li><strong>Eindeutigkeit</strong>: Jeder Ausdruck hat nur EINE Bedeutung</li>
+                        </ul>
+                    </div>
+
+                    <h3>Teste dein Verständnis:</h3>
+                    
+                    <div class="step-box">
+                        <p style="font-weight: 600; margin-bottom: 1rem;">Welche Ausdrücke sind nach unserer Grammatik gültig?</p>
+                        <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem;">
+                            <div style="padding: 0.5rem; margin: 0.25rem 0;">
+                                <code class="code-inline">2 + 3</code>
+                                <span style="color: #10b981; margin-left: 1rem;">✓ Gültig</span>
+                            </div>
+                            <div style="padding: 0.5rem; margin: 0.25rem 0;">
+                                <code class="code-inline">(2 + 3) * x</code>
+                                <span style="color: #10b981; margin-left: 1rem;">✓ Gültig</span>
+                            </div>
+                            <div style="padding: 0.5rem; margin: 0.25rem 0;">
+                                <code class="code-inline">2 + + 3</code>
+                                <span style="color: #ef4444; margin-left: 1rem;">✗ Ungültig (zwei Operatoren hintereinander)</span>
+                            </div>
+                            <div style="padding: 0.5rem; margin: 0.25rem 0;">
+                                <code class="code-inline">2 ^ 3 ^ 4</code>
+                                <span style="color: #10b981; margin-left: 1rem;">✓ Gültig</span>
+                            </div>
+                            <div style="padding: 0.5rem; margin: 0.25rem 0;">
+                                <code class="code-inline">(2 + 3</code>
+                                <span style="color: #ef4444; margin-left: 1rem;">✗ Ungültig (Klammer nicht geschlossen)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-secondary" onclick="showTab('overview')">
+                            ← Zurück zum Überblick
+                        </button>
+                        <button class="btn btn-primary" onclick="showTab('tokenizing')">
+                            Weiter zu Schritt 3: Tokenizing →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TOKENIZING TAB -->
+                <div id="tokenizing" class="content-section">
+                    <h2>Tokenizing: String in Tokens zerlegen</h2>
+                    
+                    <div class="info-box blue">
+                        <p style="font-size: 1.1rem;">
+                            Tokenizing ist wie Wörter in einem Satz erkennen. Aus "HalloWelt" machen wir "Hallo" und "Welt".
+                        </p>
+                    </div>
+
+                    <h3>Was sind Tokens?</h3>
+                    
+                    <p>Ein Token ist ein "bedeutungsvolles Stück" deiner Eingabe. Für <code class="code-inline">2 + 3 * x</code> sind die Tokens:</p>
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem; background: #f9fafb; border-radius: 0.5rem; margin: 1rem 0;">
+                        <span class="token number">NUMBER(2)</span>
+                        <span class="token operator">PLUS</span>
+                        <span class="token number">NUMBER(3)</span>
+                        <span class="token operator">MULT</span>
+                        <span class="token variable">VAR(x)</span>
+                    </div>
+
+                    <h3>Wie erkennen wir Tokens? Mit Regex!</h3>
+                    
+                    <p><strong>Reguläre Ausdrücke (Regex)</strong> sind Muster, die Text erkennen. Für deinen Taschenrechner brauchst du:</p>
+                    
+                    <div style="margin: 1rem 0; display: grid; gap: 0.75rem;">
+                        <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 2px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <code class="code-inline" style="background: #dbeafe;">\d+\.?\d*</code>
+                                <span style="background: #bbf7d0; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">NUMBER</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: #6b7280;">
+                                <strong>Erklärt:</strong> <code class="code-inline">\d+</code> = eine oder mehr Ziffern, <code class="code-inline">\.?</code> = optional ein Punkt, <code class="code-inline">\d*</code> = null oder mehr Ziffern<br>
+                                <strong>Erkennt:</strong> 42, 3.14, 0.5, 100
+                            </p>
+                        </div>
+
+                        <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 2px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <code class="code-inline" style="background: #dbeafe;">[a-z]</code>
+                                <span style="background: #e9d5ff; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">VARIABLE</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: #6b7280;">
+                                <strong>Erklärt:</strong> Ein einzelner Kleinbuchstabe<br>
+                                <strong>Erkennt:</strong> x, y, z, a, b, ...
+                            </p>
+                        </div>
+
+                        <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 2px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <code class="code-inline" style="background: #dbeafe;">\+</code>
+                                <span style="background: #fef08a; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">PLUS</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: #6b7280;">
+                                <strong>Erklärt:</strong> Das Plus-Zeichen (\ weil + in Regex speziell ist)<br>
+                                <strong>Erkennt:</strong> +
+                            </p>
+                        </div>
+
+                        <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 2px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <code class="code-inline" style="background: #dbeafe;">\(|\)|\*|\/|\^|\+|\-</code>
+                                <span style="background: #fef08a; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">OPERATORS</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: #6b7280;">
+                                <strong>Erklärt:</strong> <code class="code-inline">|</code> bedeutet "oder" - eines dieser Zeichen<br>
+                                <strong>Erkennt:</strong> ( ) * / ^ + -
+                            </p>
+                        </div>
+
+                        <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 2px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <code class="code-inline" style="background: #dbeafe;">\s+</code>
+                                <span style="background: #e5e7eb; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">WHITESPACE (ignorieren)</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: #6b7280;">
+                                <strong>Erklärt:</strong> Ein oder mehrere Leerzeichen<br>
+                                <strong>Aktion:</strong> Überspringen, nicht als Token speichern
+                            </p>
+                        </div>
+                    </div>
+
+                    <h3>Der Tokenizing-Prozess:</h3>
+                    
+                    <div style="background: linear-gradient(to right, #eff6ff, #d1fae5); padding: 1.5rem; border-radius: 0.5rem; margin: 1rem 0;">
+                        <div style="margin-bottom: 1rem;">
+                            <p style="font-size: 0.9rem; font-weight: 600; color: #6b7280; margin-bottom: 0.5rem;">Eingabe:</p>
+                            <div class="code-block" style="background: white; font-size: 1.1rem;">
+                                "2 + 3.5 * x"
+                            </div>
+                        </div>
+
+                        <div class="arrow">↓</div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <p style="font-size: 0.9rem; font-weight: 600; color: #6b7280; margin-bottom: 0.5rem;">Schritt 1: Regex durchlaufen</p>
+                            <div class="code-block" style="background: white; font-size: 0.85rem;">
+Position 0: "2" → NUMBER(2)
+Position 1: " " → WHITESPACE (skip)
+Position 2: "+" → PLUS
+Position 3: " " → WHITESPACE (skip)
+Position 4-6: "3.5" → NUMBER(3.5)
+Position 7: " " → WHITESPACE (skip)
+Position 8: "*" → MULT
+Position 9: " " → WHITESPACE (skip)
+Position 10: "x" → VAR(x)</div>
+                        </div>
+
+                        <div class="arrow">↓</div>
+
+                        <div>
+                            <p style="font-size: 0.9rem; font-weight: 600; color: #6b7280; margin-bottom: 0.5rem;">Ergebnis: Token-Liste</p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem; background: white; border-radius: 0.5rem;">
+                                <span class="token number">NUMBER(2)</span>
+                                <span class="token operator">PLUS</span>
+                                <span class="token number">NUMBER(3.5)</span>
+                                <span class="token operator">MULT</span>
+                                <span class="token variable">VAR(x)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box red">
+                        <h4>⚠️ Fehlerbehandlung</h4>
+                        <p style="margin-bottom: 0.75rem;">Was passiert, wenn die Eingabe nicht zu einem Regex passt?</p>
+                        <div class="code-block">"2 + $ * 3"</div>
+                        <p style="margin: 0.75rem 0;">Das $-Zeichen passt zu keinem Regex! Hier musst du:</p>
+                        <ul>
+                            <li>Die Position des Fehlers speichern (Position 4)</li>
+                            <li>Einen speziellen ERROR-Token erstellen</li>
+                            <li>Dem Benutzer zeigen: "Ungültiges Zeichen '$' an Position 4"</li>
+                        </ul>
+                    </div>
+
+                    <h3>Kombinierter Regex für C#:</h3>
+                    
+                    <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #6b7280;">Du kannst alle Regex-Patterns mit Namen in einen großen Regex kombinieren:</p>
+                    <div class="code-block" style="overflow-x: auto; font-size: 0.8rem;">
+(?&lt;NUMBER&gt;\d+\.?\d*)|(?&lt;VAR&gt;[a-z])|(?&lt;LPAREN&gt;\()|(?&lt;RPAREN&gt;\))|(?&lt;PLUS&gt;\+)|(?&lt;MINUS&gt;\-)|(?&lt;MULT&gt;\*)|(?&lt;DIV&gt;\/)|(?&lt;POW&gt;\^)|(?&lt;WS&gt;\s+)|(?&lt;ERROR&gt;.)</div>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #6b7280;">
+                        <strong>Hinweis:</strong> <code class="code-inline">(?&lt;NAME&gt;...)</code> sind benannte Gruppen in C#. So weißt du, welcher Regex gematcht hat!
+                    </p>
+
+                    <div class="button-group">
+                        <button class="btn btn-secondary" onclick="showTab('grammar')">
+                            ← Zurück zur Grammatik
+                        </button>
+                        <button class="btn btn-primary" onclick="showTab('parsing')">
+                            Weiter zu Schritt 4: Parsing →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PARSING TAB -->
+                <div id="parsing" class="content-section">
+                    <h2>Parsing: Aus Tokens einen Syntaxbaum bauen</h2>
+                    
+                    <div class="info-box blue">
+                        <p style="font-size: 1.1rem;">
+                            Parsing verwandelt die flache Token-Liste in eine Baum-Struktur, die die Bedeutung und Priorität zeigt.
+                        </p>
+                    </div>
+
+                    <h3>Was ist ein Syntaxbaum?</h3>
+                    
+                    <p>Ein Syntaxbaum (auch "Abstract Syntax Tree" oder AST) ist eine Baumstruktur, die zeigt, wie Operationen verschachtelt sind.</p>
+
+                    <div class="grid grid-2">
+                        <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem;">
+                            <h4 style="margin-bottom: 1rem;">Token-Liste (flach):</h4>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                <span class="token number">2</span>
+                                <span class="token operator">+</span>
+                                <span class="token number">3</span>
+                                <span class="token operator">*</span>
+                                <span class="token number">4</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: #6b7280; margin-top: 1rem;">
+                                Keine Struktur, keine Priorität erkennbar
+                            </p>
+                        </div>
+
+                        <div style="background: #d1fae5; padding: 1rem; border-radius: 0.5rem;">
+                            <h4 style="margin-bottom: 1rem;">Syntaxbaum (strukturiert):</h4>
+                            <div class="tree-diagram">      +
+     / \
+    2   *
+       / \
+      3   4</div>
+                            <p style="font-size: 0.9rem; color: #6b7280; margin-top: 1rem;">
+                                Zeigt: Erst 3*4 berechnen, dann 2 addieren
+                            </p>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 2rem;">Wie funktioniert Parsing?</h3>
+                    
+                    <div class="info-box yellow">
+                        <p style="font-weight: 600; margin-bottom: 0.5rem;">Recursive Descent Parsing</p>
+                        <p style="margin-bottom: 1rem;">
+                            Die eleganteste Methode ist "Recursive Descent Parsing" - jede Grammatik-Regel wird zu einer Funktion!
+                        </p>
+                        <div class="code-block">
+<span style="color: #2563eb;">parseExpression()</span> → ruft <span style="color: #2563eb;">parseTerm()</span>
+<span style="color: #2563eb;">parseTerm()</span> → ruft <span style="color: #2563eb;">parseFactor()</span>
+<span style="color: #2563eb;">parseFactor()</span> → ruft <span style="color: #2563eb;">parsePower()</span>
+<span style="color: #2563eb;">parsePower()</span> → liest Number/Variable/Klammer</div>
+                    </div>
+
+                    <h3>Beispiel Schritt für Schritt:</h3>
+                    
+                    <div style="background: linear-gradient(to right, #eff6ff, #d1fae5); padding: 1.5rem; border-radius: 0.5rem; margin: 1rem 0;">
+                        <div style="margin-bottom: 1rem;">
+                            <p style="font-weight: 600; margin-bottom: 0.5rem;">Eingabe: <code class="code-inline">2 + 3 * 4</code></p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                <span class="token number">NUMBER(2)</span>
+                                <span class="token operator">PLUS</span>
+                                <span class="token number">NUMBER(3)</span>
+                                <span class="token operator">MULT</span>
+                                <span class="token number">NUMBER(4)</span>
+                            </div>
+                        </div>
+
+                        <div style="background: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                            <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Schritt 1: parseExpression() startet</p>
+                            <p style="font-size: 0.9rem; color: #6b7280; margin-bottom: 0.5rem;">
+                                "Expression → Term (('+' | '-') Term)*"<br>
+                                Ich brauche zuerst einen Term...
+                            </p>
+                            <div style="margin-left: 1rem; border-left: 2px solid #93c5fd; padding-left: 1rem;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Schritt 2: parseTerm() für ersten Term</p>
+                                <p style="font-size: 0.9rem; color: #6b7280; margin-bottom: 0.5rem;">
+                                    "Term → Factor (('*' | '/') Factor)*"<br>
+                                    Ich brauche einen Factor...
+                                </p>
+                                <div style="margin-left: 1rem; border-left: 2px solid #86efac; padding-left: 1rem;">
+                                    <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Schritt 3: parseFactor() → parsePower()</p>
+                                    <p style="font-size: 0.9rem; color: #6b7280;">
+                                        Ich sehe NUMBER(2) → erstelle NumberNode(2)
+                                    </p>
+                                    <div style="background: #bbf7d0; padding: 0.5rem; border-radius: 0.25rem; margin-top: 0.5rem; font-size: 0.9rem; font-family: 'Courier New', monospace;">
+                                        Erster Term = NumberNode(2)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                            <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Schritt 4: Zurück in parseExpression()</p>
+                            <p style="font-size: 0.9rem; color: #6b7280; margin-bottom: 0.5rem;">
+                                Ich habe den ersten Term (2). Kommt jetzt + oder -?<br>
+                                Ja! Ich sehe PLUS. Also brauche ich noch einen Term...
+                            </p>
+                            <div style="margin-left: 1rem; border-left: 2px solid #93c5fd; padding-left: 1rem;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Schritt 5: parseTerm() für zweiten Term</p>
+                                <p style="font-size: 0.9rem; color: #6b7280; margin-bottom: 0.5rem;">
+                                    Erster Factor: NUMBER(3) → NumberNode(3)<br>
+                                    Sehe ich * oder /? Ja, MULT! Brauche noch einen Factor...
+                                </p>
+                                <div style="margin-left: 1rem; border-left: 2px solid #86efac; padding-left: 1rem;">
+                                    <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Schritt 6: Zweiter Factor</p>
+                                    <p style="font-size: 0.9rem; color: #6b7280;">
+                                        NUMBER(4) → NumberNode(4)
+                                    </p>
+                                </div>
+                                <div style="background: #fef08a; padding: 0.5rem; border-radius: 0.25rem; margin-top: 0.5rem; font-size: 0.9rem; font-family: 'Courier New', monospace;">
+                                    Zweiter Term = MultNode(NumberNode(3), NumberNode(4))
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: #bbf7d0; padding: 1rem; border-radius: 0.5rem;">
+                            <p style="font-weight: 600; margin-bottom: 0.5rem;">Schritt 7: Alles zusammensetzen</p>
+                            <div class="tree-diagram">        AddNode
+         /    \
+NumberNode(2)  MultNode
+               /      \
+      NumberNode(3) NumberNode(4)</div>
+                        </div>
+                    </div>
+
+                    <h3>Die Klassenstruktur (UML):</h3>
+                    
+                    <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem;">
+                        <p style="margin-bottom: 1rem; font-size: 0.9rem; color: #6b7280;">Für das Interpreter-Pattern brauchst du diese Klassen:</p>
+                        <div class="tree-diagram" style="border: 2px solid #d1d5db;">┌─────────────────────┐
+│   <<interface>>     │
+│   IExpression       │
+├─────────────────────┤
+│ + Evaluate(): double│
+└─────────────────────┘
+         △
+         │ implements
+    ┌────┴────────────────────┐
+    │                         │
+┌───────────┐         ┌──────────────┐
+│ NumberNode│         │ VariableNode │
+├───────────┤         ├──────────────┤
+│ + Value   │         │ + Name       │
+└───────────┘         └──────────────┘
+
+┌─────────────────────┐
+│   BinaryOpNode      │
+├─────────────────────┤
+│ + Left: IExpression │
+│ + Right: IExpression│
+└─────────────────────┘
+         △
+         │ extends
+    ┌────┴─────────────────────┐
+    │         │         │       │
+┌─────┐  ┌──────┐  ┌──────┐  ...
+│ Add │  │ Mult │  │ Pow  │
+└─────┘  └──────┘  └──────┘</div>
+                    </div>
+
+                    <div class="info-box red">
+                        <h4>⚠️ Syntax-Fehler erkennen</h4>
+                        <p style="margin-bottom: 0.5rem;">Während des Parsings können Fehler auftreten:</p>
+                        <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                            <div class="code-block">2 + * 3 → Fehler: Nach + muss ein Term kommen, nicht *</div>
+                            <div class="code-block">2 + (3 * 4 → Fehler: Klammer nicht geschlossen</div>
+                            <div class="code-block">() → Fehler: Leere Klammern</div>
+                        </div>
+                        <p style="margin-top: 0.75rem;">
+                            Wirf <code class="code-inline">SyntaxException</code> mit Position und Beschreibung!
+                        </p>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-secondary" onclick="showTab('tokenizing')">
+                            ← Zurück zum Tokenizing
+                        </button>
+                        <button class="btn btn-primary" onclick="showTab('interpreter')">
+                            Weiter zu Schritt 5: Interpreter-Pattern →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- INTERPRETER TAB -->
+                <div id="interpreter" class="content-section">
+                    <h2>Interpreter-Pattern: Den Baum auswerten</h2>
+                    
+                    <div class="info-box blue">
+                        <p style="font-size: 1.1rem;">
+                            Das Interpreter-Pattern ist ein Design Pattern, bei dem jeder Knoten im Baum weiß, wie er sich selbst auswertet.
+                        </p>
+                    </div>
+
+                    <h3>Die Grundidee:</h3>
+                    
+                    <div class="info-box yellow">
+                        <p style="margin-bottom: 1rem; font-weight: 600;">Jede Klasse hat eine Methode: <code class="code-inline">Evaluate()</code></p>
+                        <p style="margin-bottom: 1rem;">
+                            Diese Methode gibt den Wert des Knotens zurück. Jeder Knotentyp implementiert <code class="code-inline">Evaluate()</code> anders:
+                        </p>
+                        
+                        <div style="display: grid; gap: 0.75rem;">
+                            <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; border-left: 4px solid #10b981;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">NumberNode:</p>
+                                <code style="font-size: 0.9rem;">return this.Value;</code>
+                                <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">Gibt einfach seinen Wert zurück</p>
+                            </div>
+
+                            <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; border-left: 4px solid #a855f7;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">VariableNode:</p>
+                                <code style="font-size: 0.9rem;">return variables[this.Name];</code>
+                                <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">Schaut in einem Dictionary nach dem Wert der Variable</p>
+                            </div>
+
+                            <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">AddNode:</p>
+                                <code style="font-size: 0.9rem;">return Left.Evaluate() + Right.Evaluate();</code>
+                                <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">Wertet beide Kinder aus und addiert sie</p>
+                            </div>
+
+                            <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; border-left: 4px solid #ef4444;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">MultNode:</p>
+                                <code style="font-size: 0.9rem;">return Left.Evaluate() * Right.Evaluate();</code>
+                                <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">Wertet beide Kinder aus und multipliziert sie</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 2rem;">Beispiel: Auswertung visualisiert</h3>
+                    
+                    <div style="background: linear-gradient(to right, #d1fae5, #eff6ff); padding: 1.5rem; border-radius: 0.5rem; margin: 1rem 0;">
+                        <p style="font-weight: 600; margin-bottom: 1rem;">Gegeben: <code class="code-inline">2 + 3 * 4</code></p>
+                        
+                        <div style="background: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                            <p style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Unser Syntaxbaum:</p>
+                            <div class="tree-diagram">        AddNode
+         /    \
+NumberNode(2)  MultNode
+               /      \
+      NumberNode(3) NumberNode(4)</div>
+                        </div>
+
+                        <div style="display: grid; gap: 0.75rem;">
+                            <div style="background: #dbeafe; padding: 0.75rem; border-radius: 0.5rem;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Schritt 1: AddNode.Evaluate() wird aufgerufen</p>
+                                <p style="font-size: 0.9rem;">
+                                    AddNode sagt: "Ich muss Left.Evaluate() + Right.Evaluate() berechnen"<br>
+                                    Zuerst brauche ich Left.Evaluate()...
+                                </p>
+                            </div>
+
+                            <div style="margin-left: 1.5rem; background: #bbf7d0; padding: 0.75rem; border-radius: 0.5rem;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Schritt 2: NumberNode(2).Evaluate()</p>
+                                <p style="font-size: 0.9rem;">
+                                    NumberNode(2) sagt: "Ich bin 2, also return 2"
+                                </p>
+                                <div class="code-block" style="background: white; margin-top: 0.5rem;">
+                                    Left.Evaluate() = 2
+                                </div>
+                            </div>
+
+                            <div style="margin-left: 1.5rem; background: #fef08a; padding: 0.75rem; border-radius: 0.5rem;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Schritt 3: MultNode.Evaluate()</p>
+                                <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                    MultNode sagt: "Ich muss Left.Evaluate() * Right.Evaluate() berechnen"
+                                </p>
+                                <div style="margin-left: 1rem; display: grid; gap: 0.5rem;">
+                                    <div class="code-block" style="background: white;">
+                                        <strong>Left:</strong> NumberNode(3).Evaluate() = 3
+                                    </div>
+                                    <div class="code-block" style="background: white;">
+                                        <strong>Right:</strong> NumberNode(4).Evaluate() = 4
+                                    </div>
+                                    <div style="background: #bbf7d0; padding: 0.5rem; border-radius: 0.25rem; font-family: 'Courier New', monospace;">
+                                        MultNode.Evaluate() = 3 * 4 = 12
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="background: #bbf7d0; padding: 0.75rem; border-radius: 0.5rem;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Schritt 4: Zurück im AddNode</p>
+                                <p style="font-size: 0.9rem;">
+                                    Jetzt hat AddNode beide Werte:<br>
+                                    Left = 2, Right = 12
+                                </p>
+                                <div style="background: white; padding: 0.5rem; border-radius: 0.25rem; margin-top: 0.5rem; font-size: 1.1rem; font-family: 'Courier New', monospace; font-weight: bold; color: #10b981;">
+                                    AddNode.Evaluate() = 2 + 12 = 14 ✓
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>Der Code in C#:</h3>
+                    
+                    <div class="code-block" style="background: white; border: 2px solid #d1d5db; overflow-x: auto; font-size: 0.85rem;">
+<pre>// Interface
+public interface IExpression 
+{
+    double Evaluate(Dictionary&lt;string, double&gt; variables);
+}
+
+// Zahl
+public class NumberNode : IExpression 
+{
+    public double Value { get; set; }
+    
+    public double Evaluate(Dictionary&lt;string, double&gt; variables) 
+    {
+        return Value;
+    }
+}
+
+// Variable
+public class VariableNode : IExpression 
+{
+    public string Name { get; set; }
+    
+    public double Evaluate(Dictionary&lt;string, double&gt; variables) 
+    {
+        if (!variables.ContainsKey(Name))
+            throw new Exception($"Variable '{Name}' nicht definiert");
+        return variables[Name];
+    }
+}
+
+// Addition
+public class AddNode : IExpression 
+{
+    public IExpression Left { get; set; }
+    public IExpression Right { get; set; }
+    
+    public double Evaluate(Dictionary&lt;string, double&gt; variables) 
+    {
+        return Left.Evaluate(variables) + Right.Evaluate(variables);
+    }
+}
+
+// Multiplikation
+public class MultNode : IExpression 
+{
+    public IExpression Left { get; set; }
+    public IExpression Right { get; set; }
+    
+    public double Evaluate(Dictionary&lt;string, double&gt; variables) 
+    {
+        return Left.Evaluate(variables) * Right.Evaluate(variables);
+    }
+}
+
+// ... ähnlich für Sub, Div, Pow</pre>
+                    </div>
+
+                    <h3>Mit Variablen:</h3>
+                    
+                    <div class="info-box purple">
+                        <p style="margin-bottom: 1rem;">Wenn die Formel Variablen enthält wie <code class="code-inline">2 * x + y</code>:</p>
+                        
+                        <div style="display: grid; gap: 0.75rem;">
+                            <div style="background: white; padding: 0.75rem; border-radius: 0.5rem;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">1. Zuerst den Baum bauen</p>
+                                <div class="tree-diagram" style="font-size: 0.75rem;">      AddNode
+       /    \
+  MultNode  VariableNode(y)
+   /    \
+NumberNode(2) VariableNode(x)</div>
+                            </div>
+
+                            <div style="background: white; padding: 0.75rem; border-radius: 0.5rem;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">2. Finde alle verwendeten Variablen</p>
+                                <p style="font-size: 0.9rem;">Durchlaufe den Baum und sammle alle VariableNodes → {x, y}</p>
+                            </div>
+
+                            <div style="background: white; padding: 0.75rem; border-radius: 0.5rem;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">3. Frage den Benutzer nach Werten</p>
+                                <div style="font-size: 0.9rem;">
+                                    <div>x = ? <span style="color: #2563eb; margin-left: 0.5rem;">→ Benutzer gibt 5 ein</span></div>
+                                    <div>y = ? <span style="color: #2563eb; margin-left: 0.5rem;">→ Benutzer gibt 3 ein</span></div>
+                                </div>
+                            </div>
+
+                            <div style="background: white; padding: 0.75rem; border-radius: 0.5rem;">
+                                <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">4. Erstelle Dictionary und werte aus</p>
+                                <div class="code-block" style="font-size: 0.85rem; margin-bottom: 0.5rem;">
+var variables = new Dictionary&lt;string, double&gt;
+{ { "x", 5 }, { "y", 3 } };</div>
+                                <div style="background: #bbf7d0; padding: 0.5rem; border-radius: 0.25rem; font-family: 'Courier New', monospace; font-size: 0.9rem;">
+result = root.Evaluate(variables);<br>
+// = 2 * 5 + 3 = 13</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box blue">
+                        <h4>💡 Warum ist das Pattern so elegant?</h4>
+                        <ul style="font-size: 0.95rem;">
+                            <li>✓ <strong>Jede Klasse ist einfach</strong> - sie kennt nur ihre eigene Aufgabe</li>
+                            <li>✓ <strong>Leicht erweiterbar</strong> - neue Operatoren? Neue Klasse hinzufügen!</li>
+                            <li>✓ <strong>Rekursion macht es simpel</strong> - der Baum wertet sich selbst aus</li>
+                            <li>✓ <strong>Keine riesige switch-case</strong> - objektorientiert und sauber</li>
+                        </ul>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-secondary" onclick="showTab('parsing')">
+                            ← Zurück zum Parsing
+                        </button>
+                        <button class="btn btn-primary" onclick="showTab('complete')">
+                            Weiter: Alles zusammen sehen →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- COMPLETE TAB -->
+                <div id="complete" class="content-section">
+                    <h2>Zusammenspiel: Vom String zum Ergebnis</h2>
+                    
+                    <div class="info-box green">
+                        <p style="font-size: 1.1rem;">
+                            Jetzt setzen wir alle Teile zusammen und sehen den kompletten Durchlauf!
+                        </p>
+                    </div>
+
+                    <div class="example-buttons">
+                        <button class="example-btn active" onclick="showExample('example1')">2 + 3 * 4</button>
+                        <button class="example-btn" onclick="showExample('example2')">(2 + 3) * x</button>
+                        <button class="example-btn" onclick="showExample('example3')">2^3 + 1</button>
+                    </div>
+
+                    <!-- Example 1: 2 + 3 * 4 -->
+                    <div id="example1" class="example-content" style="display: block;">
+                        <div class="phase-box">
+                            <h3 style="margin-bottom: 1rem;">Beispiel: 2 + 3 * 4</h3>
+                            
+                            <div style="display: grid; gap: 1.5rem;">
+                                <div style="background: #eff6ff; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Phase 1: Tokenizing</h4>
+                                    <div class="code-block" style="margin: 0.5rem 0;">
+                                        Input: "2 + 3 * 4"
+                                    </div>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                        <span class="token number">NUMBER(2)</span>
+                                        <span class="token operator">PLUS</span>
+                                        <span class="token number">NUMBER(3)</span>
+                                        <span class="token operator">MULT</span>
+                                        <span class="token number">NUMBER(4)</span>
+                                    </div>
+                                </div>
+
+                                <div style="background: #fef3c7; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Phase 2: Parsing</h4>
+                                    <div class="tree-diagram">        AddNode
+         /    \
+NumberNode(2)  MultNode
+               /      \
+      NumberNode(3) NumberNode(4)</div>
+                                    <p style="font-size: 0.9rem; color: #6b7280; margin-top: 0.5rem;">
+                                        Der Parser hat verstanden: Erst 3*4, dann + 2
+                                    </p>
+                                </div>
+
+                                <div style="background: #d1fae5; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Phase 3: Interpretation</h4>
+                                    <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                                        <div class="eval-step">
+                                            1. MultNode wertet aus: 3 * 4 = 12
+                                        </div>
+                                        <div class="eval-step">
+                                            2. AddNode wertet aus: 2 + 12 = 14
+                                        </div>
+                                        <div style="background: #bbf7d0; padding: 0.75rem; border-radius: 0.5rem; font-size: 1.1rem; font-weight: bold; text-align: center;">
+                                            Ergebnis: 14
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Example 2: (2 + 3) * x -->
+                    <div id="example2" class="example-content" style="display: none;">
+                        <div class="phase-box">
+                            <h3 style="margin-bottom: 1rem;">Beispiel: (2 + 3) * x</h3>
+                            
+                            <div style="display: grid; gap: 1.5rem;">
+                                <div style="background: #eff6ff; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Phase 1: Tokenizing</h4>
+                                    <div class="code-block" style="margin: 0.5rem 0;">
+                                        Input: "(2 + 3) * x"
+                                    </div>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                        <span class="token paren">LPAREN</span>
+                                        <span class="token number">NUMBER(2)</span>
+                                        <span class="token operator">PLUS</span>
+                                        <span class="token number">NUMBER(3)</span>
+                                        <span class="token paren">RPAREN</span>
+                                        <span class="token operator">MULT</span>
+                                        <span class="token variable">VAR(x)</span>
+                                    </div>
+                                </div>
+
+                                <div style="background: #fef3c7; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Phase 2: Parsing</h4>
+                                    <div class="tree-diagram">         MultNode
+          /     \
+     AddNode    VariableNode(x)
+      /    \
+NumberNode(2) NumberNode(3)</div>
+                                    <p style="font-size: 0.9rem; color: #6b7280; margin-top: 0.5rem;">
+                                        Klammern haben Priorität! Erst (2+3), dann * x
+                                    </p>
+                                </div>
+
+                                <div style="background: #f3e8ff; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Phase 2.5: Variablen finden</h4>
+                                    <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; font-size: 0.9rem;">
+                                        <p style="margin-bottom: 0.5rem;">Gefundene Variablen: <strong>x</strong></p>
+                                        <p style="color: #6b7280;">→ Dialog öffnen: "Bitte Wert für x eingeben"</p>
+                                        <div style="background: #dbeafe; padding: 0.5rem; border-radius: 0.25rem; margin-top: 0.5rem;">
+                                            Benutzer gibt ein: x = 10
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="background: #d1fae5; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Phase 3: Interpretation</h4>
+                                    <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                                        <div class="eval-step">
+                                            1. AddNode wertet aus: 2 + 3 = 5
+                                        </div>
+                                        <div class="eval-step">
+                                            2. VariableNode holt x = 10
+                                        </div>
+                                        <div class="eval-step">
+                                            3. MultNode wertet aus: 5 * 10 = 50
+                                        </div>
+                                        <div style="background: #bbf7d0; padding: 0.75rem; border-radius: 0.5rem; font-size: 1.1rem; font-weight: bold; text-align: center;">
+                                            Ergebnis: 50
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Example 3: 2^3 + 1 -->
+                    <div id="example3" class="example-content" style="display: none;">
+                        <div class="phase-box">
+                            <h3 style="margin-bottom: 1rem;">Beispiel: 2^3 + 1</h3>
+                            
+                            <div style="display: grid; gap: 1.5rem;">
+                                <div style="background: #eff6ff; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Phase 1: Tokenizing</h4>
+                                    <div class="code-block" style="margin: 0.5rem 0;">
+                                        Input: "2^3 + 1"
+                                    </div>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                        <span class="token number">NUMBER(2)</span>
+                                        <span class="token operator">POW</span>
+                                        <span class="token number">NUMBER(3)</span>
+                                        <span class="token operator">PLUS</span>
+                                        <span class="token number">NUMBER(1)</span>
+                                    </div>
+                                </div>
+
+                                <div style="background: #fef3c7; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Phase 2: Parsing</h4>
+                                    <div class="tree-diagram">        AddNode
+         /    \
+     PowNode  NumberNode(1)
+      /    \
+NumberNode(2) NumberNode(3)</div>
+                                    <p style="font-size: 0.9rem; color: #6b7280; margin-top: 0.5rem;">
+                                        Potenz (^) hat höchste Priorität! Erst 2^3, dann + 1
+                                    </p>
+                                </div>
+
+                                <div style="background: #d1fae5; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Phase 3: Interpretation</h4>
+                                    <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                                        <div class="eval-step">
+                                            1. PowNode wertet aus: 2^3 = 8
+                                        </div>
+                                        <div class="eval-step">
+                                            2. AddNode wertet aus: 8 + 1 = 9
+                                        </div>
+                                        <div style="background: #bbf7d0; padding: 0.75rem; border-radius: 0.5rem; font-size: 1.1rem; font-weight: bold; text-align: center;">
+                                            Ergebnis: 9
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box orange">
+                        <h4>🎯 Wichtige Implementierungshinweise für deine Aufgabe:</h4>
+                        <ul style="font-size: 0.95rem;">
+                            <li><strong>1. Main-Methode / Button-Click:</strong>
+                                <ul style="margin-top: 0.25rem;">
+                                    <li>• Hole String aus TextBox</li>
+                                    <li>• try-catch Block um alles</li>
+                                    <li>• Rufe Tokenizer → Parser → Interpreter nacheinander auf</li>
+                                </ul>
+                            </li>
+                            <li><strong>2. Fehlerbehandlung:</strong>
+                                <ul style="margin-top: 0.25rem;">
+                                    <li>• TokenException: Ungültiges Zeichen gefunden</li>
+                                    <li>• SyntaxException: Grammatik verletzt</li>
+                                    <li>• EvaluationException: Variable nicht definiert, Division durch 0</li>
+                                    <li>• Zeige Position des Fehlers im Dialog!</li>
+                                </ul>
+                            </li>
+                            <li><strong>3. Variablen-Dialog:</strong>
+                                <ul style="margin-top: 0.25rem;">
+                                    <li>• Nach dem Parsing: Durchlaufe Baum und sammle alle VariableNodes</li>
+                                    <li>• Öffne Dialog nur wenn Variablen gefunden wurden</li>
+                                    <li>• Erstelle Dictionary&lt;string, double&gt; mit Benutzereingaben</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="info-box blue">
+                        <h4>💡 Zusammenfassung der Reihenfolge:</h4>
+                        <div style="display: grid; gap: 0.5rem; margin-top: 0.75rem;">
+                            <div class="numbered-list">
+                                <span class="step-number" style="width: 1.5rem; height: 1.5rem; font-size: 0.85rem;">1</span>
+                                <span>String aus TextBox holen</span>
+                            </div>
+                            <div class="numbered-list">
+                                <span class="step-number" style="width: 1.5rem; height: 1.5rem; font-size: 0.85rem;">2</span>
+                                <span>Tokenizing: String → Token-Liste (mit Regex)</span>
+                            </div>
+                            <div class="numbered-list">
+                                <span class="step-number" style="width: 1.5rem; height: 1.5rem; font-size: 0.85rem;">3</span>
+                                <span>Parsing: Token-Liste → Syntaxbaum (mit Grammatik)</span>
+                            </div>
+                            <div class="numbered-list">
+                                <span class="step-number" style="width: 1.5rem; height: 1.5rem; font-size: 0.85rem;">4</span>
+                                <span>Variablen sammeln und Benutzer fragen</span>
+                            </div>
+                            <div class="numbered-list">
+                                <span class="step-number" style="width: 1.5rem; height: 1.5rem; font-size: 0.85rem;">5</span>
+                                <span>Interpretation: Baum.Evaluate() aufrufen (Interpreter-Pattern)</span>
+                            </div>
+                            <div class="numbered-list">
+                                <span class="step-number" style="width: 1.5rem; height: 1.5rem; font-size: 0.85rem; background: #10b981;">✓</span>
+                                <span style="font-weight: 600;">Ergebnis anzeigen!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="showTab('overview')">
+                            ↺ Zurück zum Anfang
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>💡 Tipp: Gehe die Tabs in der Reihenfolge durch für den besten Lerneffekt!</p>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Remove active from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected section
+            document.getElementById(tabName).classList.add('active');
+            
+            // Activate clicked tab
+            event.target.classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showExample(exampleId) {
+            // Hide all examples
+            const examples = document.querySelectorAll('.example-content');
+            examples.forEach(ex => ex.style.display = 'none');
+            
+            // Remove active from all example buttons
+            const buttons = document.querySelectorAll('.example-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected example
+            document.getElementById(exampleId).style.display = 'block';
+            
+            // Activate clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,2332 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursive Descent Parser - Interaktive Lernunterlage</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --accent-cyan: #00d9ff;
+            --accent-magenta: #ff00aa;
+            --accent-yellow: #ffd700;
+            --accent-green: #00ff88;
+            --accent-orange: #ff6b35;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0b8;
+            --text-muted: #606080;
+            --border-color: #2a2a3a;
+            --code-bg: #0d0d14;
+            --gradient-1: linear-gradient(135deg, #00d9ff 0%, #ff00aa 100%);
+            --gradient-2: linear-gradient(135deg, #ff6b35 0%, #ffd700 100%);
+            --shadow-glow: 0 0 40px rgba(0, 217, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Crimson Pro', Georgia, serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+            font-size: 18px;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 0.8rem 2rem;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(0, 217, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(255, 0, 170, 0.08) 0%, transparent 50%);
+            animation: bgMove 20s ease-in-out infinite;
+        }
+
+        @keyframes bgMove {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-5%, 5%); }
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 900px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero h1 .gradient {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .btn {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Main Content */
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        /* Section Styles */
+        section {
+            margin-bottom: 6rem;
+            scroll-margin-top: 80px;
+        }
+
+        .section-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent-magenta);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.8rem;
+            color: var(--accent-cyan);
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        /* Info Boxes */
+        .info-box {
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--accent-cyan);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 2rem 0;
+        }
+
+        .info-box.warning {
+            border-color: var(--accent-orange);
+        }
+
+        .info-box.success {
+            border-color: var(--accent-green);
+        }
+
+        .info-box-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-box p {
+            margin-bottom: 0;
+            font-size: 1rem;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: var(--bg-tertiary);
+            padding: 0.8rem 1.2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-content {
+            padding: 1.2rem;
+            overflow-x: auto;
+        }
+
+        pre, code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        code {
+            color: var(--accent-cyan);
+        }
+
+        pre code {
+            color: var(--text-primary);
+        }
+
+        .code-keyword { color: var(--accent-magenta); }
+        .code-string { color: var(--accent-green); }
+        .code-comment { color: var(--text-muted); font-style: italic; }
+        .code-number { color: var(--accent-orange); }
+        .code-function { color: var(--accent-yellow); }
+        .code-rule { color: var(--accent-cyan); }
+
+        /* Inline code */
+        p code, li code {
+            background: var(--bg-tertiary);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        /* Interactive Demo */
+        .demo-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .demo-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .demo-title::before {
+            content: '▶';
+            color: var(--accent-green);
+        }
+
+        /* Robot Grid */
+        .robot-grid-container {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .robot-grid {
+            display: grid;
+            gap: 2px;
+            background: var(--border-color);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .grid-cell {
+            width: 50px;
+            height: 50px;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 600;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .grid-cell.robot {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+
+        .grid-cell.obstacle {
+            background: var(--bg-primary);
+            color: var(--text-muted);
+        }
+
+        .grid-cell.letter {
+            color: var(--accent-yellow);
+        }
+
+        .grid-cell.collected {
+            animation: collect 0.5s ease-out;
+        }
+
+        @keyframes collect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); background: var(--accent-green); }
+            100% { transform: scale(1); }
+        }
+
+        .robot-controls {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 0.6rem 1rem;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .collected-letters {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--accent-yellow);
+            letter-spacing: 0.3rem;
+            min-height: 2rem;
+        }
+
+        /* Parser Demo */
+        .parser-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .parser-demo {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .parser-input {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .parser-textarea {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            background: var(--code-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 200px;
+            resize: vertical;
+            width: 100%;
+        }
+
+        .parser-textarea:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        .parser-output {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 200px;
+            overflow-y: auto;
+        }
+
+        .parse-tree {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .tree-node {
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .tree-node::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            height: 100%;
+            border-left: 1px dashed var(--border-color);
+        }
+
+        .tree-node-label {
+            color: var(--accent-magenta);
+        }
+
+        .tree-node-value {
+            color: var(--accent-green);
+        }
+
+        .parse-error {
+            color: var(--accent-orange);
+            padding: 0.5rem;
+            background: rgba(255, 107, 53, 0.1);
+            border-radius: 4px;
+        }
+
+        .parse-success {
+            color: var(--accent-green);
+            padding: 0.5rem;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Step Visualization */
+        .step-viz {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .step-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .step-item:hover {
+            border-color: var(--border-color);
+        }
+
+        .step-item.active {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .step-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            background: var(--bg-secondary);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            margin: 0 0 0.3rem;
+            font-size: 1rem;
+        }
+
+        .step-content p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        /* Grammar Rules */
+        .grammar-rules {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .grammar-rule {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .grammar-rule:last-child {
+            border-bottom: none;
+        }
+
+        .rule-name {
+            color: var(--accent-cyan);
+            min-width: 140px;
+            font-weight: 600;
+        }
+
+        .rule-def {
+            color: var(--text-muted);
+        }
+
+        .rule-content {
+            color: var(--text-primary);
+        }
+
+        /* Diagram */
+        .diagram {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .diagram svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.95rem;
+            padding: 1rem 1.5rem;
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--accent-cyan);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-cyan);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1.5rem 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Flow Diagram */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 2rem 0;
+        }
+
+        .flow-box {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            font-family: 'Space Grotesk', sans-serif;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .flow-box.highlight {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        .flow-arrow {
+            color: var(--text-muted);
+            font-size: 1.5rem;
+        }
+
+        /* Animation for parsing */
+        .token-highlight {
+            background: rgba(0, 217, 255, 0.3);
+            border-radius: 3px;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { background: rgba(0, 217, 255, 0.3); }
+            50% { background: rgba(0, 217, 255, 0.5); }
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .robot-grid-container {
+                flex-direction: column;
+            }
+
+            .grid-cell {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Execution Log */
+        .execution-log {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .log-entry {
+            padding: 0.3rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-command {
+            color: var(--accent-cyan);
+        }
+
+        .log-success {
+            color: var(--accent-green);
+        }
+
+        .log-error {
+            color: var(--accent-orange);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="nav-logo">&lt;Parser/&gt;</div>
+            <ul class="nav-links">
+                <li><a href="#einleitung">Einleitung</a></li>
+                <li><a href="#grammatik">Grammatik</a></li>
+                <li><a href="#recursive-descent">Recursive Descent</a></li>
+                <li><a href="#roboter">Roboter-Demo</a></li>
+                <li><a href="#implementierung">Implementierung</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <span class="hero-badge">Interaktive Lernunterlage</span>
+            <h1>
+                <span class="gradient">Recursive Descent</span><br>
+                Parser verstehen
+            </h1>
+            <p class="hero-subtitle">
+                Lerne Schritt für Schritt, wie Computer Programmiersprachen lesen und verstehen – 
+                am Beispiel einer Roboter-Steuerungssprache für Kinder.
+            </p>
+            <div class="hero-cta">
+                <a href="#einleitung" class="btn btn-primary">Los geht's</a>
+                <a href="#roboter" class="btn btn-secondary">Zur Demo</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="content">
+        <!-- Kapitel 1: Einleitung -->
+        <section id="einleitung">
+            <span class="section-number">01</span>
+            <h2>Was ist ein Parser?</h2>
+            
+            <p>
+                Stell dir vor, du gibst einem Computer einen Befehl wie <code>MOVE RIGHT</code>. 
+                Der Computer sieht zunächst nur eine Reihe von Buchstaben. Er muss erst verstehen, 
+                dass "MOVE" ein Befehl ist und "RIGHT" die Richtung angibt. Genau dafür brauchen wir einen <strong>Parser</strong>.
+            </p>
+
+            <div class="info-box">
+                <div class="info-box-title">💡 Definition</div>
+                <p>
+                    Ein <strong>Parser</strong> ist ein Programm, das Text analysiert und seine Struktur erkennt. 
+                    Er prüft, ob der Text den Regeln einer Sprache entspricht (Syntax) und baut eine 
+                    Datenstruktur auf, die der Computer weiterverarbeiten kann.
+                </p>
+            </div>
+
+            <h3>Warum brauchen wir Parser?</h3>
+            
+            <p>Parser sind überall – sie sind essentiell für:</p>
+            <ul>
+                <li><strong>Programmiersprachen:</strong> Java, Python, C++ – alle brauchen Parser</li>
+                <li><strong>Konfigurationsdateien:</strong> JSON, XML, YAML</li>
+                <li><strong>Suchmaschinen:</strong> Verstehen von Suchanfragen</li>
+                <li><strong>Taschenrechner:</strong> Auswertung mathematischer Ausdrücke</li>
+            </ul>
+
+            <h3>Der Parsing-Prozess</h3>
+
+            <div class="flow-container">
+                <div class="flow-box">
+                    <strong>Quelltext</strong><br>
+                    <small>"MOVE RIGHT"</small>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-box highlight">
+                    <strong>Lexer / Scanner</strong><br>
+                    <small>Zerlegt in Tokens</small>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-box">
+                    <strong>Tokens</strong><br>
+                    <small>[MOVE] [RIGHT]</small>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-box highlight">
+                    <strong>Parser</strong><br>
+                    <small>Prüft Grammatik</small>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-box">
+                    <strong>Parse Tree / AST</strong><br>
+                    <small>Strukturierte Darstellung</small>
+                </div>
+            </div>
+
+            <div class="info-box success">
+                <div class="info-box-title">✅ Tokens</div>
+                <p>
+                    Der <strong>Lexer</strong> (auch Scanner genannt) zerlegt den Text zuerst in <strong>Tokens</strong> – 
+                    das sind die kleinsten bedeutungstragenden Einheiten. Aus <code>REPEAT 3 { MOVE UP }</code> werden 
+                    die Tokens: [REPEAT] [3] [{] [MOVE] [UP] [}]
+                </p>
+            </div>
+        </section>
+
+        <!-- Kapitel 2: Grammatik -->
+        <section id="grammatik">
+            <span class="section-number">02</span>
+            <h2>Grammatik & BNF</h2>
+
+            <p>
+                Bevor wir einen Parser schreiben können, müssen wir definieren, welche Sätze in unserer Sprache 
+                gültig sind. Das machen wir mit einer <strong>Grammatik</strong>.
+            </p>
+
+            <h3>Was ist eine Grammatik?</h3>
+
+            <p>
+                Eine Grammatik ist wie ein Bauplan für Sätze. Sie beschreibt, wie gültige Programme 
+                aus kleineren Teilen zusammengesetzt werden können. Die bekannteste Notation dafür ist 
+                die <strong>Backus-Naur-Form (BNF)</strong>.
+            </p>
+
+            <h3>BNF-Notation verstehen</h3>
+
+            <div class="code-block">
+                <div class="code-header">BNF Grundlagen</div>
+                <div class="code-content">
+<pre><code><span class="code-comment">; Eine Regel definiert, was ein Element sein kann</span>
+<span class="code-rule">&lt;name&gt;</span> <span class="code-keyword">::=</span> definition
+
+<span class="code-comment">; | bedeutet "oder" (Alternative)</span>
+<span class="code-rule">&lt;richtung&gt;</span> <span class="code-keyword">::=</span> <span class="code-string">"LEFT"</span> <span class="code-keyword">|</span> <span class="code-string">"RIGHT"</span> <span class="code-keyword">|</span> <span class="code-string">"UP"</span> <span class="code-keyword">|</span> <span class="code-string">"DOWN"</span>
+
+<span class="code-comment">; Elemente können andere Regeln referenzieren</span>
+<span class="code-rule">&lt;move-befehl&gt;</span> <span class="code-keyword">::=</span> <span class="code-string">"MOVE"</span> <span class="code-rule">&lt;richtung&gt;</span></code></pre>
+                </div>
+            </div>
+
+            <h3>Die Roboter-Grammatik</h3>
+
+            <p>
+                Für unser Roboter-Programm brauchen wir Befehle zum Bewegen, Einsammeln, 
+                Bedingungen und Schleifen. Hier ist die vollständige Grammatik in ABNF:
+            </p>
+
+            <div class="grammar-rules">
+                <div class="grammar-rule">
+                    <span class="rule-name">program</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">{ statement }</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">statement</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">move | collect | repeat | until | if | block</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">move</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">"MOVE" direction</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">collect</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">"COLLECT"</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">repeat</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">"REPEAT" number block</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">until</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">"UNTIL" condition block</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">if</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">"IF" condition block</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">block</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">"{" { statement } "}"</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">condition</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">position "IS-A" (letter | "OBSTACLE")</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">position</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">"HERE" | direction</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">direction</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">"LEFT" | "RIGHT" | "UP" | "DOWN"</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">letter</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">"A" | "B" | "C" | ... | "Z"</span>
+                </div>
+                <div class="grammar-rule">
+                    <span class="rule-name">number</span>
+                    <span class="rule-def">::=</span>
+                    <span class="rule-content">digit { digit }</span>
+                </div>
+            </div>
+
+            <div class="info-box warning">
+                <div class="info-box-title">⚠️ Wichtig</div>
+                <p>
+                    Die Grammatik ist <strong>rekursiv</strong>: Ein <code>block</code> enthält <code>statement</code>s, 
+                    und ein <code>statement</code> kann wieder einen <code>block</code> enthalten. 
+                    Das erlaubt verschachtelte Strukturen wie Schleifen in Schleifen.
+                </p>
+            </div>
+
+            <h3>Beispiel-Analyse</h3>
+
+            <p>Schauen wir uns an, wie <code>REPEAT 2 { MOVE RIGHT }</code> zur Grammatik passt:</p>
+
+            <div class="demo-container">
+                <div class="demo-title">Grammatik-Zerlegung</div>
+                <div class="step-viz">
+                    <div class="step-item active" onclick="highlightStep(this)">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>program</h4>
+                            <p>Ein Programm besteht aus Statements</p>
+                        </div>
+                    </div>
+                    <div class="step-item" onclick="highlightStep(this)">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>statement → repeat</h4>
+                            <p>Das Statement ist eine Wiederholung (REPEAT)</p>
+                        </div>
+                    </div>
+                    <div class="step-item" onclick="highlightStep(this)">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>repeat = "REPEAT" number block</h4>
+                            <p>REPEAT braucht eine Zahl und einen Block</p>
+                        </div>
+                    </div>
+                    <div class="step-item" onclick="highlightStep(this)">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>number = 2</h4>
+                            <p>Die Zahl ist 2</p>
+                        </div>
+                    </div>
+                    <div class="step-item" onclick="highlightStep(this)">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>block = { statement }</h4>
+                            <p>Der Block enthält: MOVE RIGHT</p>
+                        </div>
+                    </div>
+                    <div class="step-item" onclick="highlightStep(this)">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <h4>statement → move = "MOVE" direction</h4>
+                            <p>Im Block ist ein MOVE-Befehl mit Richtung RIGHT</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Kapitel 3: Recursive Descent -->
+        <section id="recursive-descent">
+            <span class="section-number">03</span>
+            <h2>Recursive Descent Parser</h2>
+
+            <p>
+                Jetzt kommt der spannende Teil: Wie setzen wir die Grammatik in Code um? 
+                Die eleganteste Methode ist der <strong>Recursive Descent Parser</strong>.
+            </p>
+
+            <div class="info-box">
+                <div class="info-box-title">💡 Kernidee</div>
+                <p>
+                    Für <strong>jede Regel</strong> in der Grammatik schreiben wir <strong>eine Funktion</strong>. 
+                    Die Funktionen rufen sich gegenseitig auf – genau wie die Regeln aufeinander verweisen. 
+                    Daher "Recursive" (rekursiv) und "Descent" (wir steigen in die Struktur ab).
+                </p>
+            </div>
+
+            <h3>Das Prinzip</h3>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showTab(event, 'tab-concept')">Konzept</button>
+                <button class="tab" onclick="showTab(event, 'tab-code')">Pseudocode</button>
+                <button class="tab" onclick="showTab(event, 'tab-example')">Konkretes Beispiel</button>
+            </div>
+
+            <div id="tab-concept" class="tab-content active">
+                <p>Der Parser funktioniert so:</p>
+                <ol>
+                    <li>Wir haben einen "Zeiger" auf das aktuelle Token</li>
+                    <li>Jede Parse-Funktion prüft, ob die nächsten Tokens ihrer Regel entsprechen</li>
+                    <li>Wenn ja: Tokens "verbrauchen" und Parse-Baum aufbauen</li>
+                    <li>Wenn nein: Fehler melden</li>
+                </ol>
+                
+                <div class="flow-container">
+                    <div class="flow-box">
+                        <strong>parseProgram()</strong><br>
+                        <small>Ruft parseStatement() auf</small>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">
+                        <strong>parseStatement()</strong><br>
+                        <small>Entscheidet: Move? Repeat? If?</small>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box highlight">
+                        <strong>parseRepeat()</strong><br>
+                        <small>Ruft parseBlock() auf</small>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-box">
+                        <strong>parseBlock()</strong><br>
+                        <small>Ruft parseStatement() auf (rekursiv!)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-code" class="tab-content">
+                <div class="code-block">
+                    <div class="code-header">Pseudocode für Recursive Descent</div>
+                    <div class="code-content">
+<pre><code><span class="code-keyword">class</span> <span class="code-function">Parser</span>:
+    tokens = []         <span class="code-comment">// Liste aller Tokens</span>
+    position = 0        <span class="code-comment">// Aktuelle Position</span>
+    
+    <span class="code-keyword">function</span> <span class="code-function">currentToken</span>():
+        <span class="code-keyword">return</span> tokens[position]
+    
+    <span class="code-keyword">function</span> <span class="code-function">consume</span>(expected):
+        <span class="code-keyword">if</span> currentToken() == expected:
+            position = position + 1
+        <span class="code-keyword">else</span>:
+            <span class="code-keyword">error</span>(<span class="code-string">"Erwartet: "</span> + expected)
+    
+    <span class="code-keyword">function</span> <span class="code-function">parseProgram</span>():
+        statements = []
+        <span class="code-keyword">while</span> <span class="code-keyword">not</span> endOfFile():
+            statements.add(parseStatement())
+        <span class="code-keyword">return</span> <span class="code-keyword">new</span> Program(statements)
+    
+    <span class="code-keyword">function</span> <span class="code-function">parseStatement</span>():
+        <span class="code-keyword">if</span> currentToken() == <span class="code-string">"MOVE"</span>:
+            <span class="code-keyword">return</span> parseMove()
+        <span class="code-keyword">else if</span> currentToken() == <span class="code-string">"REPEAT"</span>:
+            <span class="code-keyword">return</span> parseRepeat()
+        <span class="code-keyword">else if</span> currentToken() == <span class="code-string">"COLLECT"</span>:
+            <span class="code-keyword">return</span> parseCollect()
+        <span class="code-comment">// ... weitere Fälle</span>
+    
+    <span class="code-keyword">function</span> <span class="code-function">parseMove</span>():
+        consume(<span class="code-string">"MOVE"</span>)
+        direction = parseDirection()
+        <span class="code-keyword">return</span> <span class="code-keyword">new</span> MoveCommand(direction)
+    
+    <span class="code-keyword">function</span> <span class="code-function">parseRepeat</span>():
+        consume(<span class="code-string">"REPEAT"</span>)
+        count = parseNumber()
+        body = parseBlock()
+        <span class="code-keyword">return</span> <span class="code-keyword">new</span> RepeatCommand(count, body)</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-example" class="tab-content">
+                <p>Parsing von <code>REPEAT 2 { MOVE RIGHT }</code>:</p>
+                
+                <div class="code-block">
+                    <div class="code-header">Ablauf</div>
+                    <div class="code-content">
+<pre><code><span class="code-comment">// Tokens: [REPEAT, 2, {, MOVE, RIGHT, }]</span>
+<span class="code-comment">// Position: 0</span>
+
+<span class="code-function">parseProgram</span>() aufgerufen
+  └─ <span class="code-function">parseStatement</span>() aufgerufen
+       Token ist "REPEAT" → <span class="code-function">parseRepeat</span>()
+       
+       <span class="code-function">parseRepeat</span>():
+         <span class="code-keyword">consume</span>(<span class="code-string">"REPEAT"</span>)  <span class="code-comment">// Position: 1</span>
+         <span class="code-function">parseNumber</span>() → 2    <span class="code-comment">// Position: 2</span>
+         <span class="code-function">parseBlock</span>():
+           <span class="code-keyword">consume</span>(<span class="code-string">"{"</span>)       <span class="code-comment">// Position: 3</span>
+           <span class="code-function">parseStatement</span>():
+             Token ist "MOVE" → <span class="code-function">parseMove</span>()
+             <span class="code-keyword">consume</span>(<span class="code-string">"MOVE"</span>)    <span class="code-comment">// Position: 4</span>
+             <span class="code-function">parseDirection</span>() → RIGHT  <span class="code-comment">// Position: 5</span>
+             <span class="code-keyword">return</span> MoveCommand(RIGHT)
+           <span class="code-keyword">consume</span>(<span class="code-string">"}"</span>)       <span class="code-comment">// Position: 6</span>
+           <span class="code-keyword">return</span> Block([MoveCommand])
+         <span class="code-keyword">return</span> RepeatCommand(2, Block)
+       
+<span class="code-comment">// Ergebnis: RepeatCommand(2, Block([MoveCommand(RIGHT)]))</span></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Warum "Recursive" Descent?</h3>
+
+            <p>
+                Die Rekursion entsteht, wenn Regeln sich gegenseitig aufrufen. 
+                Schau dir diese Kette an:
+            </p>
+
+            <div class="code-block">
+                <div class="code-header">Rekursive Struktur</div>
+                <div class="code-content">
+<pre><code>program → statement → repeat → <span class="code-keyword">block</span> → statement → ...
+                                  ↑                    |
+                                  └────────────────────┘
+                                     <span class="code-comment">(Rekursion!)</span></code></pre>
+                </div>
+            </div>
+
+            <p>
+                Das ermöglicht beliebig tiefe Verschachtelungen wie:
+            </p>
+
+            <div class="code-block">
+                <div class="code-header">Verschachtelte Schleifen</div>
+                <div class="code-content">
+<pre><code><span class="code-keyword">REPEAT</span> <span class="code-number">3</span> {
+    <span class="code-keyword">REPEAT</span> <span class="code-number">2</span> {
+        <span class="code-keyword">MOVE</span> <span class="code-string">RIGHT</span>
+    }
+    <span class="code-keyword">MOVE</span> <span class="code-string">DOWN</span>
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Kapitel 4: Interaktiver Parser -->
+        <section id="parser-demo">
+            <span class="section-number">04</span>
+            <h2>Interaktiver Parser</h2>
+
+            <p>
+                Probiere den Parser selbst aus! Gib Roboter-Befehle ein und sieh, 
+                wie der Parser sie analysiert.
+            </p>
+
+            <div class="demo-container">
+                <div class="demo-title">Parser Live-Demo</div>
+                <div class="parser-demo">
+                    <div class="parser-input">
+                        <label class="control-label">Roboter-Programm eingeben:</label>
+                        <textarea class="parser-textarea" id="parserInput" placeholder="MOVE RIGHT
+REPEAT 3 {
+    MOVE DOWN
+}
+COLLECT">MOVE RIGHT
+REPEAT 2 {
+    MOVE DOWN
+    IF DOWN IS-A A {
+        MOVE DOWN
+        COLLECT
+    }
+}</textarea>
+                        <div style="margin-top: 1rem;">
+                            <button class="btn btn-primary" onclick="parseCode()">Parsen</button>
+                            <button class="btn btn-secondary" onclick="loadExample(1)">Beispiel 1</button>
+                            <button class="btn btn-secondary" onclick="loadExample(2)">Beispiel 2</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="control-label">Parse-Ergebnis:</label>
+                        <div class="parser-output" id="parserOutput">
+                            <div style="color: var(--text-muted);">Klicke "Parsen" um das Ergebnis zu sehen...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box warning">
+                <div class="info-box-title">⚠️ Fehlererkennung</div>
+                <p>
+                    Teste auch fehlerhafte Programme! Der Parser zeigt dir genau, 
+                    wo und warum ein Syntaxfehler vorliegt.
+                </p>
+            </div>
+
+            <h4>Teste diese Fehler:</h4>
+            <div class="control-buttons" style="margin-top: 0.5rem;">
+                <button class="control-btn" onclick="loadError(1)">Fehler 1: Fehlende Klammer</button>
+                <button class="control-btn" onclick="loadError(2)">Fehler 2: Unbekannter Befehl</button>
+                <button class="control-btn" onclick="loadError(3)">Fehler 3: Fehlende Zahl</button>
+            </div>
+        </section>
+
+        <!-- Kapitel 5: Roboter Demo -->
+        <section id="roboter">
+            <span class="section-number">05</span>
+            <h2>Roboter-Simulation</h2>
+
+            <p>
+                Jetzt sehen wir den Parser in Aktion! Steuere den Roboter manuell oder 
+                lass ein Programm ausführen.
+            </p>
+
+            <div class="demo-container">
+                <div class="demo-title">Roboter-Spielfeld</div>
+                <div class="robot-grid-container">
+                    <div>
+                        <div class="robot-grid" id="robotGrid" style="grid-template-columns: repeat(8, 50px);">
+                            <!-- Grid wird per JavaScript generiert -->
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <span class="control-label">Gesammelte Buchstaben:</span>
+                            <div class="collected-letters" id="collectedLetters">-</div>
+                        </div>
+                    </div>
+                    <div class="robot-controls">
+                        <div class="control-group">
+                            <span class="control-label">Manuelle Steuerung:</span>
+                            <div class="control-buttons">
+                                <button class="control-btn" onclick="moveRobot('UP')">↑ UP</button>
+                                <button class="control-btn" onclick="moveRobot('DOWN')">↓ DOWN</button>
+                                <button class="control-btn" onclick="moveRobot('LEFT')">← LEFT</button>
+                                <button class="control-btn" onclick="moveRobot('RIGHT')">→ RIGHT</button>
+                                <button class="control-btn" onclick="collectLetter()">✋ COLLECT</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <span class="control-label">Programm ausführen:</span>
+                            <div class="control-buttons">
+                                <button class="btn btn-primary" onclick="runProgram()">▶ Programm starten</button>
+                                <button class="btn btn-secondary" onclick="resetGrid()">⟲ Reset</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <span class="control-label">Ausführungs-Log:</span>
+                            <div class="execution-log" id="executionLog">
+                                <div class="log-entry" style="color: var(--text-muted);">Warte auf Befehle...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Kapitel 6: Implementierung -->
+        <section id="implementierung">
+            <span class="section-number">06</span>
+            <h2>Implementierung mit Interpreter Pattern</h2>
+
+            <p>
+                Für die vollständige Umsetzung verwenden wir das <strong>Interpreter Pattern</strong>. 
+                Jeder Befehl wird zu einer eigenen Klasse, die ausgeführt werden kann.
+            </p>
+
+            <h3>UML-Klassendiagramm</h3>
+
+            <div class="diagram">
+                <svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Expression Interface -->
+                    <rect x="300" y="20" width="200" height="80" fill="#1a1a25" stroke="#00d9ff" stroke-width="2" rx="4"/>
+                    <text x="400" y="45" text-anchor="middle" fill="#00d9ff" font-family="JetBrains Mono" font-size="12">«interface»</text>
+                    <text x="400" y="65" text-anchor="middle" fill="#e8e8f0" font-family="Space Grotesk" font-weight="600" font-size="14">Expression</text>
+                    <line x1="300" y1="75" x2="500" y2="75" stroke="#2a2a3a"/>
+                    <text x="400" y="92" text-anchor="middle" fill="#a0a0b8" font-family="JetBrains Mono" font-size="11">+ interpret(ctx): void</text>
+
+                    <!-- Concrete Expressions -->
+                    <!-- Move -->
+                    <rect x="50" y="160" width="140" height="90" fill="#1a1a25" stroke="#ff00aa" stroke-width="2" rx="4"/>
+                    <text x="120" y="185" text-anchor="middle" fill="#e8e8f0" font-family="Space Grotesk" font-weight="600" font-size="13">MoveExpr</text>
+                    <line x1="50" y1="195" x2="190" y2="195" stroke="#2a2a3a"/>
+                    <text x="60" y="215" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- direction: Dir</text>
+                    <line x1="50" y1="225" x2="190" y2="225" stroke="#2a2a3a"/>
+                    <text x="60" y="245" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">+ interpret()</text>
+
+                    <!-- Collect -->
+                    <rect x="210" y="160" width="140" height="90" fill="#1a1a25" stroke="#ff00aa" stroke-width="2" rx="4"/>
+                    <text x="280" y="185" text-anchor="middle" fill="#e8e8f0" font-family="Space Grotesk" font-weight="600" font-size="13">CollectExpr</text>
+                    <line x1="210" y1="195" x2="350" y2="195" stroke="#2a2a3a"/>
+                    <line x1="210" y1="225" x2="350" y2="225" stroke="#2a2a3a"/>
+                    <text x="220" y="245" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">+ interpret()</text>
+
+                    <!-- Repeat -->
+                    <rect x="370" y="160" width="140" height="90" fill="#1a1a25" stroke="#ff00aa" stroke-width="2" rx="4"/>
+                    <text x="440" y="185" text-anchor="middle" fill="#e8e8f0" font-family="Space Grotesk" font-weight="600" font-size="13">RepeatExpr</text>
+                    <line x1="370" y1="195" x2="510" y2="195" stroke="#2a2a3a"/>
+                    <text x="380" y="215" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- count: int</text>
+                    <text x="380" y="230" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- body: Block</text>
+                    <line x1="370" y1="240" x2="510" y2="240" stroke="#2a2a3a"/>
+                    <text x="380" y="255" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">+ interpret()</text>
+
+                    <!-- Until -->
+                    <rect x="530" y="160" width="140" height="90" fill="#1a1a25" stroke="#ff00aa" stroke-width="2" rx="4"/>
+                    <text x="600" y="185" text-anchor="middle" fill="#e8e8f0" font-family="Space Grotesk" font-weight="600" font-size="13">UntilExpr</text>
+                    <line x1="530" y1="195" x2="670" y2="195" stroke="#2a2a3a"/>
+                    <text x="540" y="215" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- cond: Condition</text>
+                    <text x="540" y="230" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- body: Block</text>
+                    <line x1="530" y1="240" x2="670" y2="240" stroke="#2a2a3a"/>
+                    <text x="540" y="255" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">+ interpret()</text>
+
+                    <!-- If -->
+                    <rect x="210" y="280" width="140" height="90" fill="#1a1a25" stroke="#ff00aa" stroke-width="2" rx="4"/>
+                    <text x="280" y="305" text-anchor="middle" fill="#e8e8f0" font-family="Space Grotesk" font-weight="600" font-size="13">IfExpr</text>
+                    <line x1="210" y1="315" x2="350" y2="315" stroke="#2a2a3a"/>
+                    <text x="220" y="335" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- cond: Condition</text>
+                    <text x="220" y="350" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- body: Block</text>
+                    <line x1="210" y1="360" x2="350" y2="360" stroke="#2a2a3a"/>
+                    <text x="220" y="375" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">+ interpret()</text>
+
+                    <!-- Block -->
+                    <rect x="370" y="280" width="140" height="90" fill="#1a1a25" stroke="#ff00aa" stroke-width="2" rx="4"/>
+                    <text x="440" y="305" text-anchor="middle" fill="#e8e8f0" font-family="Space Grotesk" font-weight="600" font-size="13">BlockExpr</text>
+                    <line x1="370" y1="315" x2="510" y2="315" stroke="#2a2a3a"/>
+                    <text x="380" y="335" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- stmts: List</text>
+                    <line x1="370" y1="360" x2="510" y2="360" stroke="#2a2a3a"/>
+                    <text x="380" y="375" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">+ interpret()</text>
+
+                    <!-- Context -->
+                    <rect x="570" y="380" width="180" height="100" fill="#1a1a25" stroke="#ffd700" stroke-width="2" rx="4"/>
+                    <text x="660" y="405" text-anchor="middle" fill="#e8e8f0" font-family="Space Grotesk" font-weight="600" font-size="13">RobotContext</text>
+                    <line x1="570" y1="415" x2="750" y2="415" stroke="#2a2a3a"/>
+                    <text x="580" y="435" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- x, y: int</text>
+                    <text x="580" y="450" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- grid: Cell[][]</text>
+                    <text x="580" y="465" fill="#a0a0b8" font-family="JetBrains Mono" font-size="10">- collected: String</text>
+
+                    <!-- Inheritance arrows -->
+                    <line x1="120" y1="160" x2="120" y2="130" stroke="#a0a0b8" stroke-width="1.5"/>
+                    <line x1="120" y1="130" x2="400" y2="130" stroke="#a0a0b8" stroke-width="1.5"/>
+                    <line x1="400" y1="130" x2="400" y2="100" stroke="#a0a0b8" stroke-width="1.5"/>
+                    <polygon points="400,100 395,110 405,110" fill="#a0a0b8"/>
+
+                    <line x1="280" y1="160" x2="280" y2="130" stroke="#a0a0b8" stroke-width="1.5"/>
+                    <line x1="440" y1="160" x2="440" y2="130" stroke="#a0a0b8" stroke-width="1.5"/>
+                    <line x1="600" y1="160" x2="600" y2="130" stroke="#a0a0b8" stroke-width="1.5"/>
+                    <line x1="600" y1="130" x2="400" y2="130" stroke="#a0a0b8" stroke-width="1.5"/>
+
+                    <line x1="280" y1="280" x2="280" y2="265" stroke="#a0a0b8" stroke-width="1.5"/>
+                    <line x1="280" y1="265" x2="340" y2="265" stroke="#a0a0b8" stroke-width="1.5"/>
+                    <line x1="340" y1="265" x2="340" y2="130" stroke="#a0a0b8" stroke-width="1.5"/>
+
+                    <line x1="440" y1="280" x2="440" y2="265" stroke="#a0a0b8" stroke-width="1.5"/>
+                    <line x1="440" y1="265" x2="460" y2="265" stroke="#a0a0b8" stroke-width="1.5"/>
+                    <line x1="460" y1="265" x2="460" y2="130" stroke="#a0a0b8" stroke-width="1.5"/>
+                </svg>
+            </div>
+
+            <h3>JavaScript-Implementierung</h3>
+
+            <div class="code-block">
+                <div class="code-header">interpreter.js</div>
+                <div class="code-content">
+<pre><code><span class="code-comment">// Basis-Interface für alle Ausdrücke</span>
+<span class="code-keyword">class</span> <span class="code-function">Expression</span> {
+    <span class="code-function">interpret</span>(context) {
+        <span class="code-keyword">throw new</span> Error(<span class="code-string">"Nicht implementiert"</span>);
+    }
+}
+
+<span class="code-comment">// MOVE-Befehl</span>
+<span class="code-keyword">class</span> <span class="code-function">MoveExpr</span> <span class="code-keyword">extends</span> Expression {
+    <span class="code-function">constructor</span>(direction) {
+        <span class="code-keyword">super</span>();
+        <span class="code-keyword">this</span>.direction = direction;
+    }
+    
+    <span class="code-function">interpret</span>(context) {
+        context.<span class="code-function">move</span>(<span class="code-keyword">this</span>.direction);
+    }
+}
+
+<span class="code-comment">// REPEAT-Befehl</span>
+<span class="code-keyword">class</span> <span class="code-function">RepeatExpr</span> <span class="code-keyword">extends</span> Expression {
+    <span class="code-function">constructor</span>(count, body) {
+        <span class="code-keyword">super</span>();
+        <span class="code-keyword">this</span>.count = count;
+        <span class="code-keyword">this</span>.body = body;
+    }
+    
+    <span class="code-function">interpret</span>(context) {
+        <span class="code-keyword">for</span> (<span class="code-keyword">let</span> i = <span class="code-number">0</span>; i < <span class="code-keyword">this</span>.count; i++) {
+            <span class="code-keyword">this</span>.body.<span class="code-function">interpret</span>(context);
+        }
+    }
+}
+
+<span class="code-comment">// UNTIL-Befehl</span>
+<span class="code-keyword">class</span> <span class="code-function">UntilExpr</span> <span class="code-keyword">extends</span> Expression {
+    <span class="code-function">constructor</span>(condition, body) {
+        <span class="code-keyword">super</span>();
+        <span class="code-keyword">this</span>.condition = condition;
+        <span class="code-keyword">this</span>.body = body;
+    }
+    
+    <span class="code-function">interpret</span>(context) {
+        <span class="code-keyword">while</span> (!<span class="code-keyword">this</span>.condition.<span class="code-function">evaluate</span>(context)) {
+            <span class="code-keyword">this</span>.body.<span class="code-function">interpret</span>(context);
+        }
+    }
+}</code></pre>
+                </div>
+            </div>
+
+            <h3>Der vollständige Parser</h3>
+
+            <div class="code-block">
+                <div class="code-header">parser.js</div>
+                <div class="code-content">
+<pre><code><span class="code-keyword">class</span> <span class="code-function">Parser</span> {
+    <span class="code-function">constructor</span>(tokens) {
+        <span class="code-keyword">this</span>.tokens = tokens;
+        <span class="code-keyword">this</span>.pos = <span class="code-number">0</span>;
+    }
+    
+    <span class="code-function">current</span>() {
+        <span class="code-keyword">return this</span>.tokens[<span class="code-keyword">this</span>.pos];
+    }
+    
+    <span class="code-function">consume</span>(expected) {
+        <span class="code-keyword">if</span> (<span class="code-keyword">this</span>.<span class="code-function">current</span>() !== expected) {
+            <span class="code-keyword">throw new</span> Error(
+                <span class="code-string">`Zeile ${<span class="code-keyword">this</span>.pos}: Erwartet "${expected}", `</span> +
+                <span class="code-string">`aber "${<span class="code-keyword">this</span>.<span class="code-function">current</span>()}" gefunden`</span>
+            );
+        }
+        <span class="code-keyword">this</span>.pos++;
+    }
+    
+    <span class="code-function">parseProgram</span>() {
+        <span class="code-keyword">const</span> statements = [];
+        <span class="code-keyword">while</span> (<span class="code-keyword">this</span>.pos < <span class="code-keyword">this</span>.tokens.length) {
+            statements.<span class="code-function">push</span>(<span class="code-keyword">this</span>.<span class="code-function">parseStatement</span>());
+        }
+        <span class="code-keyword">return new</span> <span class="code-function">BlockExpr</span>(statements);
+    }
+    
+    <span class="code-function">parseStatement</span>() {
+        <span class="code-keyword">const</span> token = <span class="code-keyword">this</span>.<span class="code-function">current</span>();
+        
+        <span class="code-keyword">switch</span> (token) {
+            <span class="code-keyword">case</span> <span class="code-string">'MOVE'</span>:    <span class="code-keyword">return this</span>.<span class="code-function">parseMove</span>();
+            <span class="code-keyword">case</span> <span class="code-string">'COLLECT'</span>: <span class="code-keyword">return this</span>.<span class="code-function">parseCollect</span>();
+            <span class="code-keyword">case</span> <span class="code-string">'REPEAT'</span>:  <span class="code-keyword">return this</span>.<span class="code-function">parseRepeat</span>();
+            <span class="code-keyword">case</span> <span class="code-string">'UNTIL'</span>:   <span class="code-keyword">return this</span>.<span class="code-function">parseUntil</span>();
+            <span class="code-keyword">case</span> <span class="code-string">'IF'</span>:      <span class="code-keyword">return this</span>.<span class="code-function">parseIf</span>();
+            <span class="code-keyword">default</span>:
+                <span class="code-keyword">throw new</span> Error(
+                    <span class="code-string">`Unbekannter Befehl: "${token}"`</span>
+                );
+        }
+    }
+    
+    <span class="code-function">parseMove</span>() {
+        <span class="code-keyword">this</span>.<span class="code-function">consume</span>(<span class="code-string">'MOVE'</span>);
+        <span class="code-keyword">const</span> dir = <span class="code-keyword">this</span>.<span class="code-function">parseDirection</span>();
+        <span class="code-keyword">return new</span> <span class="code-function">MoveExpr</span>(dir);
+    }
+    
+    <span class="code-function">parseRepeat</span>() {
+        <span class="code-keyword">this</span>.<span class="code-function">consume</span>(<span class="code-string">'REPEAT'</span>);
+        <span class="code-keyword">const</span> count = <span class="code-keyword">this</span>.<span class="code-function">parseNumber</span>();
+        <span class="code-keyword">const</span> body = <span class="code-keyword">this</span>.<span class="code-function">parseBlock</span>();
+        <span class="code-keyword">return new</span> <span class="code-function">RepeatExpr</span>(count, body);
+    }
+    
+    <span class="code-comment">// ... weitere Methoden</span>
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Zusammenfassung -->
+        <section id="zusammenfassung">
+            <span class="section-number">07</span>
+            <h2>Zusammenfassung</h2>
+
+            <div class="info-box success">
+                <div class="info-box-title">✅ Was du gelernt hast</div>
+                <p>Du verstehst jetzt die Grundlagen des Parsings und kannst:</p>
+            </div>
+
+            <ul>
+                <li><strong>Grammatiken in BNF</strong> lesen und schreiben</li>
+                <li>Das <strong>Recursive Descent</strong>-Prinzip anwenden</li>
+                <li><strong>Tokens</strong> und <strong>Parse Trees</strong> verstehen</li>
+                <li>Das <strong>Interpreter Pattern</strong> für die Ausführung nutzen</li>
+                <li><strong>Aussagekräftige Fehlermeldungen</strong> generieren</li>
+            </ul>
+
+            <h3>Nächste Schritte</h3>
+
+            <p>Um dein Wissen zu vertiefen:</p>
+            <ol>
+                <li>Erweitere die Grammatik um neue Befehle (z.B. <code>TURN LEFT</code>)</li>
+                <li>Implementiere Variablen: <code>SET x = 5</code></li>
+                <li>Füge ELSE zu IF hinzu: <code>IF ... ELSE ...</code></li>
+                <li>Baue einen visuellen Debugger für den Parser</li>
+            </ol>
+        </section>
+    </main>
+
+    <footer>
+        <p>Erstellt für HTBLuVA Informatik • Recursive Descent Parser Lernunterlage</p>
+    </footer>
+
+    <script>
+        // ============================================
+        // LEXER - Zerlegt Text in Tokens
+        // ============================================
+        class Lexer {
+            constructor(input) {
+                this.input = input;
+                this.pos = 0;
+                this.tokens = [];
+                this.line = 1;
+                this.col = 1;
+            }
+
+            tokenize() {
+                while (this.pos < this.input.length) {
+                    this.skipWhitespace();
+                    if (this.pos >= this.input.length) break;
+
+                    const char = this.input[this.pos];
+
+                    if (char === '{') {
+                        this.tokens.push({ type: 'LBRACE', value: '{', line: this.line, col: this.col });
+                        this.advance();
+                    } else if (char === '}') {
+                        this.tokens.push({ type: 'RBRACE', value: '}', line: this.line, col: this.col });
+                        this.advance();
+                    } else if (/[0-9]/.test(char)) {
+                        this.readNumber();
+                    } else if (/[A-Z]/.test(char)) {
+                        this.readKeyword();
+                    } else {
+                        throw new Error(`Unerwartetes Zeichen '${char}' in Zeile ${this.line}, Spalte ${this.col}`);
+                    }
+                }
+                return this.tokens;
+            }
+
+            advance() {
+                if (this.input[this.pos] === '\n') {
+                    this.line++;
+                    this.col = 1;
+                } else {
+                    this.col++;
+                }
+                this.pos++;
+            }
+
+            skipWhitespace() {
+                while (this.pos < this.input.length && /\s/.test(this.input[this.pos])) {
+                    this.advance();
+                }
+            }
+
+            readNumber() {
+                const startCol = this.col;
+                let num = '';
+                while (this.pos < this.input.length && /[0-9]/.test(this.input[this.pos])) {
+                    num += this.input[this.pos];
+                    this.advance();
+                }
+                this.tokens.push({ type: 'NUMBER', value: parseInt(num), line: this.line, col: startCol });
+            }
+
+            readKeyword() {
+                const startCol = this.col;
+                let word = '';
+                while (this.pos < this.input.length && /[A-Z\-]/.test(this.input[this.pos])) {
+                    word += this.input[this.pos];
+                    this.advance();
+                }
+                
+                const keywords = ['MOVE', 'COLLECT', 'REPEAT', 'UNTIL', 'IF', 'LEFT', 'RIGHT', 'UP', 'DOWN', 'IS-A', 'OBSTACLE', 'HERE'];
+                const isLetter = /^[A-Z]$/.test(word);
+                
+                if (keywords.includes(word)) {
+                    this.tokens.push({ type: word, value: word, line: this.line, col: startCol });
+                } else if (isLetter) {
+                    this.tokens.push({ type: 'LETTER', value: word, line: this.line, col: startCol });
+                } else {
+                    throw new Error(`Unbekanntes Schlüsselwort '${word}' in Zeile ${this.line}, Spalte ${startCol}`);
+                }
+            }
+        }
+
+        // ============================================
+        // AST NODES - Interpreter Pattern
+        // ============================================
+        class Expression {
+            interpret(context) {
+                throw new Error("Nicht implementiert");
+            }
+            
+            toTree(indent = 0) {
+                return "  ".repeat(indent) + this.constructor.name;
+            }
+        }
+
+        class MoveExpr extends Expression {
+            constructor(direction) {
+                super();
+                this.direction = direction;
+            }
+            
+            async interpret(context) {
+                await context.move(this.direction);
+            }
+            
+            toTree(indent = 0) {
+                return "  ".repeat(indent) + `<span class="tree-node-label">MOVE</span> <span class="tree-node-value">${this.direction}</span>`;
+            }
+        }
+
+        class CollectExpr extends Expression {
+            async interpret(context) {
+                await context.collect();
+            }
+            
+            toTree(indent = 0) {
+                return "  ".repeat(indent) + `<span class="tree-node-label">COLLECT</span>`;
+            }
+        }
+
+        class RepeatExpr extends Expression {
+            constructor(count, body) {
+                super();
+                this.count = count;
+                this.body = body;
+            }
+            
+            async interpret(context) {
+                for (let i = 0; i < this.count; i++) {
+                    await this.body.interpret(context);
+                }
+            }
+            
+            toTree(indent = 0) {
+                let result = "  ".repeat(indent) + `<span class="tree-node-label">REPEAT</span> <span class="tree-node-value">${this.count}</span>\n`;
+                result += this.body.toTree(indent + 1);
+                return result;
+            }
+        }
+
+        class UntilExpr extends Expression {
+            constructor(condition, body) {
+                super();
+                this.condition = condition;
+                this.body = body;
+            }
+            
+            async interpret(context) {
+                let iterations = 0;
+                const maxIterations = 100;
+                while (!this.condition.evaluate(context) && iterations < maxIterations) {
+                    await this.body.interpret(context);
+                    iterations++;
+                }
+            }
+            
+            toTree(indent = 0) {
+                let result = "  ".repeat(indent) + `<span class="tree-node-label">UNTIL</span> ${this.condition.toTree()}\n`;
+                result += this.body.toTree(indent + 1);
+                return result;
+            }
+        }
+
+        class IfExpr extends Expression {
+            constructor(condition, body) {
+                super();
+                this.condition = condition;
+                this.body = body;
+            }
+            
+            async interpret(context) {
+                if (this.condition.evaluate(context)) {
+                    await this.body.interpret(context);
+                }
+            }
+            
+            toTree(indent = 0) {
+                let result = "  ".repeat(indent) + `<span class="tree-node-label">IF</span> ${this.condition.toTree()}\n`;
+                result += this.body.toTree(indent + 1);
+                return result;
+            }
+        }
+
+        class BlockExpr extends Expression {
+            constructor(statements) {
+                super();
+                this.statements = statements;
+            }
+            
+            async interpret(context) {
+                for (const stmt of this.statements) {
+                    await stmt.interpret(context);
+                }
+            }
+            
+            toTree(indent = 0) {
+                let result = "  ".repeat(indent) + `<span class="tree-node-label">BLOCK</span>\n`;
+                for (const stmt of this.statements) {
+                    result += stmt.toTree(indent + 1) + "\n";
+                }
+                return result.trimEnd();
+            }
+        }
+
+        class Condition {
+            constructor(position, target) {
+                this.position = position;
+                this.target = target;
+            }
+            
+            evaluate(context) {
+                return context.checkCondition(this.position, this.target);
+            }
+            
+            toTree() {
+                return `<span class="tree-node-value">${this.position} IS-A ${this.target}</span>`;
+            }
+        }
+
+        // ============================================
+        // PARSER - Recursive Descent
+        // ============================================
+        class Parser {
+            constructor(tokens) {
+                this.tokens = tokens;
+                this.pos = 0;
+            }
+
+            current() {
+                return this.tokens[this.pos];
+            }
+
+            peek(type) {
+                return this.current() && this.current().type === type;
+            }
+
+            consume(type) {
+                if (!this.peek(type)) {
+                    const curr = this.current();
+                    if (curr) {
+                        throw new Error(`Zeile ${curr.line}: Erwartet "${type}", aber "${curr.value}" gefunden`);
+                    } else {
+                        throw new Error(`Unerwartetes Ende: Erwartet "${type}"`);
+                    }
+                }
+                return this.tokens[this.pos++];
+            }
+
+            parseProgram() {
+                const statements = [];
+                while (this.pos < this.tokens.length) {
+                    statements.push(this.parseStatement());
+                }
+                return new BlockExpr(statements);
+            }
+
+            parseStatement() {
+                const token = this.current();
+                
+                if (!token) {
+                    throw new Error("Unerwartetes Ende des Programms");
+                }
+
+                switch (token.type) {
+                    case 'MOVE':    return this.parseMove();
+                    case 'COLLECT': return this.parseCollect();
+                    case 'REPEAT':  return this.parseRepeat();
+                    case 'UNTIL':   return this.parseUntil();
+                    case 'IF':      return this.parseIf();
+                    default:
+                        throw new Error(`Zeile ${token.line}: Unbekannter Befehl "${token.value}"`);
+                }
+            }
+
+            parseMove() {
+                this.consume('MOVE');
+                const dir = this.parseDirection();
+                return new MoveExpr(dir);
+            }
+
+            parseCollect() {
+                this.consume('COLLECT');
+                return new CollectExpr();
+            }
+
+            parseRepeat() {
+                this.consume('REPEAT');
+                const count = this.consume('NUMBER').value;
+                const body = this.parseBlock();
+                return new RepeatExpr(count, body);
+            }
+
+            parseUntil() {
+                this.consume('UNTIL');
+                const condition = this.parseCondition();
+                const body = this.parseBlock();
+                return new UntilExpr(condition, body);
+            }
+
+            parseIf() {
+                this.consume('IF');
+                const condition = this.parseCondition();
+                const body = this.parseBlock();
+                return new IfExpr(condition, body);
+            }
+
+            parseBlock() {
+                this.consume('LBRACE');
+                const statements = [];
+                while (!this.peek('RBRACE')) {
+                    if (!this.current()) {
+                        throw new Error("Fehlende schließende Klammer '}'");
+                    }
+                    statements.push(this.parseStatement());
+                }
+                this.consume('RBRACE');
+                return new BlockExpr(statements);
+            }
+
+            parseCondition() {
+                const position = this.parsePosition();
+                this.consume('IS-A');
+                let target;
+                if (this.peek('OBSTACLE')) {
+                    this.consume('OBSTACLE');
+                    target = 'OBSTACLE';
+                } else if (this.peek('LETTER')) {
+                    target = this.consume('LETTER').value;
+                } else {
+                    // Check for single letter keywords that might be parsed differently
+                    const curr = this.current();
+                    if (curr && /^[A-Z]$/.test(curr.value)) {
+                        target = this.tokens[this.pos++].value;
+                    } else {
+                        throw new Error(`Zeile ${curr?.line || '?'}: Erwartet Buchstabe oder OBSTACLE nach IS-A`);
+                    }
+                }
+                return new Condition(position, target);
+            }
+
+            parsePosition() {
+                const token = this.current();
+                if (token.type === 'HERE') {
+                    this.consume('HERE');
+                    return 'HERE';
+                }
+                return this.parseDirection();
+            }
+
+            parseDirection() {
+                const token = this.current();
+                if (['LEFT', 'RIGHT', 'UP', 'DOWN'].includes(token?.type)) {
+                    this.pos++;
+                    return token.type;
+                }
+                throw new Error(`Zeile ${token?.line || '?'}: Erwartet Richtung (LEFT, RIGHT, UP, DOWN), aber "${token?.value}" gefunden`);
+            }
+        }
+
+        // ============================================
+        // ROBOT CONTEXT
+        // ============================================
+        class RobotContext {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.gridWidth = 8;
+                this.gridHeight = 8;
+                this.robotX = 0;
+                this.robotY = 0;
+                this.collected = [];
+                this.grid = this.createGrid();
+                this.log = [];
+            }
+
+            createGrid() {
+                const grid = [];
+                for (let y = 0; y < this.gridHeight; y++) {
+                    const row = [];
+                    for (let x = 0; x < this.gridWidth; x++) {
+                        row.push({ type: 'empty', value: '' });
+                    }
+                    grid.push(row);
+                }
+
+                // Set obstacles (borders and some internal)
+                for (let x = 0; x < this.gridWidth; x++) {
+                    grid[0][x] = { type: 'obstacle', value: '▓' };
+                    grid[this.gridHeight - 1][x] = { type: 'obstacle', value: '▓' };
+                }
+                for (let y = 0; y < this.gridHeight; y++) {
+                    grid[y][0] = { type: 'obstacle', value: '▓' };
+                    grid[y][this.gridWidth - 1] = { type: 'obstacle', value: '▓' };
+                }
+
+                // Add some letters
+                grid[3][3] = { type: 'letter', value: 'A' };
+                grid[5][5] = { type: 'letter', value: 'B' };
+                grid[2][6] = { type: 'letter', value: 'C' };
+                grid[6][2] = { type: 'letter', value: 'D' };
+
+                // Robot starting position
+                this.robotX = 1;
+                this.robotY = 1;
+
+                return grid;
+            }
+
+            async move(direction) {
+                const deltas = {
+                    'LEFT': [-1, 0],
+                    'RIGHT': [1, 0],
+                    'UP': [0, -1],
+                    'DOWN': [0, 1]
+                };
+
+                const [dx, dy] = deltas[direction];
+                const newX = this.robotX + dx;
+                const newY = this.robotY + dy;
+
+                if (this.grid[newY][newX].type !== 'obstacle') {
+                    this.robotX = newX;
+                    this.robotY = newY;
+                    this.addLog(`MOVE ${direction}`, 'success');
+                } else {
+                    this.addLog(`MOVE ${direction} - Blockiert!`, 'error');
+                }
+
+                renderGrid();
+                await this.delay(500);
+            }
+
+            async collect() {
+                const cell = this.grid[this.robotY][this.robotX];
+                if (cell.type === 'letter') {
+                    this.collected.push(cell.value);
+                    this.grid[this.robotY][this.robotX] = { type: 'empty', value: '' };
+                    this.addLog(`COLLECT "${cell.value}"`, 'success');
+                    updateCollectedLetters();
+                } else {
+                    this.addLog('COLLECT - Kein Buchstabe hier!', 'error');
+                }
+                renderGrid();
+                await this.delay(500);
+            }
+
+            checkCondition(position, target) {
+                let checkX = this.robotX;
+                let checkY = this.robotY;
+
+                if (position !== 'HERE') {
+                    const deltas = {
+                        'LEFT': [-1, 0],
+                        'RIGHT': [1, 0],
+                        'UP': [0, -1],
+                        'DOWN': [0, 1]
+                    };
+                    const [dx, dy] = deltas[position];
+                    checkX += dx;
+                    checkY += dy;
+                }
+
+                const cell = this.grid[checkY]?.[checkX];
+                
+                if (target === 'OBSTACLE') {
+                    return cell?.type === 'obstacle';
+                } else {
+                    return cell?.type === 'letter' && cell.value === target;
+                }
+            }
+
+            addLog(message, type = 'command') {
+                this.log.push({ message, type });
+                updateLog();
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // ============================================
+        // UI FUNCTIONS
+        // ============================================
+        const robotContext = new RobotContext();
+        let currentAST = null;
+
+        function renderGrid() {
+            const gridEl = document.getElementById('robotGrid');
+            gridEl.innerHTML = '';
+
+            for (let y = 0; y < robotContext.gridHeight; y++) {
+                for (let x = 0; x < robotContext.gridWidth; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+
+                    if (x === robotContext.robotX && y === robotContext.robotY) {
+                        cell.classList.add('robot');
+                        cell.textContent = '🤖';
+                    } else {
+                        const gridCell = robotContext.grid[y][x];
+                        if (gridCell.type === 'obstacle') {
+                            cell.classList.add('obstacle');
+                            cell.textContent = gridCell.value;
+                        } else if (gridCell.type === 'letter') {
+                            cell.classList.add('letter');
+                            cell.textContent = gridCell.value;
+                        }
+                    }
+
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+
+        function updateCollectedLetters() {
+            const el = document.getElementById('collectedLetters');
+            el.textContent = robotContext.collected.length > 0 ? robotContext.collected.join(' ') : '-';
+        }
+
+        function updateLog() {
+            const el = document.getElementById('executionLog');
+            el.innerHTML = robotContext.log.map(entry => 
+                `<div class="log-entry log-${entry.type}">${entry.message}</div>`
+            ).join('');
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function moveRobot(direction) {
+            robotContext.move(direction);
+        }
+
+        function collectLetter() {
+            robotContext.collect();
+        }
+
+        function resetGrid() {
+            robotContext.reset();
+            renderGrid();
+            updateCollectedLetters();
+            updateLog();
+        }
+
+        async function runProgram() {
+            const code = document.getElementById('parserInput').value;
+            
+            try {
+                const lexer = new Lexer(code);
+                const tokens = lexer.tokenize();
+                const parser = new Parser(tokens);
+                const ast = parser.parseProgram();
+                
+                resetGrid();
+                robotContext.addLog('Programm gestartet...', 'command');
+                await ast.interpret(robotContext);
+                robotContext.addLog('Programm beendet!', 'success');
+            } catch (e) {
+                robotContext.addLog(`Fehler: ${e.message}`, 'error');
+            }
+        }
+
+        function parseCode() {
+            const code = document.getElementById('parserInput').value;
+            const output = document.getElementById('parserOutput');
+            
+            try {
+                const lexer = new Lexer(code);
+                const tokens = lexer.tokenize();
+                const parser = new Parser(tokens);
+                const ast = parser.parseProgram();
+                currentAST = ast;
+                
+                output.innerHTML = `
+                    <div class="parse-success">✓ Parsing erfolgreich!</div>
+                    <div style="margin-top: 1rem;">
+                        <strong>Parse Tree:</strong>
+                        <pre class="parse-tree">${ast.toTree()}</pre>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <strong>Tokens (${tokens.length}):</strong>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">
+                            ${tokens.map(t => `[${t.type}${t.type !== t.value ? ':' + t.value : ''}]`).join(' ')}
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                output.innerHTML = `<div class="parse-error">✗ Syntax-Fehler:<br><br>${e.message}</div>`;
+            }
+        }
+
+        function loadExample(num) {
+            const examples = {
+                1: `REPEAT 2 {
+    MOVE RIGHT
+}
+REPEAT 6 {
+    MOVE DOWN
+}
+REPEAT 2 {
+    MOVE LEFT
+}
+COLLECT
+REPEAT 4 {
+    MOVE RIGHT
+}
+MOVE DOWN
+COLLECT
+MOVE RIGHT
+REPEAT 4 {
+    MOVE UP
+}
+MOVE LEFT
+COLLECT`,
+                2: `REPEAT 4 {
+    UNTIL DOWN IS-A OBSTACLE {
+        MOVE DOWN
+        IF DOWN IS-A A {
+            MOVE DOWN
+            COLLECT
+        }
+    }
+    UNTIL RIGHT IS-A OBSTACLE {
+        MOVE RIGHT
+    }
+    UNTIL UP IS-A OBSTACLE {
+        MOVE UP
+        IF UP IS-A B {
+            MOVE UP
+            COLLECT
+        }
+    }
+    UNTIL RIGHT IS-A OBSTACLE {
+        MOVE RIGHT
+    }
+}`
+            };
+            document.getElementById('parserInput').value = examples[num];
+        }
+
+        function loadError(num) {
+            const errors = {
+                1: `REPEAT 3 {
+    MOVE RIGHT
+    MOVE DOWN
+COLLECT`,
+                2: `MOVE RIGHT
+JUMP UP
+COLLECT`,
+                3: `REPEAT {
+    MOVE DOWN
+}`
+            };
+            document.getElementById('parserInput').value = errors[num];
+            parseCode();
+        }
+
+        // Tab functionality
+        function showTab(event, tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Step highlighting
+        function highlightStep(element) {
+            document.querySelectorAll('.step-item').forEach(s => s.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGrid();
+            updateCollectedLetters();
+        });
+    </script>
+</body>
+</html>

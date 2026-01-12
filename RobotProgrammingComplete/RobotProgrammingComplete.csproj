@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>RobotProgrammingComplete</RootNamespace>
+    <AssemblyName>RobotProgrammingComplete</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\wall.jpg" />
+    <Resource Include="Resources\robot.png" />
+    <Resource Include="Resources\stone.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Data\*.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\*.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

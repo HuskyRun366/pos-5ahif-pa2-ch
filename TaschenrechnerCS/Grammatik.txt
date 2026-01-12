@@ -1,0 +1,20 @@
+﻿Expression → Term (('+' | '-') Term)* 
+Term → Factor (('*' | '/') Factor)* 
+Power → Power ('^' Power)* 
+Factor → Number | Variable | '(' Expression ')'
+Variable -> [a-z] = Number
+
+Roboter:
+<Action> ::= <Move> | <Collect> | <Until> | <Repeat> | <If>
+<ActionList> ::= <Action> <ActionList> | Ende
+<Block> ::= "{" <ActionList> "}"
+<Repeat> ::= REPEAT <Number> <Block>
+<Until> ::= UNTIL <Direction> <LogicWord> OBSTACLE <Block> | UNTIL <Direction> <LogicWord> <Letter> <Block>
+<If> ::= IF <Direction> <LogicWord> OBSTACLE <Block> | IF <Direction> <LogicWord> <Letter> <Block>
+<LogicWord> ::= IS-A | IS-NOT-A
+<Collect> ::= COLLECT
+<Move> ::= MOVE <Direction>
+<Direction> ::= LEFT | RIGHT | UP | DOWN
+<Letter> ::= A | B | C | D
+<Digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<Number> ::= <Digit> <Number> | <Digit>
