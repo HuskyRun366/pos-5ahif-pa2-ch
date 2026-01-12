@@ -7,1396 +7,503 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
-            --secondary: #10b981;
-            --accent: #f59e0b;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --bg-card-light: #334155;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border: #475569;
-            --success: #22c55e;
-            --warning: #eab308;
-            --error: #ef4444;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text);
-            line-height: 1.7;
-            min-height: 100vh;
-        }
-
-        /* Background Pattern */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        /* Header */
-        header {
-            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-dark) 100%);
-            border-bottom: 1px solid var(--border);
-            padding: 2rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                rgba(99, 102, 241, 0.03) 10px,
-                rgba(99, 102, 241, 0.03) 20px
-            );
-            animation: headerPattern 20s linear infinite;
-        }
-
-        @keyframes headerPattern {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(28px, 28px); }
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Navigation Tabs */
-        .tab-navigation {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 1.5rem 2rem;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            padding: 0.75rem 1.5rem;
-            border: 2px solid var(--border);
-            background: transparent;
-            color: var(--text-muted);
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            font-weight: 500;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .tab-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary-light);
-            transform: translateY(-2px);
-        }
-
-        .tab-btn.active {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-color: var(--primary);
-            color: white;
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-        }
-
-        .tab-btn .icon {
-            font-size: 1.2rem;
-        }
-
-        /* Main Content */
-        main {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Cards */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
-        }
-
-        .card h2 {
-            color: var(--primary-light);
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .card h3 {
-            color: var(--secondary);
-            font-size: 1.2rem;
-            margin: 1.5rem 0 0.75rem;
-        }
-
-        .card h4 {
-            color: var(--accent);
-            font-size: 1rem;
-            margin: 1rem 0 0.5rem;
-        }
-
-        .card p {
-            color: var(--text);
-            margin-bottom: 1rem;
-        }
-
-        /* Info Boxes */
-        .info-box {
-            background: rgba(99, 102, 241, 0.1);
-            border-left: 4px solid var(--primary);
-            padding: 1rem 1.25rem;
-            border-radius: 0 8px 8px 0;
-            margin: 1rem 0;
-        }
-
-        .info-box.success {
-            background: rgba(34, 197, 94, 0.1);
-            border-left-color: var(--success);
-        }
-
-        .info-box.warning {
-            background: rgba(234, 179, 8, 0.1);
-            border-left-color: var(--warning);
-        }
-
-        .info-box strong {
-            color: var(--primary-light);
-        }
-
-        .info-box.success strong {
-            color: var(--success);
-        }
-
-        .info-box.warning strong {
-            color: var(--warning);
-        }
-
-        /* Code Blocks */
-        .code-container {
-            position: relative;
-            margin: 1rem 0;
-        }
-
-        .code-header {
-            background: var(--bg-card-light);
-            padding: 0.5rem 1rem;
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid var(--border);
-            border-bottom: none;
-        }
-
-        .code-lang {
-            color: var(--secondary);
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .copy-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.35rem 0.75rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-family: 'Outfit', sans-serif;
-            transition: all 0.2s ease;
-        }
-
-        .copy-btn:hover {
-            background: var(--primary-light);
-            transform: scale(1.05);
-        }
-
-        .copy-btn.copied {
-            background: var(--success);
-        }
-
-        pre {
-            background: #0d1117;
-            padding: 1.25rem;
-            border-radius: 0 0 8px 8px;
-            overflow-x: auto;
-            border: 1px solid var(--border);
-            border-top: none;
-        }
-
-        code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        /* Syntax Highlighting */
-        .keyword { color: #ff79c6; }
-        .string { color: #f1fa8c; }
-        .type { color: #8be9fd; }
-        .comment { color: #6272a4; font-style: italic; }
-        .property { color: #50fa7b; }
-        .attribute { color: #ffb86c; }
-        .value { color: #bd93f9; }
-        .tag { color: #ff79c6; }
-        .bracket { color: #f8f8f2; }
-
-        /* Interactive Demos */
-        .demo-container {
-            background: var(--bg-card-light);
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-        }
-
-        .demo-title {
-            color: var(--accent);
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Binding Demo */
-        .binding-demo {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            align-items: start;
-        }
-
-        @media (max-width: 768px) {
-            .binding-demo {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .binding-source, .binding-target {
-            background: var(--bg-dark);
-            padding: 1.25rem;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-
-        .binding-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .demo-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: var(--bg-card);
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 1rem;
-            font-family: 'Outfit', sans-serif;
-            transition: border-color 0.3s ease;
-        }
-
-        .demo-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .demo-output {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--secondary);
-            padding: 0.75rem 1rem;
-            background: rgba(16, 185, 129, 0.1);
-            border-radius: 8px;
-            min-height: 56px;
-            display: flex;
-            align-items: center;
-        }
-
-        .binding-arrow {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            font-size: 2rem;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
-        }
-
-        /* Custom Control Demo */
-        .custom-control-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .wpf-button {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .wpf-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .wpf-button:hover::before {
-            left: 100%;
-        }
-
-        .wpf-button.primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-        }
-
-        .wpf-button.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
-        }
-
-        .wpf-button.success {
-            background: linear-gradient(135deg, var(--success), #16a34a);
-            color: white;
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .wpf-button.warning {
-            background: linear-gradient(135deg, var(--accent), #d97706);
-            color: white;
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-        }
-
-        .wpf-button.danger {
-            background: linear-gradient(135deg, var(--error), #dc2626);
-            color: white;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-        }
-
-        .wpf-button.outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .wpf-button.outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Painter Canvas Demo */
-        .canvas-container {
-            background: white;
-            border-radius: 12px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-
-        .canvas-toolbar {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .color-picker {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .color-option {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: all 0.2s ease;
-        }
-
-        .color-option:hover {
-            transform: scale(1.1);
-        }
-
-        .color-option.active {
-            border-color: var(--bg-dark);
-            box-shadow: 0 0 0 3px var(--primary);
-        }
-
-        .brush-size {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--bg-card);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-        }
-
-        .brush-size input {
-            width: 100px;
-            accent-color: var(--primary);
-        }
-
-        .brush-size span {
-            color: var(--text);
-            font-size: 0.9rem;
-        }
-
-        #paintCanvas {
-            display: block;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            cursor: crosshair;
-            background: white;
-        }
-
-        .canvas-btn {
-            padding: 0.5rem 1rem;
-            background: var(--bg-card);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Outfit', sans-serif;
-            transition: all 0.2s ease;
-        }
-
-        .canvas-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-
-        /* Diagram */
-        .diagram {
-            background: var(--bg-dark);
-            border-radius: 12px;
-            padding: 2rem;
-            margin: 1.5rem 0;
-            overflow-x: auto;
-        }
-
-        .diagram-title {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .binding-diagram {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .diagram-box {
-            background: var(--bg-card);
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            padding: 1rem 1.5rem;
-            text-align: center;
-            min-width: 120px;
-        }
-
-        .diagram-box.source {
-            border-color: var(--secondary);
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-        }
-
-        .diagram-box.target {
-            border-color: var(--primary);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
-        }
-
-        .diagram-box .label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 0.25rem;
-        }
-
-        .diagram-box .value {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .diagram-arrow {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .diagram-arrow .arrow-line {
-            width: 60px;
-            height: 3px;
-            background: linear-gradient(90deg, var(--secondary), var(--primary));
-            position: relative;
-        }
-
-        .diagram-arrow .arrow-line::after {
-            content: '▶';
-            position: absolute;
-            right: -8px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary);
-            font-size: 0.75rem;
-        }
-
-        .diagram-arrow .arrow-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-        }
-
-        /* Control Structure Diagram */
-        .control-structure {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .structure-level {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .structure-box {
-            background: var(--bg-card);
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            padding: 0.75rem 1.25rem;
-            font-size: 0.9rem;
-            position: relative;
-        }
-
-        .structure-box.base {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        .structure-box.custom {
-            border-color: var(--secondary);
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        .structure-connector {
-            width: 2px;
-            height: 30px;
-            background: var(--border);
-        }
-
-        /* Accordion */
-        .accordion {
-            margin: 1rem 0;
-        }
-
-        .accordion-item {
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            overflow: hidden;
-        }
-
-        .accordion-header {
-            background: var(--bg-card-light);
-            padding: 1rem 1.25rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.3s ease;
-        }
-
-        .accordion-header:hover {
-            background: var(--bg-card);
-        }
-
-        .accordion-header h4 {
-            margin: 0;
-            color: var(--text);
-            font-weight: 500;
-        }
-
-        .accordion-icon {
-            color: var(--primary);
-            transition: transform 0.3s ease;
-            font-size: 1.25rem;
-        }
-
-        .accordion-item.open .accordion-icon {
-            transform: rotate(180deg);
-        }
-
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .accordion-item.open .accordion-content {
-            max-height: 2000px;
-        }
-
-        .accordion-body {
-            padding: 1.25rem;
-            background: var(--bg-dark);
-        }
-
-        /* Table */
-        .table-container {
-            overflow-x: auto;
-            margin: 1rem 0;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th {
-            background: var(--bg-card-light);
-            color: var(--primary-light);
-            font-weight: 600;
-        }
-
-        tr:hover td {
-            background: rgba(99, 102, 241, 0.05);
-        }
-
-        /* Quiz Section */
-        .quiz-container {
-            background: var(--bg-card-light);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-        }
-
-        .quiz-question {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            color: var(--text);
-        }
-
-        .quiz-options {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .quiz-option {
-            padding: 0.75rem 1rem;
-            background: var(--bg-dark);
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .quiz-option:hover {
-            border-color: var(--primary);
-        }
-
-        .quiz-option.selected {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        .quiz-option.correct {
-            border-color: var(--success);
-            background: rgba(34, 197, 94, 0.1);
-        }
-
-        .quiz-option.incorrect {
-            border-color: var(--error);
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .quiz-feedback {
-            margin-top: 1rem;
-            padding: 1rem;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .quiz-feedback.show {
-            display: block;
-        }
-
-        .quiz-feedback.correct {
-            background: rgba(34, 197, 94, 0.1);
-            color: var(--success);
-        }
-
-        .quiz-feedback.incorrect {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--error);
-        }
-
-        /* Progress Indicator */
-        .progress-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: var(--bg-card);
-            z-index: 1000;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            width: 0;
-            transition: width 0.3s ease;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border);
-            margin-top: 2rem;
-        }
-
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
-
-        .slide-up {
-            animation: slideUp 0.5s ease forwards;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 1.75rem;
-            }
-
-            .tab-btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.9rem;
-            }
-
-            main {
-                padding: 1rem;
-            }
-
-            .card {
-                padding: 1rem;
-            }
-
-            .binding-diagram {
-                flex-direction: column;
-            }
-
-            .diagram-arrow {
-                transform: rotate(90deg);
-            }
-        }
-
-        /* Tooltip */
-        .tooltip {
-            position: relative;
-            cursor: help;
-            border-bottom: 1px dashed var(--primary);
-        }
-
-        .tooltip::after {
-            content: attr(data-tip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg-card);
-            color: var(--text);
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            border: 1px solid var(--border);
-            z-index: 100;
-        }
-
-        .tooltip:hover::after {
-            opacity: 1;
-        }
-
-        /* List Styling */
-        ul, ol {
-            margin: 0.75rem 0;
-            padding-left: 1.5rem;
-        }
-
-        li {
-            margin-bottom: 0.5rem;
-        }
-
-        /* Inline Code */
-        code.inline {
-            background: var(--bg-card-light);
-            padding: 0.15rem 0.4rem;
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: var(--secondary);
-        }
+            --primary: #6366f1; --primary-light: #818cf8; --primary-dark: #4f46e5;
+            --secondary: #10b981; --accent: #f59e0b; --bg-dark: #0f172a;
+            --bg-card: #1e293b; --bg-card-light: #334155; --text: #f1f5f9;
+            --text-muted: #94a3b8; --border: #475569; --success: #22c55e;
+            --warning: #eab308; --error: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg-dark); color: var(--text); line-height: 1.7; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%); pointer-events: none; z-index: -1; }
+        header { background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-dark) 100%); border-bottom: 1px solid var(--border); padding: 2rem; text-align: center; }
+        header h1 { font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, var(--primary-light), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; }
+        header p { color: var(--text-muted); font-size: 1.1rem; }
+        .tab-navigation { display: flex; justify-content: center; gap: 0.5rem; padding: 1.5rem 2rem; background: var(--bg-card); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+        .tab-btn { padding: 0.75rem 1.5rem; border: 2px solid var(--border); background: transparent; color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 500; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 0.5rem; }
+        .tab-btn:hover { border-color: var(--primary); color: var(--primary-light); transform: translateY(-2px); }
+        .tab-btn.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-color: var(--primary); color: white; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
+        main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .tab-content { display: none; animation: fadeIn 0.5s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; transition: all 0.3s ease; }
+        .card:hover { border-color: var(--primary); box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15); }
+        .card h2 { color: var(--primary-light); font-size: 1.5rem; margin-bottom: 1rem; }
+        .card h3 { color: var(--secondary); font-size: 1.2rem; margin: 1.5rem 0 0.75rem; }
+        .card h4 { color: var(--accent); font-size: 1.05rem; margin: 1.25rem 0 0.5rem; }
+        .card p { color: var(--text); margin-bottom: 1rem; }
+        .info-box { background: rgba(99, 102, 241, 0.1); border-left: 4px solid var(--primary); padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+        .info-box.success { background: rgba(34, 197, 94, 0.1); border-left-color: var(--success); }
+        .info-box.warning { background: rgba(234, 179, 8, 0.1); border-left-color: var(--warning); }
+        .info-box.error { background: rgba(239, 68, 68, 0.1); border-left-color: var(--error); }
+        .info-box strong { color: var(--primary-light); }
+        .info-box.success strong { color: var(--success); }
+        .info-box.warning strong { color: var(--warning); }
+        .info-box.error strong { color: var(--error); }
+        .code-container { position: relative; margin: 1rem 0; }
+        .code-header { background: var(--bg-card-light); padding: 0.5rem 1rem; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); border-bottom: none; flex-wrap: wrap; gap: 0.5rem; }
+        .code-lang { color: var(--secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+        .code-filename { color: var(--accent); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; }
+        .copy-btn { background: var(--primary); color: white; border: none; padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-family: 'Outfit', sans-serif; transition: all 0.2s ease; }
+        .copy-btn:hover { background: var(--primary-light); }
+        .copy-btn.copied { background: var(--success); }
+        pre { background: #0d1117; padding: 1.25rem; border-radius: 0 0 8px 8px; overflow-x: auto; border: 1px solid var(--border); border-top: none; max-height: 500px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.6; }
+        .keyword { color: #ff79c6; } .string { color: #f1fa8c; } .type { color: #8be9fd; }
+        .comment { color: #6272a4; font-style: italic; } .property { color: #50fa7b; }
+        .attribute { color: #ffb86c; } .value { color: #bd93f9; } .tag { color: #ff79c6; }
+        .file-tree { background: var(--bg-dark); border-radius: 8px; padding: 1rem 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; margin: 1rem 0; }
+        .file-tree .folder { color: var(--accent); }
+        .file-tree .file { color: var(--text); margin-left: 1.5rem; }
+        .file-tree .file.important { color: var(--secondary); font-weight: 600; }
+        .table-container { overflow-x: auto; margin: 1rem 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--bg-card-light); color: var(--primary-light); font-weight: 600; }
+        tr:hover td { background: rgba(99, 102, 241, 0.05); }
+        ul, ol { margin: 0.75rem 0; padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        code.inline { background: var(--bg-card-light); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.9em; color: var(--secondary); }
+        .demo-container { background: var(--bg-card-light); border: 2px dashed var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+        .demo-title { color: var(--accent); font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+        .binding-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 768px) { .binding-demo { grid-template-columns: 1fr; } }
+        .binding-source, .binding-target { background: var(--bg-dark); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border); }
+        .binding-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; }
+        .demo-input { width: 100%; padding: 0.75rem 1rem; background: var(--bg-card); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-size: 1rem; font-family: 'Outfit', sans-serif; }
+        .demo-input:focus { outline: none; border-color: var(--primary); }
+        .demo-output { font-size: 1.5rem; font-weight: 600; color: var(--secondary); padding: 0.75rem 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; min-height: 56px; display: flex; align-items: center; }
+        .canvas-container { background: white; border-radius: 12px; padding: 1rem; margin: 1rem 0; }
+        .canvas-toolbar { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+        .color-picker { display: flex; gap: 0.5rem; }
+        .color-option { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s ease; }
+        .color-option:hover { transform: scale(1.1); }
+        .color-option.active { border-color: var(--bg-dark); box-shadow: 0 0 0 3px var(--primary); }
+        .brush-size { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card); padding: 0.5rem 1rem; border-radius: 8px; }
+        .brush-size input { width: 100px; accent-color: var(--primary); }
+        .brush-size span { color: var(--text); font-size: 0.9rem; }
+        #paintCanvas { display: block; border: 2px solid var(--border); border-radius: 8px; cursor: crosshair; background: white; max-width: 100%; }
+        .canvas-btn { padding: 0.5rem 1rem; background: var(--bg-card); color: var(--text); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-family: 'Outfit', sans-serif; }
+        .canvas-btn:hover { background: var(--primary); border-color: var(--primary); }
+        .quiz-container { background: var(--bg-card-light); border-radius: 12px; padding: 1.5rem; margin: 1rem 0; }
+        .quiz-question { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text); }
+        .quiz-options { display: flex; flex-direction: column; gap: 0.75rem; }
+        .quiz-option { padding: 0.75rem 1rem; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+        .quiz-option:hover { border-color: var(--primary); }
+        .quiz-option.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+        .quiz-option.correct { border-color: var(--success); background: rgba(34, 197, 94, 0.1); }
+        .quiz-option.incorrect { border-color: var(--error); background: rgba(239, 68, 68, 0.1); }
+        .quiz-feedback { margin-top: 1rem; padding: 1rem; border-radius: 8px; display: none; }
+        .quiz-feedback.show { display: block; }
+        .quiz-feedback.correct { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+        .quiz-feedback.incorrect { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+        .wpf-button { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; }
+        .wpf-button.primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .wpf-button.primary:hover { transform: translateY(-2px); }
+        .wpf-button.outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .wpf-button.outline:hover { background: var(--primary); color: white; }
+        .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: var(--bg-card); z-index: 1000; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0; transition: width 0.3s ease; }
+        footer { text-align: center; padding: 2rem; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 2rem; }
+        @media (max-width: 768px) { header h1 { font-size: 1.75rem; } .tab-btn { padding: 0.5rem 1rem; font-size: 0.9rem; } main { padding: 1rem; } .card { padding: 1rem; } }
     </style>
 </head>
 <body>
-    <div class="progress-container">
-        <div class="progress-bar" id="progressBar"></div>
-    </div>
-
+    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
     <header>
         <h1>📦 WPF Lernunterlage</h1>
-        <p>Custom Controls, Bindings & Painter – Interaktiv erklärt</p>
+        <p>Custom Controls, Bindings & Painter – Detailliert erklärt</p>
     </header>
-
     <nav class="tab-navigation">
-        <button class="tab-btn active" data-tab="intro">
-            <span class="icon">🏠</span> Einführung
-        </button>
-        <button class="tab-btn" data-tab="controls">
-            <span class="icon">🎨</span> Custom Controls
-        </button>
-        <button class="tab-btn" data-tab="bindings">
-            <span class="icon">🔗</span> Bindings
-        </button>
-        <button class="tab-btn" data-tab="painter">
-            <span class="icon">🖌️</span> Painter
-        </button>
-        <button class="tab-btn" data-tab="quiz">
-            <span class="icon">✅</span> Quiz
-        </button>
+        <button class="tab-btn active" data-tab="controls"><span class="icon">🎨</span> Custom Controls</button>
+        <button class="tab-btn" data-tab="bindings"><span class="icon">🔗</span> Bindings</button>
+        <button class="tab-btn" data-tab="painter"><span class="icon">🖌️</span> Painter</button>
+        <button class="tab-btn" data-tab="quiz"><span class="icon">✅</span> Quiz</button>
     </nav>
-
     <main>
-        <!-- Einführung Tab -->
-        <section id="intro" class="tab-content active">
-            <div class="card slide-up">
-                <h2>👋 Willkommen zur WPF Lernunterlage!</h2>
-                <p>Diese interaktive Lernunterlage hilft dir, drei wichtige Konzepte der Windows Presentation Foundation (WPF) zu verstehen:</p>
-                
-                <div class="info-box">
-                    <strong>Was ist WPF?</strong><br>
-                    WPF (Windows Presentation Foundation) ist ein Framework von Microsoft zur Erstellung von Desktop-Anwendungen mit grafischen Benutzeroberflächen. Es verwendet XAML für die Oberflächengestaltung und C# für die Logik.
-                </div>
-
-                <h3>📚 Was du lernen wirst:</h3>
-                
-                <div class="accordion">
-                    <div class="accordion-item">
-                        <div class="accordion-header">
-                            <h4>🎨 Custom Controls</h4>
-                            <span class="accordion-icon">▼</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="accordion-body">
-                                <p>Lerne, wie du eigene wiederverwendbare UI-Komponenten erstellst. Custom Controls erweitern bestehende Steuerelemente oder erstellen völlig neue.</p>
-                                <ul>
-                                    <li>UserControls vs. Custom Controls</li>
-                                    <li>Dependency Properties</li>
-                                    <li>Control Templates</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <div class="accordion-header">
-                            <h4>🔗 Data Bindings</h4>
-                            <span class="accordion-icon">▼</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="accordion-body">
-                                <p>Verstehe, wie Daten automatisch zwischen UI und Datenquelle synchronisiert werden – das Herzstück moderner WPF-Anwendungen.</p>
-                                <ul>
-                                    <li>OneWay, TwoWay, OneWayToSource</li>
-                                    <li>INotifyPropertyChanged</li>
-                                    <li>Converter und MultiBinding</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <div class="accordion-header">
-                            <h4>🖌️ WPF Painter (Grafik & Zeichnen)</h4>
-                            <span class="accordion-icon">▼</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="accordion-body">
-                                <p>Entdecke die Grafikfähigkeiten von WPF – vom einfachen Zeichnen bis zu komplexen visuellen Effekten.</p>
-                                <ul>
-                                    <li>Shapes (Rectangle, Ellipse, Path)</li>
-                                    <li>DrawingContext und Geometrien</li>
-                                    <li>Brushes und Effekte</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <h3>🛠️ Voraussetzungen</h3>
-                <p>Für diese Lernunterlage brauchst du nur grundlegendes Wissen über:</p>
-                <ul>
-                    <li>C# Grundlagen (Klassen, Properties, Events)</li>
-                    <li>Grundverständnis von XML/XAML-Syntax</li>
-                    <li>Visual Studio (Community Edition reicht aus)</li>
-                </ul>
-
-                <div class="info-box success">
-                    <strong>💡 Tipp:</strong> Klicke dich durch die Tabs oben, um die einzelnen Themen zu erkunden. Jeder Abschnitt enthält interaktive Beispiele!
-                </div>
-            </div>
-        </section>
-
-        <!-- Custom Controls Tab -->
-        <section id="controls" class="tab-content">
+        <!-- CUSTOM CONTROLS TAB -->
+        <section id="controls" class="tab-content active">
             <div class="card">
-                <h2>🎨 Custom Controls in WPF</h2>
-                <p>Custom Controls sind wiederverwendbare UI-Komponenten, die du selbst erstellst. Sie sind der Schlüssel zu sauberen, wartbaren WPF-Anwendungen.</p>
-
-                <h3>UserControl vs. Custom Control</h3>
-                
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Eigenschaft</th>
-                                <th>UserControl</th>
-                                <th>Custom Control</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Komplexität</td>
-                                <td>Einfacher zu erstellen</td>
-                                <td>Komplexer, mehr Kontrolle</td>
-                            </tr>
-                            <tr>
-                                <td>Template</td>
-                                <td>Fest im XAML definiert</td>
-                                <td>Austauschbar via ControlTemplate</td>
-                            </tr>
-                            <tr>
-                                <td>Wiederverwendung</td>
-                                <td>Innerhalb eines Projekts</td>
-                                <td>Über Projekte hinweg (DLL)</td>
-                            </tr>
-                            <tr>
-                                <td>Anpassbarkeit</td>
-                                <td>Begrenzt</td>
-                                <td>Vollständig thembar</td>
-                            </tr>
-                            <tr>
-                                <td>Anwendungsfall</td>
-                                <td>Composite Views</td>
-                                <td>Neue Steuerelemente</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
+                <h2>🎨 Custom Controls – Komplettanleitung</h2>
+                <p>Custom Controls sind vollständig thembare, wiederverwendbare Steuerelemente, die von der Klasse <code class="inline">Control</code> erben. Das Aussehen wird komplett über Templates in Generic.xaml definiert.</p>
                 <div class="info-box">
-                    <strong>Faustregel:</strong> Verwende UserControls für zusammengesetzte Ansichten (z.B. ein Login-Formular) und Custom Controls für neue, thembare Steuerelemente (z.B. ein Rating-Control).
+                    <strong>Kernprinzip:</strong> Bei Custom Controls ist die <strong>Logik</strong> (C#) komplett von der <strong>Darstellung</strong> (XAML) getrennt. Das Control funktioniert auch ohne Template – es sieht nur nichts aus.
                 </div>
             </div>
 
             <div class="card">
-                <h3>🔧 UserControl erstellen – Schritt für Schritt</h3>
-                <p>Ein UserControl ist der einfachste Weg, wiederverwendbare Komponenten zu erstellen:</p>
-
-                <h4>1. XAML-Datei (ColoredButton.xaml)</h4>
+                <h3>1. Projektstruktur & Generic.xaml</h3>
+                <div class="file-tree">
+                    <div class="folder">📁 MeinControlLibrary/</div>
+                    <div class="file important">├── 📄 AssemblyInfo.cs (wichtig!)</div>
+                    <div class="folder">├── 📁 Themes/</div>
+                    <div class="file important" style="margin-left: 2.5rem;">└── 📄 Generic.xaml</div>
+                    <div class="folder">├── 📁 Controls/</div>
+                    <div class="file" style="margin-left: 2.5rem;">└── 📄 RatingControl.cs</div>
+                </div>
+                <div class="info-box warning">
+                    <strong>⚠️ Wichtig:</strong> Der Ordner muss exakt <code class="inline">Themes</code> heißen und die Datei exakt <code class="inline">Generic.xaml</code>!
+                </div>
+                <h4>AssemblyInfo.cs</h4>
                 <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">XAML</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="tag">&lt;UserControl</span> <span class="attribute">x:Class</span>=<span class="string">"MyApp.Controls.ColoredButton"</span>
-             <span class="attribute">xmlns</span>=<span class="string">"http://schemas.microsoft.com/winfx/2006/xaml/presentation"</span>
-             <span class="attribute">xmlns:x</span>=<span class="string">"http://schemas.microsoft.com/winfx/2006/xaml"</span><span class="tag">&gt;</span>
-    
-    <span class="tag">&lt;Border</span> <span class="attribute">x:Name</span>=<span class="string">"ButtonBorder"</span>
-            <span class="attribute">Background</span>=<span class="string">"{Binding ButtonColor, RelativeSource={RelativeSource AncestorType=UserControl}}"</span>
-            <span class="attribute">CornerRadius</span>=<span class="string">"8"</span>
-            <span class="attribute">Padding</span>=<span class="string">"16,10"</span>
-            <span class="attribute">Cursor</span>=<span class="string">"Hand"</span>
-            <span class="attribute">MouseLeftButtonUp</span>=<span class="string">"OnClick"</span><span class="tag">&gt;</span>
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">AssemblyInfo.cs</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="keyword">using</span> System.Windows;
+
+[<span class="keyword">assembly</span>: <span class="type">ThemeInfo</span>(
+    <span class="type">ResourceDictionaryLocation</span>.None,
+    <span class="type">ResourceDictionaryLocation</span>.SourceAssembly
+)]</code></pre>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>2. DefaultStyleKey – Das Herzstück</h3>
+                <p>Der statische Konstruktor verbindet das Control mit seinem Style in Generic.xaml:</p>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">Basis-Control</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="keyword">public class</span> <span class="type">MeinControl</span> : <span class="type">Control</span>
+{
+    <span class="comment">// Statischer Konstruktor – verbindet mit Generic.xaml</span>
+    <span class="keyword">static</span> MeinControl()
+    {
+        DefaultStyleKeyProperty.OverrideMetadata(
+            <span class="keyword">typeof</span>(<span class="type">MeinControl</span>),
+            <span class="keyword">new</span> <span class="type">FrameworkPropertyMetadata</span>(<span class="keyword">typeof</span>(<span class="type">MeinControl</span>))
+        );
+    }
+}</code></pre>
+                </div>
+                <div class="info-box error">
+                    <strong>❌ Häufiger Fehler:</strong> Ohne den statischen Konstruktor findet WPF den Style nicht und das Control bleibt unsichtbar!
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>3. Dependency Properties</h3>
+                <p>Dependency Properties ermöglichen Data Binding, Animationen, Styling und Vererbung.</p>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">Dependency Property Template</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="comment">// 1. Statisches Feld registrieren</span>
+<span class="keyword">public static readonly</span> <span class="type">DependencyProperty</span> ValueProperty =
+    <span class="type">DependencyProperty</span>.Register(
+        <span class="keyword">nameof</span>(Value),                    <span class="comment">// Name</span>
+        <span class="keyword">typeof</span>(<span class="type">int</span>),                       <span class="comment">// Datentyp</span>
+        <span class="keyword">typeof</span>(<span class="type">MeinControl</span>),               <span class="comment">// Besitzer</span>
+        <span class="keyword">new</span> <span class="type">FrameworkPropertyMetadata</span>(
+            <span class="value">0</span>,                                <span class="comment">// Standardwert</span>
+            <span class="type">FrameworkPropertyMetadataOptions</span>.BindsTwoWayByDefault,
+            OnValueChanged,                   <span class="comment">// Callback</span>
+            CoerceValue                       <span class="comment">// Wert begrenzen</span>
+        )
+    );
+
+<span class="comment">// 2. CLR-Wrapper</span>
+<span class="keyword">public int</span> Value
+{
+    <span class="keyword">get</span> => (<span class="type">int</span>)GetValue(ValueProperty);
+    <span class="keyword">set</span> => SetValue(ValueProperty, <span class="keyword">value</span>);
+}
+
+<span class="comment">// 3. Callback bei Änderung</span>
+<span class="keyword">private static void</span> OnValueChanged(<span class="type">DependencyObject</span> d, <span class="type">DependencyPropertyChangedEventArgs</span> e)
+{
+    <span class="keyword">var</span> control = (<span class="type">MeinControl</span>)d;
+    <span class="comment">// Reagiere auf Änderung...</span>
+}
+
+<span class="comment">// 4. Wert begrenzen (optional)</span>
+<span class="keyword">private static object</span> CoerceValue(<span class="type">DependencyObject</span> d, <span class="keyword">object</span> baseValue)
+{
+    <span class="keyword">return</span> <span class="type">Math</span>.Clamp((<span class="type">int</span>)baseValue, <span class="value">0</span>, <span class="value">100</span>);
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>4. Template Parts (PART_)</h3>
+                <p>Template Parts sind benannte Elemente im Template, auf die das Control im Code zugreift:</p>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">Template Parts</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="comment">// Attribut dokumentiert erwartete Parts</span>
+[<span class="type">TemplatePart</span>(Name = PART_StarPanel, Type = <span class="keyword">typeof</span>(<span class="type">StackPanel</span>))]
+<span class="keyword">public class</span> <span class="type">RatingControl</span> : <span class="type">Control</span>
+{
+    <span class="keyword">private const string</span> PART_StarPanel = <span class="string">"PART_StarPanel"</span>;
+    <span class="keyword">private</span> <span class="type">StackPanel</span>? _starPanel;
+
+    <span class="keyword">public override void</span> OnApplyTemplate()
+    {
+        <span class="keyword">base</span>.OnApplyTemplate();
         
-        <span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"{Binding ButtonText, RelativeSource={RelativeSource AncestorType=UserControl}}"</span>
-                   <span class="attribute">Foreground</span>=<span class="string">"White"</span>
-                   <span class="attribute">FontWeight</span>=<span class="string">"SemiBold"</span>
-                   <span class="attribute">HorizontalAlignment</span>=<span class="string">"Center"</span><span class="tag">/&gt;</span>
-    <span class="tag">&lt;/Border&gt;</span>
-    
-<span class="tag">&lt;/UserControl&gt;</span></code></pre>
+        <span class="comment">// Part aus Template holen</span>
+        _starPanel = GetTemplateChild(PART_StarPanel) <span class="keyword">as</span> <span class="type">StackPanel</span>;
+        
+        <span class="comment">// Control initialisieren...</span>
+    }
+}</code></pre>
+                </div>
+                <div class="info-box">
+                    <strong>💡 PART_-Konvention:</strong> Signalisiert Template-Designern, dass das Control diese Elemente erwartet.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>5. Visual States & VisualStateManager</h3>
+                <p>Visual States definieren das Aussehen in verschiedenen Zuständen:</p>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">Visual States</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code>[<span class="type">TemplateVisualState</span>(Name = STATE_Normal, GroupName = GROUP_CommonStates)]
+[<span class="type">TemplateVisualState</span>(Name = STATE_MouseOver, GroupName = GROUP_CommonStates)]
+[<span class="type">TemplateVisualState</span>(Name = STATE_Pressed, GroupName = GROUP_CommonStates)]
+<span class="keyword">public class</span> <span class="type">MeinButton</span> : <span class="type">Control</span>
+{
+    <span class="keyword">private const string</span> GROUP_CommonStates = <span class="string">"CommonStates"</span>;
+    <span class="keyword">private const string</span> STATE_Normal = <span class="string">"Normal"</span>;
+    <span class="keyword">private const string</span> STATE_MouseOver = <span class="string">"MouseOver"</span>;
+    <span class="keyword">private const string</span> STATE_Pressed = <span class="string">"Pressed"</span>;
+
+    <span class="keyword">protected override void</span> OnMouseEnter(<span class="type">MouseEventArgs</span> e)
+    {
+        <span class="keyword">base</span>.OnMouseEnter(e);
+        <span class="type">VisualStateManager</span>.GoToState(<span class="keyword">this</span>, STATE_MouseOver, <span class="keyword">true</span>);
+    }
+
+    <span class="keyword">protected override void</span> OnMouseLeave(<span class="type">MouseEventArgs</span> e)
+    {
+        <span class="keyword">base</span>.OnMouseLeave(e);
+        <span class="type">VisualStateManager</span>.GoToState(<span class="keyword">this</span>, STATE_Normal, <span class="keyword">true</span>);
+    }
+}</code></pre>
                 </div>
 
-                <h4>2. Code-Behind (ColoredButton.xaml.cs)</h4>
+                <h4>Im Template:</h4>
                 <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">C#</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">VisualStates im Template</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="tag">&lt;ControlTemplate</span> <span class="attribute">TargetType</span>=<span class="string">"{x:Type local:MeinButton}"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;Border</span> <span class="attribute">x:Name</span>=<span class="string">"RootBorder"</span> <span class="attribute">Background</span>=<span class="string">"{TemplateBinding Background}"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;VisualStateManager.VisualStateGroups&gt;</span>
+            <span class="tag">&lt;VisualStateGroup</span> <span class="attribute">x:Name</span>=<span class="string">"CommonStates"</span><span class="tag">&gt;</span>
+                <span class="tag">&lt;VisualStateGroup.Transitions&gt;</span>
+                    <span class="tag">&lt;VisualTransition</span> <span class="attribute">GeneratedDuration</span>=<span class="string">"0:0:0.2"</span><span class="tag">/&gt;</span>
+                <span class="tag">&lt;/VisualStateGroup.Transitions&gt;</span>
+                
+                <span class="tag">&lt;VisualState</span> <span class="attribute">x:Name</span>=<span class="string">"Normal"</span><span class="tag">/&gt;</span>
+                <span class="tag">&lt;VisualState</span> <span class="attribute">x:Name</span>=<span class="string">"MouseOver"</span><span class="tag">&gt;</span>
+                    <span class="tag">&lt;Storyboard&gt;</span>
+                        <span class="tag">&lt;ColorAnimation</span> <span class="attribute">Storyboard.TargetName</span>=<span class="string">"RootBorder"</span>
+                            <span class="attribute">Storyboard.TargetProperty</span>=<span class="string">"(Border.Background).(SolidColorBrush.Color)"</span>
+                            <span class="attribute">To</span>=<span class="string">"#818CF8"</span> <span class="attribute">Duration</span>=<span class="string">"0"</span><span class="tag">/&gt;</span>
+                    <span class="tag">&lt;/Storyboard&gt;</span>
+                <span class="tag">&lt;/VisualState&gt;</span>
+            <span class="tag">&lt;/VisualStateGroup&gt;</span>
+        <span class="tag">&lt;/VisualStateManager.VisualStateGroups&gt;</span>
+        <span class="tag">&lt;ContentPresenter/&gt;</span>
+    <span class="tag">&lt;/Border&gt;</span>
+<span class="tag">&lt;/ControlTemplate&gt;</span></code></pre>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>6. Routed Events</h3>
+                <p>Routed Events können durch den Element-Baum "bublen":</p>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">Routed Event</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="comment">// 1. Event registrieren</span>
+<span class="keyword">public static readonly</span> <span class="type">RoutedEvent</span> ValueChangedEvent =
+    <span class="type">EventManager</span>.RegisterRoutedEvent(
+        <span class="keyword">nameof</span>(ValueChanged),
+        <span class="type">RoutingStrategy</span>.Bubble,
+        <span class="keyword">typeof</span>(<span class="type">RoutedPropertyChangedEventHandler</span>&lt;<span class="type">int</span>&gt;),
+        <span class="keyword">typeof</span>(<span class="type">RatingControl</span>)
+    );
+
+<span class="comment">// 2. CLR Event-Wrapper</span>
+<span class="keyword">public event</span> <span class="type">RoutedPropertyChangedEventHandler</span>&lt;<span class="type">int</span>&gt; ValueChanged
+{
+    <span class="keyword">add</span> => AddHandler(ValueChangedEvent, <span class="keyword">value</span>);
+    <span class="keyword">remove</span> => RemoveHandler(ValueChangedEvent, <span class="keyword">value</span>);
+}
+
+<span class="comment">// 3. Event auslösen</span>
+<span class="keyword">protected virtual void</span> OnValueChanged(<span class="type">int</span> oldValue, <span class="type">int</span> newValue)
+{
+    RaiseEvent(<span class="keyword">new</span> <span class="type">RoutedPropertyChangedEventArgs</span>&lt;<span class="type">int</span>&gt;(
+        oldValue, newValue, ValueChangedEvent));
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>7. Komplettes Beispiel: RatingControl</h3>
+                <h4>C# - RatingControl.cs</h4>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">Controls/RatingControl.cs</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
                     <pre><code><span class="keyword">using</span> System.Windows;
 <span class="keyword">using</span> System.Windows.Controls;
+<span class="keyword">using</span> System.Windows.Input;
 <span class="keyword">using</span> System.Windows.Media;
 
-<span class="keyword">namespace</span> <span class="type">MyApp.Controls</span>
+<span class="keyword">namespace</span> <span class="type">MeinControlLibrary.Controls</span>
 {
-    <span class="keyword">public partial class</span> <span class="type">ColoredButton</span> : <span class="type">UserControl</span>
+    [<span class="type">TemplatePart</span>(Name = PART_StarPanel, Type = <span class="keyword">typeof</span>(<span class="type">StackPanel</span>))]
+    <span class="keyword">public class</span> <span class="type">RatingControl</span> : <span class="type">Control</span>
     {
-        <span class="comment">// Dependency Property für die Button-Farbe</span>
-        <span class="keyword">public static readonly</span> <span class="type">DependencyProperty</span> ButtonColorProperty =
-            <span class="type">DependencyProperty</span>.Register(
-                <span class="string">"ButtonColor"</span>,
-                <span class="keyword">typeof</span>(<span class="type">Brush</span>),
-                <span class="keyword">typeof</span>(<span class="type">ColoredButton</span>),
-                <span class="keyword">new</span> <span class="type">PropertyMetadata</span>(<span class="type">Brushes</span>.Blue)
-            );
+        <span class="keyword">private const string</span> PART_StarPanel = <span class="string">"PART_StarPanel"</span>;
+        <span class="keyword">private</span> <span class="type">StackPanel</span>? _starPanel;
 
-        <span class="comment">// Dependency Property für den Button-Text</span>
-        <span class="keyword">public static readonly</span> <span class="type">DependencyProperty</span> ButtonTextProperty =
-            <span class="type">DependencyProperty</span>.Register(
-                <span class="string">"ButtonText"</span>,
-                <span class="keyword">typeof</span>(<span class="type">string</span>),
-                <span class="keyword">typeof</span>(<span class="type">ColoredButton</span>),
-                <span class="keyword">new</span> <span class="type">PropertyMetadata</span>(<span class="string">"Button"</span>)
-            );
+        <span class="comment">// Value Property (1-5)</span>
+        <span class="keyword">public static readonly</span> <span class="type">DependencyProperty</span> ValueProperty =
+            <span class="type">DependencyProperty</span>.Register(<span class="keyword">nameof</span>(Value), <span class="keyword">typeof</span>(<span class="type">int</span>), <span class="keyword">typeof</span>(<span class="type">RatingControl</span>),
+                <span class="keyword">new</span> <span class="type">FrameworkPropertyMetadata</span>(<span class="value">0</span>, <span class="type">FrameworkPropertyMetadataOptions</span>.BindsTwoWayByDefault,
+                    OnValueChanged, (d, v) => <span class="type">Math</span>.Clamp((<span class="type">int</span>)v, <span class="value">0</span>, ((<span class="type">RatingControl</span>)d).Maximum)));
 
-        <span class="comment">// Event für Klicks</span>
-        <span class="keyword">public event</span> <span class="type">RoutedEventHandler</span> Click;
+        <span class="keyword">public int</span> Value { <span class="keyword">get</span> => (<span class="type">int</span>)GetValue(ValueProperty); <span class="keyword">set</span> => SetValue(ValueProperty, <span class="keyword">value</span>); }
 
-        <span class="comment">// Wrapper-Properties für einfachen Zugriff</span>
-        <span class="keyword">public</span> <span class="type">Brush</span> ButtonColor
+        <span class="comment">// Maximum Property</span>
+        <span class="keyword">public static readonly</span> <span class="type">DependencyProperty</span> MaximumProperty =
+            <span class="type">DependencyProperty</span>.Register(<span class="keyword">nameof</span>(Maximum), <span class="keyword">typeof</span>(<span class="type">int</span>), <span class="keyword">typeof</span>(<span class="type">RatingControl</span>),
+                <span class="keyword">new</span> <span class="type">PropertyMetadata</span>(<span class="value">5</span>, (d, e) => ((<span class="type">RatingControl</span>)d).CreateStars()));
+
+        <span class="keyword">public int</span> Maximum { <span class="keyword">get</span> => (<span class="type">int</span>)GetValue(MaximumProperty); <span class="keyword">set</span> => SetValue(MaximumProperty, <span class="keyword">value</span>); }
+
+        <span class="comment">// StarSize Property</span>
+        <span class="keyword">public static readonly</span> <span class="type">DependencyProperty</span> StarSizeProperty =
+            <span class="type">DependencyProperty</span>.Register(<span class="keyword">nameof</span>(StarSize), <span class="keyword">typeof</span>(<span class="type">double</span>), <span class="keyword">typeof</span>(<span class="type">RatingControl</span>),
+                <span class="keyword">new</span> <span class="type">PropertyMetadata</span>(<span class="value">24.0</span>));
+
+        <span class="keyword">public double</span> StarSize { <span class="keyword">get</span> => (<span class="type">double</span>)GetValue(StarSizeProperty); <span class="keyword">set</span> => SetValue(StarSizeProperty, <span class="keyword">value</span>); }
+
+        <span class="comment">// ValueChanged Event</span>
+        <span class="keyword">public static readonly</span> <span class="type">RoutedEvent</span> ValueChangedEvent =
+            <span class="type">EventManager</span>.RegisterRoutedEvent(<span class="keyword">nameof</span>(ValueChanged), <span class="type">RoutingStrategy</span>.Bubble,
+                <span class="keyword">typeof</span>(<span class="type">RoutedPropertyChangedEventHandler</span>&lt;<span class="type">int</span>&gt;), <span class="keyword">typeof</span>(<span class="type">RatingControl</span>));
+
+        <span class="keyword">public event</span> <span class="type">RoutedPropertyChangedEventHandler</span>&lt;<span class="type">int</span>&gt; ValueChanged
         {
-            <span class="keyword">get</span> => (<span class="type">Brush</span>)GetValue(ButtonColorProperty);
-            <span class="keyword">set</span> => SetValue(ButtonColorProperty, <span class="keyword">value</span>);
+            <span class="keyword">add</span> => AddHandler(ValueChangedEvent, <span class="keyword">value</span>);
+            <span class="keyword">remove</span> => RemoveHandler(ValueChangedEvent, <span class="keyword">value</span>);
         }
 
-        <span class="keyword">public</span> <span class="type">string</span> ButtonText
+        <span class="keyword">static</span> RatingControl()
         {
-            <span class="keyword">get</span> => (<span class="type">string</span>)GetValue(ButtonTextProperty);
-            <span class="keyword">set</span> => SetValue(ButtonTextProperty, <span class="keyword">value</span>);
+            DefaultStyleKeyProperty.OverrideMetadata(<span class="keyword">typeof</span>(<span class="type">RatingControl</span>),
+                <span class="keyword">new</span> <span class="type">FrameworkPropertyMetadata</span>(<span class="keyword">typeof</span>(<span class="type">RatingControl</span>)));
         }
 
-        <span class="keyword">public</span> ColoredButton()
+        <span class="keyword">public override void</span> OnApplyTemplate()
         {
-            InitializeComponent();
+            <span class="keyword">base</span>.OnApplyTemplate();
+            _starPanel = GetTemplateChild(PART_StarPanel) <span class="keyword">as</span> <span class="type">StackPanel</span>;
+            CreateStars();
         }
 
-        <span class="keyword">private void</span> OnClick(<span class="keyword">object</span> sender, <span class="type">MouseButtonEventArgs</span> e)
+        <span class="keyword">private static void</span> OnValueChanged(<span class="type">DependencyObject</span> d, <span class="type">DependencyPropertyChangedEventArgs</span> e)
         {
-            Click?.Invoke(<span class="keyword">this</span>, <span class="keyword">new</span> <span class="type">RoutedEventArgs</span>());
+            <span class="keyword">var</span> c = (<span class="type">RatingControl</span>)d;
+            c.UpdateStars();
+            c.RaiseEvent(<span class="keyword">new</span> <span class="type">RoutedPropertyChangedEventArgs</span>&lt;<span class="type">int</span>&gt;((<span class="type">int</span>)e.OldValue, (<span class="type">int</span>)e.NewValue, ValueChangedEvent));
+        }
+
+        <span class="keyword">private void</span> CreateStars()
+        {
+            <span class="keyword">if</span> (_starPanel == <span class="keyword">null</span>) <span class="keyword">return</span>;
+            _starPanel.Children.Clear();
+            <span class="keyword">for</span> (<span class="type">int</span> i = <span class="value">0</span>; i < Maximum; i++)
+            {
+                <span class="keyword">var</span> star = <span class="keyword">new</span> <span class="type">TextBlock</span> { Text = <span class="string">"★"</span>, FontSize = StarSize, Cursor = <span class="type">Cursors</span>.Hand, Tag = i + <span class="value">1</span> };
+                star.MouseLeftButtonDown += (s, e) => { <span class="keyword">if</span> (s <span class="keyword">is</span> <span class="type">TextBlock</span> t && t.Tag <span class="keyword">is int</span> idx) Value = idx; };
+                star.MouseEnter += Star_MouseEnter;
+                star.MouseLeave += (s, e) => UpdateStars();
+                _starPanel.Children.Add(star);
+            }
+            UpdateStars();
+        }
+
+        <span class="keyword">private void</span> Star_MouseEnter(<span class="keyword">object</span> sender, <span class="type">MouseEventArgs</span> e)
+        {
+            <span class="keyword">if</span> (_starPanel == <span class="keyword">null</span> || !(sender <span class="keyword">is</span> <span class="type">TextBlock</span> t) || !(t.Tag <span class="keyword">is int</span> idx)) <span class="keyword">return</span>;
+            <span class="keyword">for</span> (<span class="type">int</span> i = <span class="value">0</span>; i < _starPanel.Children.Count; i++)
+                <span class="keyword">if</span> (_starPanel.Children[i] <span class="keyword">is</span> <span class="type">TextBlock</span> star)
+                    star.Foreground = i < idx ? <span class="type">Brushes</span>.Orange : <span class="type">Brushes</span>.LightGray;
+        }
+
+        <span class="keyword">private void</span> UpdateStars()
+        {
+            <span class="keyword">if</span> (_starPanel == <span class="keyword">null</span>) <span class="keyword">return</span>;
+            <span class="keyword">for</span> (<span class="type">int</span> i = <span class="value">0</span>; i < _starPanel.Children.Count; i++)
+                <span class="keyword">if</span> (_starPanel.Children[i] <span class="keyword">is</span> <span class="type">TextBlock</span> star)
+                    star.Foreground = i < Value ? <span class="type">Brushes</span>.Gold : <span class="type">Brushes</span>.LightGray;
         }
     }
 }</code></pre>
                 </div>
 
-                <h4>3. Verwendung im MainWindow</h4>
+                <h4>XAML - Generic.xaml</h4>
                 <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">XAML</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="tag">&lt;Window</span> <span class="attribute">xmlns:controls</span>=<span class="string">"clr-namespace:MyApp.Controls"</span><span class="tag">&gt;</span>
-    <span class="tag">&lt;StackPanel</span> <span class="attribute">Margin</span>=<span class="string">"20"</span><span class="tag">&gt;</span>
-        
-        <span class="tag">&lt;controls:ColoredButton</span> <span class="attribute">ButtonText</span>=<span class="string">"Primär"</span>
-                                 <span class="attribute">ButtonColor</span>=<span class="string">"#6366F1"</span>
-                                 <span class="attribute">Click</span>=<span class="string">"PrimaryButton_Click"</span>
-                                 <span class="attribute">Margin</span>=<span class="string">"0,0,0,10"</span><span class="tag">/&gt;</span>
-        
-        <span class="tag">&lt;controls:ColoredButton</span> <span class="attribute">ButtonText</span>=<span class="string">"Erfolg"</span>
-                                 <span class="attribute">ButtonColor</span>=<span class="string">"#22C55E"</span><span class="tag">/&gt;</span>
-        
-        <span class="tag">&lt;controls:ColoredButton</span> <span class="attribute">ButtonText</span>=<span class="string">"Warnung"</span>
-                                 <span class="attribute">ButtonColor</span>=<span class="string">"#F59E0B"</span><span class="tag">/&gt;</span>
-        
-    <span class="tag">&lt;/StackPanel&gt;</span>
-<span class="tag">&lt;/Window&gt;</span></code></pre>
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">Themes/Generic.xaml</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="tag">&lt;ResourceDictionary</span> <span class="attribute">xmlns</span>=<span class="string">"http://schemas.microsoft.com/winfx/2006/xaml/presentation"</span>
+    <span class="attribute">xmlns:x</span>=<span class="string">"http://schemas.microsoft.com/winfx/2006/xaml"</span>
+    <span class="attribute">xmlns:local</span>=<span class="string">"clr-namespace:MeinControlLibrary.Controls"</span><span class="tag">&gt;</span>
+
+    <span class="tag">&lt;Style</span> <span class="attribute">TargetType</span>=<span class="string">"{x:Type local:RatingControl}"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;Setter</span> <span class="attribute">Property</span>=<span class="string">"Background"</span> <span class="attribute">Value</span>=<span class="string">"Transparent"</span><span class="tag">/&gt;</span>
+        <span class="tag">&lt;Setter</span> <span class="attribute">Property</span>=<span class="string">"Padding"</span> <span class="attribute">Value</span>=<span class="string">"4"</span><span class="tag">/&gt;</span>
+        <span class="tag">&lt;Setter</span> <span class="attribute">Property</span>=<span class="string">"Template"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;Setter.Value&gt;</span>
+                <span class="tag">&lt;ControlTemplate</span> <span class="attribute">TargetType</span>=<span class="string">"{x:Type local:RatingControl}"</span><span class="tag">&gt;</span>
+                    <span class="tag">&lt;Border</span> <span class="attribute">Background</span>=<span class="string">"{TemplateBinding Background}"</span>
+                            <span class="attribute">Padding</span>=<span class="string">"{TemplateBinding Padding}"</span>
+                            <span class="attribute">CornerRadius</span>=<span class="string">"4"</span><span class="tag">&gt;</span>
+                        <span class="tag">&lt;StackPanel</span> <span class="attribute">x:Name</span>=<span class="string">"PART_StarPanel"</span>
+                                    <span class="attribute">Orientation</span>=<span class="string">"Horizontal"</span>
+                                    <span class="attribute">HorizontalAlignment</span>=<span class="string">"Center"</span><span class="tag">/&gt;</span>
+                    <span class="tag">&lt;/Border&gt;</span>
+                <span class="tag">&lt;/ControlTemplate&gt;</span>
+            <span class="tag">&lt;/Setter.Value&gt;</span>
+        <span class="tag">&lt;/Setter&gt;</span>
+    <span class="tag">&lt;/Style&gt;</span>
+<span class="tag">&lt;/ResourceDictionary&gt;</span></code></pre>
                 </div>
 
-                <div class="demo-container">
-                    <div class="demo-title">🎮 Interaktive Vorschau</div>
-                    <p style="color: var(--text-muted); margin-bottom: 1rem;">So könnten deine Custom Buttons aussehen:</p>
-                    <div class="custom-control-preview">
-                        <button class="wpf-button primary">Primär</button>
-                        <button class="wpf-button success">Erfolg</button>
-                        <button class="wpf-button warning">Warnung</button>
-                        <button class="wpf-button danger">Gefahr</button>
-                        <button class="wpf-button outline">Outline</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>🏗️ Dependency Properties verstehen</h3>
-                <p>Dependency Properties sind das Fundament von WPF. Sie ermöglichen Data Binding, Animationen, Styles und mehr.</p>
-
-                <div class="diagram">
-                    <div class="diagram-title">Aufbau einer Dependency Property</div>
-                    <div class="control-structure">
-                        <div class="structure-box base">
-                            1. Statisches DependencyProperty-Feld
-                        </div>
-                        <div class="structure-connector"></div>
-                        <div class="structure-box custom">
-                            2. Register() mit Name, Typ, Owner
-                        </div>
-                        <div class="structure-connector"></div>
-                        <div class="structure-box base">
-                            3. Wrapper-Property (CLR)
-                        </div>
-                    </div>
-                </div>
-
+                <h4>Verwendung:</h4>
                 <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">C# - Dependency Property Template</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="comment">// 1. Statisches Feld registrieren</span>
-<span class="keyword">public static readonly</span> <span class="type">DependencyProperty</span> MeinWertProperty =
-    <span class="type">DependencyProperty</span>.Register(
-        <span class="string">"MeinWert"</span>,                    <span class="comment">// Name der Property</span>
-        <span class="keyword">typeof</span>(<span class="type">int</span>),                    <span class="comment">// Datentyp</span>
-        <span class="keyword">typeof</span>(<span class="type">MeinControl</span>),            <span class="comment">// Besitzer-Klasse</span>
-        <span class="keyword">new</span> <span class="type">PropertyMetadata</span>(           <span class="comment">// Metadaten</span>
-            <span class="value">0</span>,                            <span class="comment">// Standardwert</span>
-            OnMeinWertChanged              <span class="comment">// Callback bei Änderung</span>
-        )
-    );
-
-<span class="comment">// 2. CLR-Wrapper für einfachen Zugriff</span>
-<span class="keyword">public</span> <span class="type">int</span> MeinWert
-{
-    <span class="keyword">get</span> => (<span class="type">int</span>)GetValue(MeinWertProperty);
-    <span class="keyword">set</span> => SetValue(MeinWertProperty, <span class="keyword">value</span>);
-}
-
-<span class="comment">// 3. Optional: Callback-Methode</span>
-<span class="keyword">private static void</span> OnMeinWertChanged(
-    <span class="type">DependencyObject</span> d, 
-    <span class="type">DependencyPropertyChangedEventArgs</span> e)
-{
-    <span class="keyword">var</span> control = (<span class="type">MeinControl</span>)d;
-    <span class="keyword">var</span> neuerWert = (<span class="type">int</span>)e.NewValue;
-    <span class="comment">// Reagiere auf Änderung...</span>
-}</code></pre>
-                </div>
-
-                <div class="info-box warning">
-                    <strong>⚠️ Wichtig:</strong> Der Name im Register() muss exakt mit dem Property-Namen übereinstimmen! "MeinWert" im Register entspricht der Property "MeinWert".
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>🎭 Control Templates</h3>
-                <p>Control Templates definieren das Aussehen eines Controls völlig neu. Du kannst damit das Standard-Aussehen komplett überschreiben.</p>
-
-                <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">XAML - Custom Button Template</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="tag">&lt;Style</span> <span class="attribute">TargetType</span>=<span class="string">"Button"</span> <span class="attribute">x:Key</span>=<span class="string">"ModernButton"</span><span class="tag">&gt;</span>
-    <span class="tag">&lt;Setter</span> <span class="attribute">Property</span>=<span class="string">"Template"</span><span class="tag">&gt;</span>
-        <span class="tag">&lt;Setter.Value&gt;</span>
-            <span class="tag">&lt;ControlTemplate</span> <span class="attribute">TargetType</span>=<span class="string">"Button"</span><span class="tag">&gt;</span>
-                <span class="tag">&lt;Border</span> <span class="attribute">x:Name</span>=<span class="string">"border"</span>
-                        <span class="attribute">Background</span>=<span class="string">"{TemplateBinding Background}"</span>
-                        <span class="attribute">BorderBrush</span>=<span class="string">"{TemplateBinding BorderBrush}"</span>
-                        <span class="attribute">BorderThickness</span>=<span class="string">"2"</span>
-                        <span class="attribute">CornerRadius</span>=<span class="string">"12"</span>
-                        <span class="attribute">Padding</span>=<span class="string">"20,12"</span><span class="tag">&gt;</span>
-                    
-                    <span class="comment">&lt;!-- ContentPresenter zeigt den Button-Inhalt --&gt;</span>
-                    <span class="tag">&lt;ContentPresenter</span> <span class="attribute">HorizontalAlignment</span>=<span class="string">"Center"</span>
-                                      <span class="attribute">VerticalAlignment</span>=<span class="string">"Center"</span><span class="tag">/&gt;</span>
-                <span class="tag">&lt;/Border&gt;</span>
-                
-                <span class="comment">&lt;!-- Trigger für Hover-Effekt --&gt;</span>
-                <span class="tag">&lt;ControlTemplate.Triggers&gt;</span>
-                    <span class="tag">&lt;Trigger</span> <span class="attribute">Property</span>=<span class="string">"IsMouseOver"</span> <span class="attribute">Value</span>=<span class="string">"True"</span><span class="tag">&gt;</span>
-                        <span class="tag">&lt;Setter</span> <span class="attribute">TargetName</span>=<span class="string">"border"</span> 
-                                <span class="attribute">Property</span>=<span class="string">"Background"</span> 
-                                <span class="attribute">Value</span>=<span class="string">"#818CF8"</span><span class="tag">/&gt;</span>
-                    <span class="tag">&lt;/Trigger&gt;</span>
-                    
-                    <span class="tag">&lt;Trigger</span> <span class="attribute">Property</span>=<span class="string">"IsPressed"</span> <span class="attribute">Value</span>=<span class="string">"True"</span><span class="tag">&gt;</span>
-                        <span class="tag">&lt;Setter</span> <span class="attribute">TargetName</span>=<span class="string">"border"</span>
-                                <span class="attribute">Property</span>=<span class="string">"Background"</span>
-                                <span class="attribute">Value</span>=<span class="string">"#4F46E5"</span><span class="tag">/&gt;</span>
-                    <span class="tag">&lt;/Trigger&gt;</span>
-                <span class="tag">&lt;/ControlTemplate.Triggers&gt;</span>
-            <span class="tag">&lt;/ControlTemplate&gt;</span>
-        <span class="tag">&lt;/Setter.Value&gt;</span>
-    <span class="tag">&lt;/Setter&gt;</span>
-    
-    <span class="comment">&lt;!-- Standard-Werte --&gt;</span>
-    <span class="tag">&lt;Setter</span> <span class="attribute">Property</span>=<span class="string">"Background"</span> <span class="attribute">Value</span>=<span class="string">"#6366F1"</span><span class="tag">/&gt;</span>
-    <span class="tag">&lt;Setter</span> <span class="attribute">Property</span>=<span class="string">"Foreground"</span> <span class="attribute">Value</span>=<span class="string">"White"</span><span class="tag">/&gt;</span>
-    <span class="tag">&lt;Setter</span> <span class="attribute">Property</span>=<span class="string">"FontWeight"</span> <span class="attribute">Value</span>=<span class="string">"SemiBold"</span><span class="tag">/&gt;</span>
-<span class="tag">&lt;/Style&gt;</span>
-
-<span class="comment">&lt;!-- Verwendung: --&gt;</span>
-<span class="tag">&lt;Button</span> <span class="attribute">Style</span>=<span class="string">"{StaticResource ModernButton}"</span> <span class="attribute">Content</span>=<span class="string">"Klick mich!"</span><span class="tag">/&gt;</span></code></pre>
-                </div>
-
-                <div class="info-box success">
-                    <strong>✨ TemplateBinding:</strong> Mit <code class="inline">{TemplateBinding PropertyName}</code> verbindest du Template-Elemente mit den Properties des Controls. So bleibt dein Template flexibel!
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">MainWindow.xaml</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="tag">&lt;controls:RatingControl</span> <span class="attribute">Value</span>=<span class="string">"3"</span> <span class="attribute">Maximum</span>=<span class="string">"5"</span> <span class="attribute">StarSize</span>=<span class="string">"32"</span>
+                        <span class="attribute">ValueChanged</span>=<span class="string">"Rating_ValueChanged"</span><span class="tag">/&gt;</span></code></pre>
                 </div>
             </div>
         </section>
 
-        <!-- Bindings Tab -->
+        <!-- BINDINGS TAB -->
         <section id="bindings" class="tab-content">
             <div class="card">
                 <h2>🔗 Data Binding in WPF</h2>
-                <p>Data Binding ist die automatische Synchronisation zwischen UI-Elementen und Datenquellen. Es ist eines der mächtigsten Features von WPF und fundamental für das MVVM-Pattern.</p>
+                <p>Data Binding synchronisiert automatisch UI und Daten – das Herzstück des MVVM-Patterns.</p>
+            </div>
 
-                <div class="diagram">
-                    <div class="diagram-title">Wie Binding funktioniert</div>
-                    <div class="binding-diagram">
-                        <div class="diagram-box source">
-                            <div class="label">Quelle (Source)</div>
-                            <div class="value">ViewModel</div>
-                        </div>
-                        <div class="diagram-arrow">
-                            <div class="arrow-line"></div>
-                            <div class="arrow-label">Binding</div>
-                        </div>
-                        <div class="diagram-box target">
-                            <div class="label">Ziel (Target)</div>
-                            <div class="value">UI Element</div>
-                        </div>
-                    </div>
+            <div class="card">
+                <h3>1. Binding-Modi</h3>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Modus</th><th>Richtung</th><th>Verwendung</th></tr></thead>
+                        <tbody>
+                            <tr><td><code class="inline">OneWay</code></td><td>Source → Target</td><td>Nur Anzeige</td></tr>
+                            <tr><td><code class="inline">TwoWay</code></td><td>Source ↔ Target</td><td>Bearbeitung</td></tr>
+                            <tr><td><code class="inline">OneWayToSource</code></td><td>Source ← Target</td><td>UI → ViewModel</td></tr>
+                            <tr><td><code class="inline">OneTime</code></td><td>Einmalig</td><td>Initialisierung</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-
                 <div class="demo-container">
-                    <div class="demo-title">🎮 Interaktive Demo: TwoWay Binding</div>
-                    <p style="color: var(--text-muted); margin-bottom: 1rem;">Tippe in das Eingabefeld – der Wert wird automatisch synchronisiert:</p>
+                    <div class="demo-title">🎮 Demo: TwoWay Binding</div>
                     <div class="binding-demo">
                         <div class="binding-source">
-                            <div class="binding-label">📝 Quelle (Input)</div>
-                            <input type="text" class="demo-input" id="bindingSource" placeholder="Tippe hier..." value="Hallo WPF!">
+                            <div class="binding-label">📝 Quelle</div>
+                            <input type="text" class="demo-input" id="bindingSource" value="Hallo WPF!">
                         </div>
                         <div class="binding-target">
-                            <div class="binding-label">🎯 Ziel (Output)</div>
+                            <div class="binding-label">🎯 Ziel</div>
                             <div class="demo-output" id="bindingTarget">Hallo WPF!</div>
                         </div>
                     </div>
@@ -1404,564 +511,126 @@
             </div>
 
             <div class="card">
-                <h3>📊 Binding-Modi</h3>
-                <p>WPF bietet verschiedene Modi, die bestimmen, in welche Richtung Daten fließen:</p>
-
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Modus</th>
-                                <th>Richtung</th>
-                                <th>Verwendung</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code class="inline">OneWay</code></td>
-                                <td>Source → Target</td>
-                                <td>Anzeige von Daten (Labels, ReadOnly)</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">TwoWay</code></td>
-                                <td>Source ↔ Target</td>
-                                <td>Bearbeitbare Felder (TextBox, CheckBox)</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">OneWayToSource</code></td>
-                                <td>Source ← Target</td>
-                                <td>UI-Werte zurück zum ViewModel</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">OneTime</code></td>
-                                <td>Source → Target (einmalig)</td>
-                                <td>Statische Initialisierung</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
+                <h3>2. INotifyPropertyChanged</h3>
                 <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">XAML - Binding-Modi Beispiele</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="comment">&lt;!-- OneWay: Nur Anzeige --&gt;</span>
-<span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"{Binding Name, Mode=OneWay}"</span><span class="tag">/&gt;</span>
-
-<span class="comment">&lt;!-- TwoWay: Bearbeitbar, synchronisiert beide Richtungen --&gt;</span>
-<span class="tag">&lt;TextBox</span> <span class="attribute">Text</span>=<span class="string">"{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"</span><span class="tag">/&gt;</span>
-
-<span class="comment">&lt;!-- Mit Fallback-Wert wenn Binding fehlschlägt --&gt;</span>
-<span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"{Binding Preis, StringFormat='{}{0:C}', FallbackValue='N/A'}"</span><span class="tag">/&gt;</span>
-
-<span class="comment">&lt;!-- Binding an andere UI-Elemente --&gt;</span>
-<span class="tag">&lt;Slider</span> <span class="attribute">x:Name</span>=<span class="string">"slider"</span> <span class="attribute">Minimum</span>=<span class="string">"0"</span> <span class="attribute">Maximum</span>=<span class="string">"100"</span><span class="tag">/&gt;</span>
-<span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"{Binding Value, ElementName=slider, StringFormat='Wert: {0:F0}'}"</span><span class="tag">/&gt;</span></code></pre>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>🔔 INotifyPropertyChanged</h3>
-                <p>Damit das UI automatisch aktualisiert wird, wenn sich Daten ändern, muss die Datenquelle das Interface <code class="inline">INotifyPropertyChanged</code> implementieren.</p>
-
-                <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">C# - ViewModel mit INotifyPropertyChanged</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="keyword">using</span> System.ComponentModel;
-<span class="keyword">using</span> System.Runtime.CompilerServices;
-
-<span class="keyword">public class</span> <span class="type">PersonViewModel</span> : <span class="type">INotifyPropertyChanged</span>
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">ViewModel</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="keyword">public class</span> <span class="type">PersonViewModel</span> : <span class="type">INotifyPropertyChanged</span>
 {
-    <span class="comment">// Event, das bei Änderungen ausgelöst wird</span>
     <span class="keyword">public event</span> <span class="type">PropertyChangedEventHandler</span>? PropertyChanged;
+    <span class="keyword">private string</span> _name = <span class="string">""</span>;
 
-    <span class="comment">// Private Felder</span>
-    <span class="keyword">private string</span> _vorname = <span class="string">""</span>;
-    <span class="keyword">private string</span> _nachname = <span class="string">""</span>;
-    <span class="keyword">private int</span> _alter;
-
-    <span class="comment">// Property mit Benachrichtigung</span>
-    <span class="keyword">public string</span> Vorname
+    <span class="keyword">public string</span> Name
     {
-        <span class="keyword">get</span> => _vorname;
-        <span class="keyword">set</span>
-        {
-            <span class="keyword">if</span> (_vorname != <span class="keyword">value</span>)
-            {
-                _vorname = <span class="keyword">value</span>;
-                OnPropertyChanged();           <span class="comment">// Benachrichtigt UI</span>
-                OnPropertyChanged(<span class="keyword">nameof</span>(VollName)); <span class="comment">// Auch abhängige Props!</span>
-            }
-        }
+        <span class="keyword">get</span> => _name;
+        <span class="keyword">set</span> { <span class="keyword">if</span> (_name != <span class="keyword">value</span>) { _name = <span class="keyword">value</span>; OnPropertyChanged(); } }
     }
 
-    <span class="keyword">public string</span> Nachname
-    {
-        <span class="keyword">get</span> => _nachname;
-        <span class="keyword">set</span>
-        {
-            <span class="keyword">if</span> (_nachname != <span class="keyword">value</span>)
-            {
-                _nachname = <span class="keyword">value</span>;
-                OnPropertyChanged();
-                OnPropertyChanged(<span class="keyword">nameof</span>(VollName));
-            }
-        }
-    }
-
-    <span class="keyword">public int</span> Alter
-    {
-        <span class="keyword">get</span> => _alter;
-        <span class="keyword">set</span> { _alter = <span class="keyword">value</span>; OnPropertyChanged(); }
-    }
-
-    <span class="comment">// Berechnete Property</span>
-    <span class="keyword">public string</span> VollName => <span class="string">$"</span>{Vorname} {Nachname}<span class="string">"</span>;
-
-    <span class="comment">// Helper-Methode</span>
     <span class="keyword">protected void</span> OnPropertyChanged([<span class="type">CallerMemberName</span>] <span class="keyword">string</span>? name = <span class="keyword">null</span>)
-    {
-        PropertyChanged?.Invoke(<span class="keyword">this</span>, <span class="keyword">new</span> <span class="type">PropertyChangedEventArgs</span>(name));
-    }
+        => PropertyChanged?.Invoke(<span class="keyword">this</span>, <span class="keyword">new</span> <span class="type">PropertyChangedEventArgs</span>(name));
 }</code></pre>
-                </div>
-
-                <div class="info-box">
-                    <strong>💡 CallerMemberName:</strong> Mit diesem Attribut wird automatisch der Name der aufrufenden Property eingesetzt. Du musst ihn nicht manuell als String angeben!
                 </div>
             </div>
 
             <div class="card">
-                <h3>🔄 Value Converter</h3>
-                <p>Converter transformieren Werte zwischen Source und Target. Nützlich für Formatierung, Umrechnung oder Sichtbarkeit.</p>
-
+                <h3>3. Binding-Quellen</h3>
                 <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">C# - Bool zu Visibility Converter</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="keyword">using</span> System;
-<span class="keyword">using</span> System.Globalization;
-<span class="keyword">using</span> System.Windows;
-<span class="keyword">using</span> System.Windows.Data;
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">Verschiedene Quellen</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="comment">&lt;!-- Vom DataContext --&gt;</span>
+<span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"{Binding Name}"</span><span class="tag">/&gt;</span>
 
-<span class="keyword">public class</span> <span class="type">BoolToVisibilityConverter</span> : <span class="type">IValueConverter</span>
+<span class="comment">&lt;!-- Von anderem Element --&gt;</span>
+<span class="tag">&lt;Slider</span> <span class="attribute">x:Name</span>=<span class="string">"slider"</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"{Binding Value, ElementName=slider}"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- Von sich selbst --&gt;</span>
+<span class="tag">&lt;Border</span> <span class="attribute">Width</span>=<span class="string">"{Binding ActualHeight, RelativeSource={RelativeSource Self}}"</span><span class="tag">/&gt;</span>
+
+<span class="comment">&lt;!-- TemplateBinding --&gt;</span>
+<span class="tag">&lt;Border</span> <span class="attribute">Background</span>=<span class="string">"{TemplateBinding Background}"</span><span class="tag">/&gt;</span></code></pre>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>4. Value Converter</h3>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">BoolToVisibilityConverter</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="keyword">public class</span> <span class="type">BoolToVisibilityConverter</span> : <span class="type">IValueConverter</span>
 {
-    <span class="comment">// Wird aufgerufen wenn Source → Target</span>
-    <span class="keyword">public object</span> Convert(<span class="keyword">object</span> value, <span class="type">Type</span> targetType, 
-                           <span class="keyword">object</span> parameter, <span class="type">CultureInfo</span> culture)
-    {
-        <span class="keyword">if</span> (value <span class="keyword">is bool</span> boolValue)
-        {
-            <span class="keyword">return</span> boolValue ? <span class="type">Visibility</span>.Visible : <span class="type">Visibility</span>.Collapsed;
-        }
-        <span class="keyword">return</span> <span class="type">Visibility</span>.Collapsed;
-    }
+    <span class="keyword">public object</span> Convert(<span class="keyword">object</span> value, <span class="type">Type</span> t, <span class="keyword">object</span> p, <span class="type">CultureInfo</span> c)
+        => value <span class="keyword">is bool</span> b && b ? <span class="type">Visibility</span>.Visible : <span class="type">Visibility</span>.Collapsed;
 
-    <span class="comment">// Wird aufgerufen wenn Target → Source (bei TwoWay)</span>
-    <span class="keyword">public object</span> ConvertBack(<span class="keyword">object</span> value, <span class="type">Type</span> targetType,
-                               <span class="keyword">object</span> parameter, <span class="type">CultureInfo</span> culture)
-    {
-        <span class="keyword">if</span> (value <span class="keyword">is</span> <span class="type">Visibility</span> visibility)
-        {
-            <span class="keyword">return</span> visibility == <span class="type">Visibility</span>.Visible;
-        }
-        <span class="keyword">return false</span>;
-    }
+    <span class="keyword">public object</span> ConvertBack(<span class="keyword">object</span> value, <span class="type">Type</span> t, <span class="keyword">object</span> p, <span class="type">CultureInfo</span> c)
+        => value <span class="keyword">is</span> <span class="type">Visibility</span> v && v == <span class="type">Visibility</span>.Visible;
 }</code></pre>
                 </div>
-
-                <h4>Verwendung des Converters</h4>
-                <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">XAML</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="tag">&lt;Window.Resources&gt;</span>
-    <span class="comment">&lt;!-- Converter als Ressource registrieren --&gt;</span>
-    <span class="tag">&lt;local:BoolToVisibilityConverter</span> <span class="attribute">x:Key</span>=<span class="string">"BoolToVis"</span><span class="tag">/&gt;</span>
-<span class="tag">&lt;/Window.Resources&gt;</span>
-
-<span class="comment">&lt;!-- Anwendung: Panel nur sichtbar wenn IstSichtbar = true --&gt;</span>
-<span class="tag">&lt;StackPanel</span> <span class="attribute">Visibility</span>=<span class="string">"{Binding IstSichtbar, Converter={StaticResource BoolToVis}}"</span><span class="tag">&gt;</span>
-    <span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"Ich bin sichtbar!"</span><span class="tag">/&gt;</span>
-<span class="tag">&lt;/StackPanel&gt;</span></code></pre>
-                </div>
-
                 <div class="demo-container">
-                    <div class="demo-title">🎮 Demo: Converter in Aktion</div>
-                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <div class="demo-title">🎮 Demo: Converter</div>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="visibilityToggle" checked style="width: 20px; height: 20px; accent-color: var(--primary);">
+                            <input type="checkbox" id="visibilityToggle" checked style="width: 20px; height: 20px;">
                             <span>IstSichtbar</span>
                         </label>
-                        <div id="visibilityTarget" style="background: var(--secondary); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; transition: all 0.3s ease;">
-                            ✨ Ich bin sichtbar!
-                        </div>
+                        <div id="visibilityTarget" style="background: var(--secondary); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; transition: all 0.3s ease;">✨ Sichtbar!</div>
                     </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>📋 DataContext & Binding-Pfade</h3>
-                <p>Der DataContext bestimmt, von wo Bindings ihre Daten beziehen. Er wird an Kind-Elemente vererbt.</p>
-
-                <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">XAML - DataContext setzen</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="tag">&lt;Window</span> <span class="attribute">x:Class</span>=<span class="string">"MyApp.MainWindow"</span>
-        <span class="attribute">xmlns:vm</span>=<span class="string">"clr-namespace:MyApp.ViewModels"</span><span class="tag">&gt;</span>
-    
-    <span class="comment">&lt;!-- DataContext für das ganze Window setzen --&gt;</span>
-    <span class="tag">&lt;Window.DataContext&gt;</span>
-        <span class="tag">&lt;vm:MainViewModel/&gt;</span>
-    <span class="tag">&lt;/Window.DataContext&gt;</span>
-    
-    <span class="tag">&lt;StackPanel&gt;</span>
-        <span class="comment">&lt;!-- Einfaches Binding zum aktuellen DataContext --&gt;</span>
-        <span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"{Binding Titel}"</span><span class="tag">/&gt;</span>
-        
-        <span class="comment">&lt;!-- Verschachtelter Pfad --&gt;</span>
-        <span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"{Binding Benutzer.Email}"</span><span class="tag">/&gt;</span>
-        
-        <span class="comment">&lt;!-- Binding an Listen-Element --&gt;</span>
-        <span class="tag">&lt;ListBox</span> <span class="attribute">ItemsSource</span>=<span class="string">"{Binding Produkte}"</span><span class="tag">&gt;</span>
-            <span class="tag">&lt;ListBox.ItemTemplate&gt;</span>
-                <span class="tag">&lt;DataTemplate&gt;</span>
-                    <span class="comment">&lt;!-- Hier ist DataContext = einzelnes Produkt --&gt;</span>
-                    <span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"{Binding Name}"</span><span class="tag">/&gt;</span>
-                <span class="tag">&lt;/DataTemplate&gt;</span>
-            <span class="tag">&lt;/ListBox.ItemTemplate&gt;</span>
-        <span class="tag">&lt;/ListBox&gt;</span>
-        
-        <span class="comment">&lt;!-- Binding an anderes Element --&gt;</span>
-        <span class="tag">&lt;TextBox</span> <span class="attribute">x:Name</span>=<span class="string">"suchfeld"</span><span class="tag">/&gt;</span>
-        <span class="tag">&lt;TextBlock</span> <span class="attribute">Text</span>=<span class="string">"{Binding Text, ElementName=suchfeld}"</span><span class="tag">/&gt;</span>
-        
-        <span class="comment">&lt;!-- Binding an sich selbst --&gt;</span>
-        <span class="tag">&lt;Border</span> <span class="attribute">Width</span>=<span class="string">"{Binding ActualHeight, RelativeSource={RelativeSource Self}}"</span><span class="tag">/&gt;</span>
-    <span class="tag">&lt;/StackPanel&gt;</span>
-<span class="tag">&lt;/Window&gt;</span></code></pre>
-                </div>
-
-                <div class="info-box success">
-                    <strong>🎯 Binding-Quellen:</strong>
-                    <ul style="margin-top: 0.5rem; margin-bottom: 0;">
-                        <li><code class="inline">{Binding Path}</code> – Vom DataContext</li>
-                        <li><code class="inline">{Binding Path, ElementName=name}</code> – Von anderem Element</li>
-                        <li><code class="inline">{Binding Path, RelativeSource={RelativeSource Self}}</code> – Von sich selbst</li>
-                        <li><code class="inline">{Binding Path, Source={StaticResource res}}</code> – Von einer Ressource</li>
-                    </ul>
                 </div>
             </div>
         </section>
 
-        <!-- Painter Tab -->
+        <!-- PAINTER TAB -->
         <section id="painter" class="tab-content">
             <div class="card">
                 <h2>🖌️ WPF Painter & Grafik</h2>
-                <p>WPF bietet mächtige Grafik-Funktionen zum Zeichnen von Shapes, Pfaden und komplexen Visualisierungen. Alles basiert auf Vektorgrafik und ist daher auflösungsunabhängig.</p>
+                <p>WPF bietet mächtige Vektorgrafik-Funktionen für Shapes, Pfade und Visualisierungen.</p>
+            </div>
 
-                <div class="info-box">
-                    <strong>Vektorgrafik vs. Rastergrafik:</strong> WPF verwendet Vektorgrafik, d.h. Formen werden mathematisch beschrieben und können ohne Qualitätsverlust skaliert werden – perfekt für verschiedene Bildschirmauflösungen!
+            <div class="card">
+                <h3>1. Shapes</h3>
+                <div class="code-container">
+                    <div class="code-header"><span class="code-lang">XAML</span><span class="code-filename">Grundformen</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="tag">&lt;Canvas&gt;</span>
+    <span class="tag">&lt;Rectangle</span> <span class="attribute">Width</span>=<span class="string">"100"</span> <span class="attribute">Height</span>=<span class="string">"60"</span> <span class="attribute">Fill</span>=<span class="string">"#6366F1"</span> <span class="attribute">RadiusX</span>=<span class="string">"10"</span> <span class="attribute">RadiusY</span>=<span class="string">"10"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"80"</span> <span class="attribute">Height</span>=<span class="string">"80"</span> <span class="attribute">Fill</span>=<span class="string">"#22C55E"</span> <span class="attribute">Canvas.Left</span>=<span class="string">"120"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;Line</span> <span class="attribute">X1</span>=<span class="string">"20"</span> <span class="attribute">Y1</span>=<span class="string">"100"</span> <span class="attribute">X2</span>=<span class="string">"200"</span> <span class="attribute">Y2</span>=<span class="string">"100"</span> <span class="attribute">Stroke</span>=<span class="string">"#F59E0B"</span> <span class="attribute">StrokeThickness</span>=<span class="string">"3"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;Polygon</span> <span class="attribute">Points</span>=<span class="string">"250,20 300,80 200,80"</span> <span class="attribute">Fill</span>=<span class="string">"#EF4444"</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;/Canvas&gt;</span></code></pre>
                 </div>
             </div>
 
             <div class="card">
-                <h3>📐 Basic Shapes</h3>
-                <p>WPF bietet vordefinierte Formen, die du einfach in XAML verwenden kannst:</p>
-
-                <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">XAML - Grundformen</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="tag">&lt;Canvas</span> <span class="attribute">Width</span>=<span class="string">"400"</span> <span class="attribute">Height</span>=<span class="string">"300"</span> <span class="attribute">Background</span>=<span class="string">"White"</span><span class="tag">&gt;</span>
-    
-    <span class="comment">&lt;!-- Rechteck --&gt;</span>
-    <span class="tag">&lt;Rectangle</span> <span class="attribute">Canvas.Left</span>=<span class="string">"20"</span> <span class="attribute">Canvas.Top</span>=<span class="string">"20"</span>
-               <span class="attribute">Width</span>=<span class="string">"100"</span> <span class="attribute">Height</span>=<span class="string">"60"</span>
-               <span class="attribute">Fill</span>=<span class="string">"#6366F1"</span>
-               <span class="attribute">Stroke</span>=<span class="string">"#4F46E5"</span>
-               <span class="attribute">StrokeThickness</span>=<span class="string">"2"</span>
-               <span class="attribute">RadiusX</span>=<span class="string">"10"</span> <span class="attribute">RadiusY</span>=<span class="string">"10"</span><span class="tag">/&gt;</span>
-    
-    <span class="comment">&lt;!-- Ellipse / Kreis --&gt;</span>
-    <span class="tag">&lt;Ellipse</span> <span class="attribute">Canvas.Left</span>=<span class="string">"150"</span> <span class="attribute">Canvas.Top</span>=<span class="string">"20"</span>
-             <span class="attribute">Width</span>=<span class="string">"80"</span> <span class="attribute">Height</span>=<span class="string">"80"</span>
-             <span class="attribute">Fill</span>=<span class="string">"#22C55E"</span><span class="tag">/&gt;</span>
-    
-    <span class="comment">&lt;!-- Linie --&gt;</span>
-    <span class="tag">&lt;Line</span> <span class="attribute">X1</span>=<span class="string">"20"</span> <span class="attribute">Y1</span>=<span class="string">"150"</span>
-          <span class="attribute">X2</span>=<span class="string">"200"</span> <span class="attribute">Y2</span>=<span class="string">"150"</span>
-          <span class="attribute">Stroke</span>=<span class="string">"#F59E0B"</span>
-          <span class="attribute">StrokeThickness</span>=<span class="string">"3"</span>
-          <span class="attribute">StrokeDashArray</span>=<span class="string">"5,3"</span><span class="tag">/&gt;</span>
-    
-    <span class="comment">&lt;!-- Polygon (Dreieck) --&gt;</span>
-    <span class="tag">&lt;Polygon</span> <span class="attribute">Points</span>=<span class="string">"300,20 350,100 250,100"</span>
-             <span class="attribute">Fill</span>=<span class="string">"#EF4444"</span>
-             <span class="attribute">Stroke</span>=<span class="string">"#DC2626"</span>
-             <span class="attribute">StrokeThickness</span>=<span class="string">"2"</span><span class="tag">/&gt;</span>
-    
-    <span class="comment">&lt;!-- Polyline (offene Linie) --&gt;</span>
-    <span class="tag">&lt;Polyline</span> <span class="attribute">Points</span>=<span class="string">"20,200 60,180 100,220 140,190 180,210"</span>
-              <span class="attribute">Stroke</span>=<span class="string">"#8B5CF6"</span>
-              <span class="attribute">StrokeThickness</span>=<span class="string">"3"</span>
-              <span class="attribute">Fill</span>=<span class="string">"Transparent"</span><span class="tag">/&gt;</span>
-              
-<span class="tag">&lt;/Canvas&gt;</span></code></pre>
-                </div>
-
+                <h3>2. Path & Geometrien</h3>
                 <div class="table-container">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Shape</th>
-                                <th>Beschreibung</th>
-                                <th>Wichtige Properties</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Befehl</th><th>Bedeutung</th></tr></thead>
                         <tbody>
-                            <tr>
-                                <td><code class="inline">Rectangle</code></td>
-                                <td>Rechteck (optional mit runden Ecken)</td>
-                                <td>RadiusX, RadiusY</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">Ellipse</code></td>
-                                <td>Ellipse oder Kreis</td>
-                                <td>Width = Height für Kreis</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">Line</code></td>
-                                <td>Einzelne Linie</td>
-                                <td>X1, Y1, X2, Y2</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">Polygon</code></td>
-                                <td>Geschlossene Form</td>
-                                <td>Points</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">Polyline</code></td>
-                                <td>Offene Linienkette</td>
-                                <td>Points</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">Path</code></td>
-                                <td>Komplexe Pfade</td>
-                                <td>Data (Mini-Sprache)</td>
-                            </tr>
+                            <tr><td><code class="inline">M x,y</code></td><td>Move to (Startpunkt)</td></tr>
+                            <tr><td><code class="inline">L x,y</code></td><td>Line to</td></tr>
+                            <tr><td><code class="inline">H x</code></td><td>Horizontale Linie</td></tr>
+                            <tr><td><code class="inline">V y</code></td><td>Vertikale Linie</td></tr>
+                            <tr><td><code class="inline">C x1,y1 x2,y2 x,y</code></td><td>Cubic Bézier</td></tr>
+                            <tr><td><code class="inline">Z</code></td><td>Close Path</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
             <div class="card">
-                <h3>🎨 Brushes (Pinsel)</h3>
-                <p>Brushes definieren, wie Flächen gefüllt werden. WPF bietet verschiedene Brush-Typen:</p>
-
+                <h3>3. DrawingContext</h3>
                 <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">XAML - Verschiedene Brush-Typen</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="tag">&lt;StackPanel</span> <span class="attribute">Orientation</span>=<span class="string">"Horizontal"</span> <span class="attribute">Spacing</span>=<span class="string">"20"</span><span class="tag">&gt;</span>
-    
-    <span class="comment">&lt;!-- SolidColorBrush: Einfarbig --&gt;</span>
-    <span class="tag">&lt;Rectangle</span> <span class="attribute">Width</span>=<span class="string">"80"</span> <span class="attribute">Height</span>=<span class="string">"80"</span><span class="tag">&gt;</span>
-        <span class="tag">&lt;Rectangle.Fill&gt;</span>
-            <span class="tag">&lt;SolidColorBrush</span> <span class="attribute">Color</span>=<span class="string">"#6366F1"</span><span class="tag">/&gt;</span>
-        <span class="tag">&lt;/Rectangle.Fill&gt;</span>
-    <span class="tag">&lt;/Rectangle&gt;</span>
-    
-    <span class="comment">&lt;!-- LinearGradientBrush: Linearer Farbverlauf --&gt;</span>
-    <span class="tag">&lt;Rectangle</span> <span class="attribute">Width</span>=<span class="string">"80"</span> <span class="attribute">Height</span>=<span class="string">"80"</span><span class="tag">&gt;</span>
-        <span class="tag">&lt;Rectangle.Fill&gt;</span>
-            <span class="tag">&lt;LinearGradientBrush</span> <span class="attribute">StartPoint</span>=<span class="string">"0,0"</span> <span class="attribute">EndPoint</span>=<span class="string">"1,1"</span><span class="tag">&gt;</span>
-                <span class="tag">&lt;GradientStop</span> <span class="attribute">Color</span>=<span class="string">"#6366F1"</span> <span class="attribute">Offset</span>=<span class="string">"0"</span><span class="tag">/&gt;</span>
-                <span class="tag">&lt;GradientStop</span> <span class="attribute">Color</span>=<span class="string">"#EC4899"</span> <span class="attribute">Offset</span>=<span class="string">"1"</span><span class="tag">/&gt;</span>
-            <span class="tag">&lt;/LinearGradientBrush&gt;</span>
-        <span class="tag">&lt;/Rectangle.Fill&gt;</span>
-    <span class="tag">&lt;/Rectangle&gt;</span>
-    
-    <span class="comment">&lt;!-- RadialGradientBrush: Radialer Farbverlauf --&gt;</span>
-    <span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"80"</span> <span class="attribute">Height</span>=<span class="string">"80"</span><span class="tag">&gt;</span>
-        <span class="tag">&lt;Ellipse.Fill&gt;</span>
-            <span class="tag">&lt;RadialGradientBrush</span> <span class="attribute">GradientOrigin</span>=<span class="string">"0.3,0.3"</span><span class="tag">&gt;</span>
-                <span class="tag">&lt;GradientStop</span> <span class="attribute">Color</span>=<span class="string">"White"</span> <span class="attribute">Offset</span>=<span class="string">"0"</span><span class="tag">/&gt;</span>
-                <span class="tag">&lt;GradientStop</span> <span class="attribute">Color</span>=<span class="string">"#22C55E"</span> <span class="attribute">Offset</span>=<span class="string">"1"</span><span class="tag">/&gt;</span>
-            <span class="tag">&lt;/RadialGradientBrush&gt;</span>
-        <span class="tag">&lt;/Ellipse.Fill&gt;</span>
-    <span class="tag">&lt;/Ellipse&gt;</span>
-    
-    <span class="comment">&lt;!-- ImageBrush: Bild als Füllung --&gt;</span>
-    <span class="tag">&lt;Rectangle</span> <span class="attribute">Width</span>=<span class="string">"80"</span> <span class="attribute">Height</span>=<span class="string">"80"</span><span class="tag">&gt;</span>
-        <span class="tag">&lt;Rectangle.Fill&gt;</span>
-            <span class="tag">&lt;ImageBrush</span> <span class="attribute">ImageSource</span>=<span class="string">"textur.png"</span> <span class="attribute">Stretch</span>=<span class="string">"UniformToFill"</span><span class="tag">/&gt;</span>
-        <span class="tag">&lt;/Rectangle.Fill&gt;</span>
-    <span class="tag">&lt;/Rectangle&gt;</span>
-    
-<span class="tag">&lt;/StackPanel&gt;</span></code></pre>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>✏️ Programmatisches Zeichnen mit DrawingContext</h3>
-                <p>Für dynamisches Zeichnen (z.B. in Spielen oder Visualisierungen) verwendest du <code class="inline">DrawingContext</code>:</p>
-
-                <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">C# - Custom Drawing Control</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="keyword">using</span> System.Windows;
-<span class="keyword">using</span> System.Windows.Media;
-
-<span class="keyword">public class</span> <span class="type">CustomDrawingControl</span> : <span class="type">FrameworkElement</span>
+                    <div class="code-header"><span class="code-lang">C#</span><span class="code-filename">Programmatisches Zeichnen</span><button class="copy-btn" onclick="copyCode(this)">Kopieren</button></div>
+                    <pre><code><span class="keyword">public class</span> <span class="type">CustomDrawing</span> : <span class="type">FrameworkElement</span>
 {
     <span class="keyword">protected override void</span> OnRender(<span class="type">DrawingContext</span> dc)
     {
-        <span class="keyword">base</span>.OnRender(dc);
-        
-        <span class="comment">// Pinsel und Stifte definieren</span>
-        <span class="keyword">var</span> fillBrush = <span class="keyword">new</span> <span class="type">SolidColorBrush</span>(<span class="type">Color</span>.FromRgb(<span class="value">99</span>, <span class="value">102</span>, <span class="value">241</span>));
-        <span class="keyword">var</span> strokePen = <span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.White, <span class="value">2</span>);
-        
-        <span class="comment">// Ellipse zeichnen</span>
-        dc.DrawEllipse(
-            fillBrush,           <span class="comment">// Füllung</span>
-            strokePen,           <span class="comment">// Rand</span>
-            <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">100</span>, <span class="value">100</span>), <span class="comment">// Mittelpunkt</span>
-            <span class="value">50</span>,                  <span class="comment">// RadiusX</span>
-            <span class="value">50</span>                   <span class="comment">// RadiusY</span>
-        );
-        
-        <span class="comment">// Rechteck zeichnen</span>
-        dc.DrawRectangle(
-            <span class="type">Brushes</span>.LimeGreen,
-            strokePen,
-            <span class="keyword">new</span> <span class="type">Rect</span>(<span class="value">180</span>, <span class="value">60</span>, <span class="value">100</span>, <span class="value">80</span>)
-        );
-        
-        <span class="comment">// Linie zeichnen</span>
-        dc.DrawLine(
-            <span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.Orange, <span class="value">3</span>),
-            <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">50</span>, <span class="value">180</span>),
-            <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">250</span>, <span class="value">180</span>)
-        );
-        
-        <span class="comment">// Text zeichnen</span>
-        <span class="keyword">var</span> formattedText = <span class="keyword">new</span> <span class="type">FormattedText</span>(
-            <span class="string">"Hallo WPF!"</span>,
-            <span class="type">System.Globalization.CultureInfo</span>.CurrentCulture,
-            <span class="type">FlowDirection</span>.LeftToRight,
-            <span class="keyword">new</span> <span class="type">Typeface</span>(<span class="string">"Segoe UI"</span>),
-            <span class="value">24</span>,
-            <span class="type">Brushes</span>.White,
-            <span class="value">1.0</span>
-        );
-        dc.DrawText(formattedText, <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">100</span>, <span class="value">200</span>));
+        dc.DrawEllipse(<span class="type">Brushes</span>.Blue, <span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.White, <span class="value">2</span>), <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">100</span>, <span class="value">100</span>), <span class="value">50</span>, <span class="value">50</span>);
+        dc.DrawRectangle(<span class="type">Brushes</span>.Green, <span class="keyword">null</span>, <span class="keyword">new</span> <span class="type">Rect</span>(<span class="value">180</span>, <span class="value">60</span>, <span class="value">100</span>, <span class="value">80</span>));
+        dc.DrawLine(<span class="keyword">new</span> <span class="type">Pen</span>(<span class="type">Brushes</span>.Orange, <span class="value">3</span>), <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">50</span>, <span class="value">180</span>), <span class="keyword">new</span> <span class="type">Point</span>(<span class="value">250</span>, <span class="value">180</span>));
     }
 }</code></pre>
                 </div>
-
-                <div class="info-box warning">
-                    <strong>⚠️ Performance-Tipp:</strong> Erstelle Brushes und Pens außerhalb von <code class="inline">OnRender()</code> als Klassenvariablen, um sie wiederzuverwenden. Das Erstellen in der Render-Methode kann bei häufigem Neuzeichnen zu Performance-Problemen führen.
-                </div>
             </div>
 
             <div class="card">
-                <h3>🖼️ Path und Geometrien</h3>
-                <p>Mit <code class="inline">Path</code> kannst du komplexe Formen erstellen. Die Data-Property verwendet eine Mini-Sprache:</p>
-
-                <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">XAML - Path Mini-Sprache</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="comment">&lt;!-- Herz-Symbol mit Path --&gt;</span>
-<span class="tag">&lt;Path</span> <span class="attribute">Fill</span>=<span class="string">"#EF4444"</span>
-      <span class="attribute">Data</span>=<span class="string">"M 100,30 
-            C 60,0 0,30 0,90 
-            C 0,140 60,180 100,210 
-            C 140,180 200,140 200,90 
-            C 200,30 140,0 100,30 Z"</span><span class="tag">/&gt;</span>
-
-<span class="comment">&lt;!-- Pfeil --&gt;</span>
-<span class="tag">&lt;Path</span> <span class="attribute">Stroke</span>=<span class="string">"#6366F1"</span> <span class="attribute">StrokeThickness</span>=<span class="string">"3"</span>
-      <span class="attribute">Data</span>=<span class="string">"M 10,50 L 90,50 M 70,30 L 90,50 L 70,70"</span><span class="tag">/&gt;</span></code></pre>
-                </div>
-
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Befehl</th>
-                                <th>Bedeutung</th>
-                                <th>Beispiel</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code class="inline">M x,y</code></td>
-                                <td>Move to (Startpunkt)</td>
-                                <td>M 10,20</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">L x,y</code></td>
-                                <td>Line to (Linie)</td>
-                                <td>L 50,80</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">H x</code></td>
-                                <td>Horizontale Linie</td>
-                                <td>H 100</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">V y</code></td>
-                                <td>Vertikale Linie</td>
-                                <td>V 50</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">C x1,y1 x2,y2 x,y</code></td>
-                                <td>Cubic Bézier Kurve</td>
-                                <td>C 10,10 90,10 50,50</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">Q x1,y1 x,y</code></td>
-                                <td>Quadratic Bézier</td>
-                                <td>Q 50,0 100,50</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">A rx,ry angle large,sweep x,y</code></td>
-                                <td>Arc (Bogen)</td>
-                                <td>A 50,50 0 1,1 100,100</td>
-                            </tr>
-                            <tr>
-                                <td><code class="inline">Z</code></td>
-                                <td>Close Path (schließen)</td>
-                                <td>Z</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="info-box success">
-                    <strong>💡 Tipp:</strong> Kleinbuchstaben (m, l, c, ...) verwenden relative Koordinaten zum letzten Punkt. Großbuchstaben verwenden absolute Koordinaten.
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>🎮 Interaktive Canvas-Demo</h3>
-                <p>Probiere es selbst aus! Zeichne auf der Leinwand:</p>
-
+                <h3>🎮 Canvas Demo</h3>
                 <div class="demo-container">
                     <div class="demo-title">🖌️ WPF Painter Simulation</div>
                     <div class="canvas-container">
@@ -1971,7 +640,6 @@
                                 <div class="color-option" style="background: #22C55E;" data-color="#22C55E"></div>
                                 <div class="color-option" style="background: #EF4444;" data-color="#EF4444"></div>
                                 <div class="color-option" style="background: #F59E0B;" data-color="#F59E0B"></div>
-                                <div class="color-option" style="background: #EC4899;" data-color="#EC4899"></div>
                                 <div class="color-option" style="background: #000000;" data-color="#000000"></div>
                             </div>
                             <div class="brush-size">
@@ -1981,86 +649,23 @@
                             </div>
                             <button class="canvas-btn" id="clearCanvas">🗑️ Löschen</button>
                         </div>
-                        <canvas id="paintCanvas" width="600" height="300"></canvas>
+                        <canvas id="paintCanvas" width="600" height="250"></canvas>
                     </div>
-                    <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.9rem;">
-                        Diese Demo simuliert, wie Canvas-Zeichnung in WPF funktioniert. In echtem WPF würdest du 
-                        <code class="inline">InkCanvas</code> oder <code class="inline">DrawingContext</code> verwenden.
-                    </p>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>🎬 Transforms & Effekte</h3>
-                <p>WPF unterstützt verschiedene Transformationen und visuelle Effekte:</p>
-
-                <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-lang">XAML - Transformationen</span>
-                        <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
-                    </div>
-                    <pre><code><span class="comment">&lt;!-- Rotation --&gt;</span>
-<span class="tag">&lt;Rectangle</span> <span class="attribute">Width</span>=<span class="string">"80"</span> <span class="attribute">Height</span>=<span class="string">"40"</span> <span class="attribute">Fill</span>=<span class="string">"#6366F1"</span><span class="tag">&gt;</span>
-    <span class="tag">&lt;Rectangle.RenderTransform&gt;</span>
-        <span class="tag">&lt;RotateTransform</span> <span class="attribute">Angle</span>=<span class="string">"45"</span> <span class="attribute">CenterX</span>=<span class="string">"40"</span> <span class="attribute">CenterY</span>=<span class="string">"20"</span><span class="tag">/&gt;</span>
-    <span class="tag">&lt;/Rectangle.RenderTransform&gt;</span>
-<span class="tag">&lt;/Rectangle&gt;</span>
-
-<span class="comment">&lt;!-- Skalierung --&gt;</span>
-<span class="tag">&lt;Ellipse</span> <span class="attribute">Width</span>=<span class="string">"50"</span> <span class="attribute">Height</span>=<span class="string">"50"</span> <span class="attribute">Fill</span>=<span class="string">"#22C55E"</span><span class="tag">&gt;</span>
-    <span class="tag">&lt;Ellipse.RenderTransform&gt;</span>
-        <span class="tag">&lt;ScaleTransform</span> <span class="attribute">ScaleX</span>=<span class="string">"1.5"</span> <span class="attribute">ScaleY</span>=<span class="string">"1.5"</span><span class="tag">/&gt;</span>
-    <span class="tag">&lt;/Ellipse.RenderTransform&gt;</span>
-<span class="tag">&lt;/Ellipse&gt;</span>
-
-<span class="comment">&lt;!-- Mehrere Transformationen kombinieren --&gt;</span>
-<span class="tag">&lt;Rectangle</span> <span class="attribute">Width</span>=<span class="string">"60"</span> <span class="attribute">Height</span>=<span class="string">"60"</span> <span class="attribute">Fill</span>=<span class="string">"#EF4444"</span><span class="tag">&gt;</span>
-    <span class="tag">&lt;Rectangle.RenderTransform&gt;</span>
-        <span class="tag">&lt;TransformGroup&gt;</span>
-            <span class="tag">&lt;RotateTransform</span> <span class="attribute">Angle</span>=<span class="string">"30"</span><span class="tag">/&gt;</span>
-            <span class="tag">&lt;TranslateTransform</span> <span class="attribute">X</span>=<span class="string">"50"</span> <span class="attribute">Y</span>=<span class="string">"20"</span><span class="tag">/&gt;</span>
-            <span class="tag">&lt;SkewTransform</span> <span class="attribute">AngleX</span>=<span class="string">"10"</span><span class="tag">/&gt;</span>
-        <span class="tag">&lt;/TransformGroup&gt;</span>
-    <span class="tag">&lt;/Rectangle.RenderTransform&gt;</span>
-<span class="tag">&lt;/Rectangle&gt;</span>
-
-<span class="comment">&lt;!-- Schatten-Effekt --&gt;</span>
-<span class="tag">&lt;Rectangle</span> <span class="attribute">Width</span>=<span class="string">"100"</span> <span class="attribute">Height</span>=<span class="string">"60"</span> <span class="attribute">Fill</span>=<span class="string">"#F59E0B"</span><span class="tag">&gt;</span>
-    <span class="tag">&lt;Rectangle.Effect&gt;</span>
-        <span class="tag">&lt;DropShadowEffect</span> <span class="attribute">BlurRadius</span>=<span class="string">"15"</span> 
-                          <span class="attribute">ShadowDepth</span>=<span class="string">"5"</span>
-                          <span class="attribute">Color</span>=<span class="string">"Black"</span>
-                          <span class="attribute">Opacity</span>=<span class="string">"0.5"</span><span class="tag">/&gt;</span>
-    <span class="tag">&lt;/Rectangle.Effect&gt;</span>
-<span class="tag">&lt;/Rectangle&gt;</span>
-
-<span class="comment">&lt;!-- Blur-Effekt --&gt;</span>
-<span class="tag">&lt;Image</span> <span class="attribute">Source</span>=<span class="string">"bild.jpg"</span><span class="tag">&gt;</span>
-    <span class="tag">&lt;Image.Effect&gt;</span>
-        <span class="tag">&lt;BlurEffect</span> <span class="attribute">Radius</span>=<span class="string">"10"</span><span class="tag">/&gt;</span>
-    <span class="tag">&lt;/Image.Effect&gt;</span>
-<span class="tag">&lt;/Image&gt;</span></code></pre>
                 </div>
             </div>
         </section>
 
-        <!-- Quiz Tab -->
+        <!-- QUIZ TAB -->
         <section id="quiz" class="tab-content">
-            <div class="card">
-                <h2>✅ Wissens-Quiz</h2>
-                <p>Teste dein Wissen über die drei WPF-Themen! Wähle die richtige Antwort für jede Frage.</p>
-            </div>
+            <div class="card"><h2>✅ Wissens-Quiz</h2><p>Teste dein Wissen!</p></div>
 
             <div class="card">
                 <div class="quiz-container" data-quiz="1">
-                    <div class="quiz-question">
-                        <strong>Frage 1:</strong> Was ist der Hauptunterschied zwischen einem UserControl und einem Custom Control?
-                    </div>
+                    <div class="quiz-question"><strong>1.</strong> Wo muss Generic.xaml liegen?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" data-answer="a">A) UserControls sind schneller als Custom Controls</div>
-                        <div class="quiz-option" data-answer="b">B) Custom Controls haben austauschbare Templates, UserControls nicht</div>
-                        <div class="quiz-option" data-answer="c">C) UserControls können nur in XAML erstellt werden</div>
-                        <div class="quiz-option" data-answer="d">D) Es gibt keinen Unterschied</div>
+                        <div class="quiz-option" data-answer="a">A) Im Projektroot</div>
+                        <div class="quiz-option" data-answer="b">B) Im Themes-Ordner</div>
+                        <div class="quiz-option" data-answer="c">C) Im Resources-Ordner</div>
                     </div>
                     <div class="quiz-feedback"></div>
                 </div>
@@ -2068,14 +673,11 @@
 
             <div class="card">
                 <div class="quiz-container" data-quiz="2">
-                    <div class="quiz-question">
-                        <strong>Frage 2:</strong> Welches Interface muss implementiert werden, damit das UI automatisch bei Datenänderungen aktualisiert wird?
-                    </div>
+                    <div class="quiz-question"><strong>2.</strong> Was bewirkt DefaultStyleKeyProperty.OverrideMetadata()?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" data-answer="a">A) IDataBinding</div>
-                        <div class="quiz-option" data-answer="b">B) INotifyPropertyChanged</div>
-                        <div class="quiz-option" data-answer="c">C) IBindable</div>
-                        <div class="quiz-option" data-answer="d">D) IUpdateUI</div>
+                        <div class="quiz-option" data-answer="a">A) Setzt die Hintergrundfarbe</div>
+                        <div class="quiz-option" data-answer="b">B) Verknüpft das Control mit seinem Style in Generic.xaml</div>
+                        <div class="quiz-option" data-answer="c">C) Registriert Events</div>
                     </div>
                     <div class="quiz-feedback"></div>
                 </div>
@@ -2083,14 +685,11 @@
 
             <div class="card">
                 <div class="quiz-container" data-quiz="3">
-                    <div class="quiz-question">
-                        <strong>Frage 3:</strong> Was bewirkt der Binding-Modus "TwoWay"?
-                    </div>
+                    <div class="quiz-question"><strong>3.</strong> Was ist die Namenskonvention für Template Parts?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" data-answer="a">A) Daten fließen nur von der Quelle zum Ziel</div>
-                        <div class="quiz-option" data-answer="b">B) Daten fließen nur vom Ziel zur Quelle</div>
-                        <div class="quiz-option" data-answer="c">C) Daten werden in beide Richtungen synchronisiert</div>
-                        <div class="quiz-option" data-answer="d">D) Das Binding wird nur einmal beim Start ausgeführt</div>
+                        <div class="quiz-option" data-answer="a">A) PART_ElementName</div>
+                        <div class="quiz-option" data-answer="b">B) _ElementName</div>
+                        <div class="quiz-option" data-answer="c">C) x:ElementName</div>
                     </div>
                     <div class="quiz-feedback"></div>
                 </div>
@@ -2098,14 +697,11 @@
 
             <div class="card">
                 <div class="quiz-container" data-quiz="4">
-                    <div class="quiz-question">
-                        <strong>Frage 4:</strong> Welcher Path-Befehl wird verwendet, um eine Linie zu einem Punkt zu zeichnen?
-                    </div>
+                    <div class="quiz-question"><strong>4.</strong> Welches Interface braucht man für automatische UI-Updates?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" data-answer="a">A) M (Move)</div>
-                        <div class="quiz-option" data-answer="b">B) L (Line)</div>
-                        <div class="quiz-option" data-answer="c">C) C (Curve)</div>
-                        <div class="quiz-option" data-answer="d">D) Z (Close)</div>
+                        <div class="quiz-option" data-answer="a">A) IBindable</div>
+                        <div class="quiz-option" data-answer="b">B) INotifyPropertyChanged</div>
+                        <div class="quiz-option" data-answer="c">C) IUpdateUI</div>
                     </div>
                     <div class="quiz-feedback"></div>
                 </div>
@@ -2113,14 +709,11 @@
 
             <div class="card">
                 <div class="quiz-container" data-quiz="5">
-                    <div class="quiz-question">
-                        <strong>Frage 5:</strong> Was ist eine Dependency Property?
-                    </div>
+                    <div class="quiz-question"><strong>5.</strong> Was macht der Binding-Modus TwoWay?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" data-answer="a">A) Eine normale C#-Property</div>
-                        <div class="quiz-option" data-answer="b">B) Eine Property, die Binding, Animationen und Styles unterstützt</div>
-                        <div class="quiz-option" data-answer="c">C) Eine Property, die nur in XAML verwendet werden kann</div>
-                        <div class="quiz-option" data-answer="d">D) Eine Property, die von einer anderen Klasse abhängt</div>
+                        <div class="quiz-option" data-answer="a">A) Nur Source → Target</div>
+                        <div class="quiz-option" data-answer="b">B) Nur Target → Source</div>
+                        <div class="quiz-option" data-answer="c">C) Beide Richtungen synchron</div>
                     </div>
                     <div class="quiz-feedback"></div>
                 </div>
@@ -2128,14 +721,11 @@
 
             <div class="card">
                 <div class="quiz-container" data-quiz="6">
-                    <div class="quiz-question">
-                        <strong>Frage 6:</strong> Welcher Brush-Typ erzeugt einen Farbverlauf von der Mitte nach außen?
-                    </div>
+                    <div class="quiz-question"><strong>6.</strong> Welcher Path-Befehl zeichnet eine Linie?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" data-answer="a">A) SolidColorBrush</div>
-                        <div class="quiz-option" data-answer="b">B) LinearGradientBrush</div>
-                        <div class="quiz-option" data-answer="c">C) RadialGradientBrush</div>
-                        <div class="quiz-option" data-answer="d">D) ImageBrush</div>
+                        <div class="quiz-option" data-answer="a">A) M</div>
+                        <div class="quiz-option" data-answer="b">B) L</div>
+                        <div class="quiz-option" data-answer="c">C) Z</div>
                     </div>
                     <div class="quiz-feedback"></div>
                 </div>
@@ -2143,257 +733,113 @@
 
             <div class="card">
                 <h3 id="quizResult" style="display: none;"></h3>
-                <button class="wpf-button primary" id="checkQuiz" style="margin-top: 1rem;">Quiz auswerten</button>
-                <button class="wpf-button outline" id="resetQuiz" style="margin-top: 1rem; margin-left: 0.5rem;">Quiz zurücksetzen</button>
+                <button class="wpf-button primary" id="checkQuiz">Quiz auswerten</button>
+                <button class="wpf-button outline" id="resetQuiz" style="margin-left: 0.5rem;">Zurücksetzen</button>
             </div>
         </section>
     </main>
 
-    <footer>
-        <p>WPF Lernunterlage © 2025 | Erstellt für HTBLuVA-Studierende</p>
-        <p style="font-size: 0.85rem; margin-top: 0.5rem;">Custom Controls • Bindings • Painter</p>
-    </footer>
+    <footer><p>WPF Lernunterlage © 2025 | Custom Controls • Bindings • Painter</p></footer>
 
     <script>
         // Tab Navigation
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabBtns.forEach(btn => {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const tabId = btn.dataset.tab;
-                
-                tabBtns.forEach(b => b.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 btn.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
-                
+                document.getElementById(btn.dataset.tab).classList.add('active');
                 updateProgress();
             });
         });
 
-        // Accordion
-        document.querySelectorAll('.accordion-header').forEach(header => {
-            header.addEventListener('click', () => {
-                const item = header.parentElement;
-                item.classList.toggle('open');
-            });
-        });
-
-        // Copy Code Function
         function copyCode(btn) {
-            const codeBlock = btn.closest('.code-container').querySelector('code');
-            const text = codeBlock.innerText;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                btn.textContent = 'Kopiert!';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.textContent = 'Kopieren';
-                    btn.classList.remove('copied');
-                }, 2000);
+            navigator.clipboard.writeText(btn.closest('.code-container').querySelector('code').innerText).then(() => {
+                btn.textContent = 'Kopiert!'; btn.classList.add('copied');
+                setTimeout(() => { btn.textContent = 'Kopieren'; btn.classList.remove('copied'); }, 2000);
             });
         }
 
         // Binding Demo
-        const bindingSource = document.getElementById('bindingSource');
-        const bindingTarget = document.getElementById('bindingTarget');
-
-        bindingSource.addEventListener('input', (e) => {
-            bindingTarget.textContent = e.target.value || '(leer)';
+        document.getElementById('bindingSource').addEventListener('input', e => {
+            document.getElementById('bindingTarget').textContent = e.target.value || '(leer)';
         });
 
         // Visibility Demo
-        const visibilityToggle = document.getElementById('visibilityToggle');
-        const visibilityTarget = document.getElementById('visibilityTarget');
-
-        visibilityToggle.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                visibilityTarget.style.opacity = '1';
-                visibilityTarget.style.transform = 'scale(1)';
-            } else {
-                visibilityTarget.style.opacity = '0';
-                visibilityTarget.style.transform = 'scale(0.8)';
-            }
+        document.getElementById('visibilityToggle').addEventListener('change', e => {
+            const t = document.getElementById('visibilityTarget');
+            t.style.opacity = e.target.checked ? '1' : '0';
+            t.style.transform = e.target.checked ? 'scale(1)' : 'scale(0.8)';
         });
 
-        // Canvas Painter
-        const canvas = document.getElementById('paintCanvas');
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        let currentColor = '#6366F1';
-        let brushSize = 5;
+        // Canvas
+        const canvas = document.getElementById('paintCanvas'), ctx = canvas.getContext('2d');
+        let isDrawing = false, currentColor = '#6366F1', brushSize = 5;
 
-        // Color picker
-        document.querySelectorAll('.color-option').forEach(option => {
-            option.addEventListener('click', () => {
+        document.querySelectorAll('.color-option').forEach(opt => {
+            opt.addEventListener('click', () => {
                 document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
-                option.classList.add('active');
-                currentColor = option.dataset.color;
+                opt.classList.add('active'); currentColor = opt.dataset.color;
             });
         });
 
-        // Brush size
-        const brushSizeInput = document.getElementById('brushSize');
-        const brushSizeValue = document.getElementById('brushSizeValue');
-        
-        brushSizeInput.addEventListener('input', (e) => {
+        document.getElementById('brushSize').addEventListener('input', e => {
             brushSize = e.target.value;
-            brushSizeValue.textContent = brushSize + 'px';
+            document.getElementById('brushSizeValue').textContent = brushSize + 'px';
         });
 
-        // Clear canvas
-        document.getElementById('clearCanvas').addEventListener('click', () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        });
+        document.getElementById('clearCanvas').addEventListener('click', () => ctx.clearRect(0, 0, canvas.width, canvas.height));
 
-        // Drawing
         function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            
-            if (e.touches) {
-                return {
-                    x: (e.touches[0].clientX - rect.left) * scaleX,
-                    y: (e.touches[0].clientY - rect.top) * scaleY
-                };
-            }
-            return {
-                x: (e.clientX - rect.left) * scaleX,
-                y: (e.clientY - rect.top) * scaleY
-            };
+            const r = canvas.getBoundingClientRect();
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+            const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+            return { x: x * (canvas.width / r.width), y: y * (canvas.height / r.height) };
         }
 
-        function startDraw(e) {
-            isDrawing = true;
-            const pos = getPos(e);
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            e.preventDefault();
-            
-            const pos = getPos(e);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = brushSize;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.stroke();
-        }
-
-        function stopDraw() {
-            isDrawing = false;
-        }
-
-        canvas.addEventListener('mousedown', startDraw);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDraw);
-        canvas.addEventListener('mouseout', stopDraw);
-
-        canvas.addEventListener('touchstart', startDraw);
-        canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', stopDraw);
+        canvas.addEventListener('mousedown', e => { isDrawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); });
+        canvas.addEventListener('mousemove', e => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = currentColor; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.stroke(); });
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mouseout', () => isDrawing = false);
+        canvas.addEventListener('touchstart', e => { isDrawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); });
+        canvas.addEventListener('touchmove', e => { if (!isDrawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = currentColor; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.stroke(); });
+        canvas.addEventListener('touchend', () => isDrawing = false);
 
         // Quiz
-        const correctAnswers = {
-            1: 'b',
-            2: 'b',
-            3: 'c',
-            4: 'b',
-            5: 'b',
-            6: 'c'
-        };
-
-        document.querySelectorAll('.quiz-option').forEach(option => {
-            option.addEventListener('click', () => {
-                const container = option.closest('.quiz-container');
-                container.querySelectorAll('.quiz-option').forEach(o => {
-                    o.classList.remove('selected', 'correct', 'incorrect');
-                });
-                option.classList.add('selected');
-                container.querySelector('.quiz-feedback').classList.remove('show');
+        const answers = { 1: 'b', 2: 'b', 3: 'a', 4: 'b', 5: 'c', 6: 'b' };
+        document.querySelectorAll('.quiz-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                opt.closest('.quiz-container').querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+                opt.classList.add('selected');
             });
         });
 
         document.getElementById('checkQuiz').addEventListener('click', () => {
             let score = 0;
-            const total = Object.keys(correctAnswers).length;
-
-            document.querySelectorAll('.quiz-container').forEach(container => {
-                const quizNum = container.dataset.quiz;
-                const selected = container.querySelector('.quiz-option.selected');
-                const feedback = container.querySelector('.quiz-feedback');
-
-                if (selected) {
-                    const answer = selected.dataset.answer;
-                    if (answer === correctAnswers[quizNum]) {
-                        selected.classList.add('correct');
-                        feedback.textContent = '✅ Richtig!';
-                        feedback.className = 'quiz-feedback show correct';
-                        score++;
-                    } else {
-                        selected.classList.add('incorrect');
-                        // Find and highlight correct answer
-                        container.querySelectorAll('.quiz-option').forEach(o => {
-                            if (o.dataset.answer === correctAnswers[quizNum]) {
-                                o.classList.add('correct');
-                            }
-                        });
-                        feedback.textContent = '❌ Falsch! Die richtige Antwort ist markiert.';
-                        feedback.className = 'quiz-feedback show incorrect';
-                    }
-                } else {
-                    feedback.textContent = '⚠️ Bitte wähle eine Antwort!';
-                    feedback.className = 'quiz-feedback show incorrect';
+            document.querySelectorAll('.quiz-container').forEach(c => {
+                const num = c.dataset.quiz, sel = c.querySelector('.quiz-option.selected'), fb = c.querySelector('.quiz-feedback');
+                if (sel) {
+                    if (sel.dataset.answer === answers[num]) { sel.classList.add('correct'); fb.textContent = '✅ Richtig!'; fb.className = 'quiz-feedback show correct'; score++; }
+                    else { sel.classList.add('incorrect'); c.querySelectorAll('.quiz-option').forEach(o => { if (o.dataset.answer === answers[num]) o.classList.add('correct'); }); fb.textContent = '❌ Falsch!'; fb.className = 'quiz-feedback show incorrect'; }
                 }
             });
-
-            const resultEl = document.getElementById('quizResult');
-            const percentage = Math.round((score / total) * 100);
-            let emoji = '';
-            if (percentage === 100) emoji = '🏆';
-            else if (percentage >= 80) emoji = '🌟';
-            else if (percentage >= 60) emoji = '👍';
-            else emoji = '📚';
-
-            resultEl.innerHTML = `${emoji} Ergebnis: ${score} von ${total} richtig (${percentage}%)`;
-            resultEl.style.display = 'block';
-            resultEl.style.color = percentage >= 60 ? 'var(--success)' : 'var(--error)';
+            const r = document.getElementById('quizResult');
+            r.innerHTML = `🎯 Ergebnis: ${score} von ${Object.keys(answers).length} richtig`;
+            r.style.display = 'block'; r.style.color = score >= 4 ? 'var(--success)' : 'var(--error)';
         });
 
         document.getElementById('resetQuiz').addEventListener('click', () => {
-            document.querySelectorAll('.quiz-option').forEach(o => {
-                o.classList.remove('selected', 'correct', 'incorrect');
-            });
-            document.querySelectorAll('.quiz-feedback').forEach(f => {
-                f.classList.remove('show');
-            });
+            document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect'));
+            document.querySelectorAll('.quiz-feedback').forEach(f => f.classList.remove('show'));
             document.getElementById('quizResult').style.display = 'none';
         });
 
-        // Progress Bar
         function updateProgress() {
-            const activeTab = document.querySelector('.tab-btn.active');
             const tabs = Array.from(document.querySelectorAll('.tab-btn'));
-            const index = tabs.indexOf(activeTab);
-            const progress = ((index + 1) / tabs.length) * 100;
-            document.getElementById('progressBar').style.width = progress + '%';
+            const active = document.querySelector('.tab-btn.active');
+            document.getElementById('progressBar').style.width = ((tabs.indexOf(active) + 1) / tabs.length * 100) + '%';
         }
-
         updateProgress();
-
-        // Scroll Progress
-        window.addEventListener('scroll', () => {
-            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrolled = (winScroll / height) * 100;
-            // Could use this for a different progress indicator
-        });
     </script>
 </body>
 </html>
