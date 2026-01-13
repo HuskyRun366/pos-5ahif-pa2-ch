@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interpreter Pattern – Selbst-parsende Nodes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-card: #1c2128;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-purple: #bc8cff;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --accent-cyan: #39c5cf;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border-color: #30363d;
+            --code-bg: #0d1117;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(88, 166, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(188, 140, 255, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 3rem 0;
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            color: var(--accent-cyan);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        section {
+            margin-bottom: 4rem;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h2 .icon {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--accent-blue);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-header .number {
+            width: 28px;
+            height: 28px;
+            background: var(--accent-blue);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .card-header h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1.25rem 0;
+        }
+
+        .code-header {
+            background: var(--bg-tertiary);
+            padding: 0.6rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-header span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .code-header .lang {
+            background: var(--bg-secondary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            color: var(--accent-purple);
+        }
+
+        pre {
+            padding: 1.25rem;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .keyword { color: var(--accent-purple); font-weight: 500; }
+        .type { color: var(--accent-cyan); }
+        .string { color: var(--accent-green); }
+        .number { color: var(--accent-orange); }
+        .comment { color: var(--text-muted); font-style: italic; }
+        .method { color: var(--accent-blue); }
+        .param { color: var(--accent-orange); }
+
+        p code, li code {
+            background: var(--bg-tertiary);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--accent-cyan);
+        }
+
+        .info-box {
+            background: rgba(88, 166, 255, 0.08);
+            border-left: 3px solid var(--accent-blue);
+            padding: 1.25rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+
+        .info-box.success {
+            background: rgba(63, 185, 80, 0.08);
+            border-left-color: var(--accent-green);
+        }
+
+        .info-box.warning {
+            background: rgba(210, 153, 34, 0.08);
+            border-left-color: var(--accent-orange);
+        }
+
+        .info-box strong {
+            color: var(--text-primary);
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .comparison-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .comparison-item.traditional {
+            border-top: 3px solid var(--accent-orange);
+        }
+
+        .comparison-item.self-parsing {
+            border-top: 3px solid var(--accent-green);
+        }
+
+        .comparison-item h4 {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .comparison-item ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .comparison-item li {
+            padding: 0.4rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .comparison-item li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--text-muted);
+        }
+
+        .demo-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .demo-header {
+            background: var(--bg-tertiary);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .demo-header .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .demo-header .dot.red { background: #ff5f56; }
+        .demo-header .dot.yellow { background: #ffbd2e; }
+        .demo-header .dot.green { background: #27c93f; }
+
+        .demo-header span {
+            margin-left: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .demo-content {
+            padding: 1.5rem;
+        }
+
+        .demo-input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .demo-input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+
+        .demo-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .demo-btn {
+            background: var(--accent-blue);
+            color: var(--bg-primary);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .demo-btn:hover {
+            background: #79b8ff;
+            transform: translateY(-1px);
+        }
+
+        .demo-btn:active {
+            transform: translateY(0);
+        }
+
+        .demo-output {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            min-height: 120px;
+        }
+
+        .demo-output h5 {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+        }
+
+        .tree-container {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .steps-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            transition: all 0.3s;
+        }
+
+        .step.completed {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: var(--bg-primary);
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 2rem 1rem;
+            flex-wrap: wrap;
+        }
+
+        .flow-box {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            font-weight: 500;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .flow-box.highlight {
+            border-color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .flow-arrow {
+            color: var(--text-muted);
+            font-size: 1.5rem;
+        }
+
+        ul, ol {
+            margin: 1rem 0 1rem 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .parse-log {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+        }
+
+        .parse-log .log-entry {
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            margin-left: -0.75rem;
+        }
+
+        .parse-log .log-entry.parse {
+            border-left-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .parse-log .log-entry.create {
+            border-left-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .parse-log .log-entry.eval {
+            border-left-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        .parse-log .log-entry.result {
+            border-left-color: var(--accent-orange);
+            color: var(--accent-orange);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            .flow-diagram {
+                flex-direction: column;
+            }
+            
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+
+        .toc {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .toc-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .toc-list li {
+            margin: 0;
+        }
+
+        .toc-list a {
+            display: block;
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border-color);
+            transition: color 0.2s;
+        }
+
+        .toc-list li:last-child a {
+            border-bottom: none;
+        }
+
+        .toc-list a:hover {
+            color: var(--accent-blue);
+        }
+
+        .toc-list a span {
+            color: var(--text-muted);
+            margin-right: 0.5rem;
+        }
+
+        .highlight-box {
+            background: rgba(188, 140, 255, 0.1);
+            border: 2px solid var(--accent-purple);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .highlight-box code {
+            color: var(--accent-purple);
+        }
+
+        .class-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .class-box {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            min-width: 280px;
+            overflow: hidden;
+        }
+
+        .class-box.interface {
+            border-color: var(--accent-purple);
+        }
+
+        .class-box.concrete {
+            border-color: var(--accent-green);
+        }
+
+        .class-box-header {
+            background: var(--bg-tertiary);
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .class-box.interface .class-box-header {
+            color: var(--accent-purple);
+        }
+
+        .class-box.concrete .class-box-header {
+            color: var(--accent-green);
+        }
+
+        .class-box-body {
+            padding: 0.75rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .class-box-body div {
+            padding: 0.2rem 0;
+            color: var(--text-secondary);
+        }
+
+        .inherit-arrow {
+            color: var(--text-muted);
+            font-size: 1.5rem;
+        }
+
+        .concrete-classes {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="badge">Design Pattern</div>
+            <h1>Interpreter Pattern</h1>
+            <p>Lerne, wie Nodes sich selbst parsen und auswerten können – mit <code>Parse()</code> und <code>Evaluate()</code> direkt im Interface. Keine extra Parser-Klasse nötig!</p>
+        </header>
+
+        <nav class="toc">
+            <h3>📑 Inhalt</h3>
+            <ul class="toc-list">
+                <li><a href="#motivation"><span>01</span> Was ist das Problem?</a></li>
+                <li><a href="#konzept"><span>02</span> Das Konzept verstehen</a></li>
+                <li><a href="#interface"><span>03</span> Das IExpression Interface</a></li>
+                <li><a href="#nodes"><span>04</span> Die konkreten Node-Klassen</a></li>
+                <li><a href="#ablauf"><span>05</span> Wie das Parsen funktioniert</a></li>
+                <li><a href="#demo"><span>06</span> Interaktive Demo</a></li>
+                <li><a href="#vorteile"><span>07</span> Vor- und Nachteile</a></li>
+            </ul>
+        </nav>
+
+        <!-- Section 1: Motivation -->
+        <section id="motivation">
+            <h2><span class="icon">💡</span> Was ist das Problem?</h2>
+            
+            <p>Stell dir vor, du möchtest mathematische Ausdrücke wie <code>3 + 5 * 2</code> in deinem Programm verarbeiten. Dafür brauchst du zwei Dinge:</p>
+            
+            <ol>
+                <li><strong>Parsen:</strong> Den Text in eine Baumstruktur umwandeln (damit <code>*</code> vor <code>+</code> kommt)</li>
+                <li><strong>Auswerten:</strong> Das Ergebnis berechnen (hier: 13)</li>
+            </ol>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="number">?</div>
+                    <h4>Die klassische Frage</h4>
+                </div>
+                <p>Normalerweise hast du dafür zwei getrennte Komponenten: einen <strong>Parser</strong> der den Baum baut, und einen <strong>Interpreter</strong> der ihn auswertet.</p>
+                <p>Aber was, wenn jeder Knoten im Baum <em>selbst weiß</em>, wie er sich aus dem Input parst? Das ist die Idee hinter <strong>selbst-parsenden Nodes</strong>.</p>
+            </div>
+
+            <div class="highlight-box">
+                <strong>🎯 Die Kernidee:</strong> Das <code>IExpression</code> Interface definiert sowohl <code>Parse()</code> als auch <code>Evaluate()</code>. Jeder Expression-Typ implementiert beide Methoden selbst – keine separate Parser-Klasse nötig!
+            </div>
+        </section>
+
+        <!-- Section 2: Concept -->
+        <section id="konzept">
+            <h2><span class="icon">🧠</span> Das Konzept verstehen</h2>
+
+            <p>Beim traditionellen Interpreter Pattern hast du meist eine separate Parser-Klasse. Bei unserem Ansatz ist das Parsen <strong>direkt im Interface und den Nodes</strong> integriert:</p>
+
+            <div class="comparison">
+                <div class="comparison-item traditional">
+                    <h4>❌ Traditionell (mit Parser-Klasse)</h4>
+                    <ul>
+                        <li>Separate Parser-Klasse kennt alle Node-Typen</li>
+                        <li>Parser entscheidet, welcher Node erstellt wird</li>
+                        <li>Nodes können nur auswerten</li>
+                        <li>Logik verteilt auf mehrere Klassen</li>
+                    </ul>
+                </div>
+                <div class="comparison-item self-parsing">
+                    <h4>✓ Selbst-parsend (unser Ansatz)</h4>
+                    <ul>
+                        <li><code>Parse()</code> ist Teil des Interfaces</li>
+                        <li>Jeder Node parst sich selbst</li>
+                        <li>Nodes können parsen UND auswerten</li>
+                        <li>Alles an einem Ort – elegant!</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Die Klassenstruktur</h3>
+
+            <div class="class-diagram">
+                <div class="class-box interface">
+                    <div class="class-box-header">«interface» IExpression</div>
+                    <div class="class-box-body">
+                        <div>+ Evaluate() : double</div>
+                        <div>+ <strong>static Parse(tokens, ref pos) : IExpression</strong></div>
+                    </div>
+                </div>
+                <div class="inherit-arrow">▲</div>
+                <div class="concrete-classes">
+                    <div class="class-box concrete">
+                        <div class="class-box-header">NumberExpression</div>
+                        <div class="class-box-body">
+                            <div>- _value : double</div>
+                            <div>+ Evaluate() : double</div>
+                            <div>+ static Parse(...)</div>
+                        </div>
+                    </div>
+                    <div class="class-box concrete">
+                        <div class="class-box-header">BinaryExpression</div>
+                        <div class="class-box-body">
+                            <div>- _left, _right : IExpression</div>
+                            <div>- _operator : char</div>
+                            <div>+ Evaluate() : double</div>
+                            <div>+ static Parse(...)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Der Ablauf im Überblick</h3>
+
+            <div class="flow-diagram">
+                <div class="flow-box">Input String<br><code>"3 + 5"</code></div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box highlight">IExpression<br><code>.Parse()</code></div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box">AST<br><small>(Baum)</small></div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box highlight"><code>.Evaluate()</code></div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box">Ergebnis<br><code>8</code></div>
+            </div>
+        </section>
+
+        <!-- Section 3: Interface -->
+        <section id="interface">
+            <h2><span class="icon">📐</span> Das IExpression Interface</h2>
+
+            <p>Das Herzstück ist ein Interface, das <strong>beide Fähigkeiten</strong> definiert – Parsen und Auswerten. In C# 11+ können wir statische abstrakte Methoden in Interfaces verwenden:</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="lang">C# 11+</span>
+                    <span>IExpression.cs</span>
+                </div>
+                <pre><code><span class="keyword">public interface</span> <span class="type">IExpression</span>
+{
+    <span class="comment">/// Wertet den Ausdruck aus und gibt das Ergebnis zurück</span>
+    <span class="type">double</span> <span class="method">Evaluate</span>();
+    
+    <span class="comment">/// Parst Tokens ab Position und gibt einen Expression-Baum zurück</span>
+    <span class="comment">/// Jede implementierende Klasse definiert ihre eigene Parse-Logik!</span>
+    <span class="keyword">static abstract</span> <span class="type">IExpression</span> <span class="method">Parse</span>(
+        <span class="type">List</span>&lt;<span class="type">Token</span>&gt; <span class="param">tokens</span>, 
+        <span class="keyword">ref</span> <span class="type">int</span> <span class="param">position</span>
+    );
+}</code></pre>
+            </div>
+
+            <div class="info-box warning">
+                <strong>⚠️ C# Version:</strong> Statische abstrakte Interface-Methoden gibt es erst ab C# 11 (.NET 7+). Für ältere Versionen zeige ich unten eine Alternative.
+            </div>
+
+            <h3>Alternative für ältere C# Versionen</h3>
+            <p>Falls du eine ältere C# Version verwendest, kannst du die Parse-Methode als normale statische Methode in jeder Klasse haben:</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="lang">C# (alle Versionen)</span>
+                    <span>IExpression.cs – Kompatible Version</span>
+                </div>
+                <pre><code><span class="keyword">public interface</span> <span class="type">IExpression</span>
+{
+    <span class="comment">/// Wertet den Ausdruck aus</span>
+    <span class="type">double</span> <span class="method">Evaluate</span>();
+    
+    <span class="comment">// Parse() wird in jeder Klasse als statische Methode implementiert</span>
+    <span class="comment">// Konvention: Jede IExpression-Klasse hat eine</span>
+    <span class="comment">// public static IExpression Parse(tokens, ref pos) Methode</span>
+}</code></pre>
+            </div>
+
+            <h3>Was sind Tokens?</h3>
+            <p>Bevor wir parsen können, müssen wir den Eingabestring in <strong>Tokens</strong> zerlegen – die kleinsten bedeutungstragenden Einheiten:</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="lang">C#</span>
+                    <span>Token.cs</span>
+                </div>
+                <pre><code><span class="keyword">public enum</span> <span class="type">TokenType</span>
+{
+    Number,      <span class="comment">// Eine Zahl: 42, 3.14</span>
+    Plus,        <span class="comment">// +</span>
+    Minus,       <span class="comment">// -</span>
+    Multiply,    <span class="comment">// *</span>
+    Divide,      <span class="comment">// /</span>
+    LeftParen,   <span class="comment">// (</span>
+    RightParen,  <span class="comment">// )</span>
+    End          <span class="comment">// Ende des Inputs</span>
+}
+
+<span class="keyword">public record</span> <span class="type">Token</span>(<span class="type">TokenType</span> Type, <span class="type">string</span> Value = <span class="string">""</span>);</code></pre>
+            </div>
+
+            <p>Aus <code>"3 + 5 * 2"</code> wird also die Token-Liste:</p>
+            <div class="steps-container">
+                <span class="step completed">Number(3)</span>
+                <span class="step completed">Plus</span>
+                <span class="step completed">Number(5)</span>
+                <span class="step completed">Multiply</span>
+                <span class="step completed">Number(2)</span>
+                <span class="step completed">End</span>
+            </div>
+        </section>
+
+        <!-- Section 4: Nodes -->
+        <section id="nodes">
+            <h2><span class="icon">🧩</span> Die konkreten Node-Klassen</h2>
+
+            <p>Jetzt kommen die spannenden Teile: Die konkreten Klassen implementieren <strong>sowohl</strong> <code>Parse()</code> <strong>als auch</strong> <code>Evaluate()</code>!</p>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="number">1</div>
+                    <h4>NumberExpression – Die einfachste Node</h4>
+                </div>
+                <p>Eine Zahl ist der Basisfall. Sie parst sich selbst aus einem Number-Token und gibt bei <code>Evaluate()</code> einfach ihren Wert zurück.</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="lang">C#</span>
+                        <span>NumberExpression.cs</span>
+                    </div>
+                    <pre><code><span class="keyword">public class</span> <span class="type">NumberExpression</span> : <span class="type">IExpression</span>
+{
+    <span class="keyword">private readonly</span> <span class="type">double</span> _value;
+    
+    <span class="comment">// Privater Konstruktor – Instanzen nur über Parse() erstellen!</span>
+    <span class="keyword">private</span> <span class="method">NumberExpression</span>(<span class="type">double</span> <span class="param">value</span>)
+    {
+        _value = value;
+    }
+    
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="comment">// PARSE: Liest eine Zahl aus den Tokens</span>
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="keyword">public static</span> <span class="type">IExpression</span> <span class="method">Parse</span>(
+        <span class="type">List</span>&lt;<span class="type">Token</span>&gt; <span class="param">tokens</span>, 
+        <span class="keyword">ref</span> <span class="type">int</span> <span class="param">pos</span>)
+    {
+        <span class="keyword">var</span> token = tokens[pos];
+        
+        <span class="keyword">if</span> (token.Type == <span class="type">TokenType</span>.Number)
+        {
+            pos++;  <span class="comment">// Token konsumieren</span>
+            <span class="keyword">var</span> value = <span class="type">double</span>.<span class="method">Parse</span>(token.Value);
+            <span class="keyword">return new</span> <span class="type">NumberExpression</span>(value);
+        }
+        
+        <span class="keyword">throw new</span> <span class="type">Exception</span>(<span class="string">$"Expected number, got {token.Type}"</span>);
+    }
+    
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="comment">// EVALUATE: Gibt einfach den Wert zurück</span>
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="keyword">public</span> <span class="type">double</span> <span class="method">Evaluate</span>() => _value;
+    
+    <span class="keyword">public override</span> <span class="type">string</span> <span class="method">ToString</span>() => _value.ToString();
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="number">2</div>
+                    <h4>BinaryExpression – Für +, -, *, /</h4>
+                </div>
+                <p>Hier wird es interessant! Die <code>Parse()</code>-Methode ruft <strong>rekursiv andere Parse-Methoden</strong> auf, um die Operatorpriorität zu handhaben.</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="lang">C#</span>
+                        <span>BinaryExpression.cs</span>
+                    </div>
+                    <pre><code><span class="keyword">public class</span> <span class="type">BinaryExpression</span> : <span class="type">IExpression</span>
+{
+    <span class="keyword">private readonly</span> <span class="type">IExpression</span> _left;
+    <span class="keyword">private readonly</span> <span class="type">IExpression</span> _right;
+    <span class="keyword">private readonly</span> <span class="type">char</span> _operator;
+    
+    <span class="keyword">private</span> <span class="method">BinaryExpression</span>(
+        <span class="type">IExpression</span> <span class="param">left</span>, 
+        <span class="type">char</span> <span class="param">op</span>, 
+        <span class="type">IExpression</span> <span class="param">right</span>)
+    {
+        _left = left;
+        _operator = op;
+        _right = right;
+    }
+    
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="comment">// PARSE: Einstiegspunkt – handhabt + und -</span>
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="keyword">public static</span> <span class="type">IExpression</span> <span class="method">Parse</span>(
+        <span class="type">List</span>&lt;<span class="type">Token</span>&gt; <span class="param">tokens</span>, 
+        <span class="keyword">ref</span> <span class="type">int</span> <span class="param">pos</span>)
+    {
+        <span class="comment">// Starte mit höherer Priorität (Multiplikation)</span>
+        <span class="type">IExpression</span> left = <span class="method">ParseMulDiv</span>(tokens, <span class="keyword">ref</span> pos);
+        
+        <span class="comment">// Dann: Solange + oder - kommen, weitermachen</span>
+        <span class="keyword">while</span> (pos &lt; tokens.Count)
+        {
+            <span class="keyword">var</span> token = tokens[pos];
+            
+            <span class="keyword">if</span> (token.Type != <span class="type">TokenType</span>.Plus && 
+                token.Type != <span class="type">TokenType</span>.Minus)
+                <span class="keyword">break</span>;  <span class="comment">// Kein + oder - mehr</span>
+            
+            <span class="type">char</span> op = token.Type == <span class="type">TokenType</span>.Plus ? <span class="string">'+'</span> : <span class="string">'-'</span>;
+            pos++;  <span class="comment">// Operator konsumieren</span>
+            
+            <span class="comment">// Rechte Seite parsen (wieder höhere Priorität zuerst)</span>
+            <span class="type">IExpression</span> right = <span class="method">ParseMulDiv</span>(tokens, <span class="keyword">ref</span> pos);
+            
+            <span class="comment">// Neuen BinaryExpression-Knoten erstellen</span>
+            left = <span class="keyword">new</span> <span class="type">BinaryExpression</span>(left, op, right);
+        }
+        
+        <span class="keyword">return</span> left;
+    }
+    
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="comment">// ParseMulDiv: Handhabt * und / (höhere Priorität)</span>
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="keyword">private static</span> <span class="type">IExpression</span> <span class="method">ParseMulDiv</span>(
+        <span class="type">List</span>&lt;<span class="type">Token</span>&gt; <span class="param">tokens</span>, 
+        <span class="keyword">ref</span> <span class="type">int</span> <span class="param">pos</span>)
+    {
+        <span class="comment">// Starte mit höchster Priorität (Zahlen/Klammern)</span>
+        <span class="type">IExpression</span> left = <span class="method">ParsePrimary</span>(tokens, <span class="keyword">ref</span> pos);
+        
+        <span class="keyword">while</span> (pos &lt; tokens.Count)
+        {
+            <span class="keyword">var</span> token = tokens[pos];
+            
+            <span class="keyword">if</span> (token.Type != <span class="type">TokenType</span>.Multiply && 
+                token.Type != <span class="type">TokenType</span>.Divide)
+                <span class="keyword">break</span>;
+            
+            <span class="type">char</span> op = token.Type == <span class="type">TokenType</span>.Multiply ? <span class="string">'*'</span> : <span class="string">'/'</span>;
+            pos++;
+            
+            <span class="type">IExpression</span> right = <span class="method">ParsePrimary</span>(tokens, <span class="keyword">ref</span> pos);
+            left = <span class="keyword">new</span> <span class="type">BinaryExpression</span>(left, op, right);
+        }
+        
+        <span class="keyword">return</span> left;
+    }
+    
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="comment">// ParsePrimary: Zahlen und Klammern (höchste Priorität)</span>
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="keyword">private static</span> <span class="type">IExpression</span> <span class="method">ParsePrimary</span>(
+        <span class="type">List</span>&lt;<span class="type">Token</span>&gt; <span class="param">tokens</span>, 
+        <span class="keyword">ref</span> <span class="type">int</span> <span class="param">pos</span>)
+    {
+        <span class="keyword">var</span> token = tokens[pos];
+        
+        <span class="comment">// Fall 1: Eine Zahl → delegiere an NumberExpression</span>
+        <span class="keyword">if</span> (token.Type == <span class="type">TokenType</span>.Number)
+        {
+            <span class="keyword">return</span> <span class="type">NumberExpression</span>.<span class="method">Parse</span>(tokens, <span class="keyword">ref</span> pos);
+        }
+        
+        <span class="comment">// Fall 2: Klammer → parse den inneren Ausdruck</span>
+        <span class="keyword">if</span> (token.Type == <span class="type">TokenType</span>.LeftParen)
+        {
+            pos++;  <span class="comment">// '(' überspringen</span>
+            
+            <span class="comment">// Rekursiv den ganzen Ausdruck in der Klammer parsen</span>
+            <span class="type">IExpression</span> expr = <span class="type">BinaryExpression</span>.<span class="method">Parse</span>(tokens, <span class="keyword">ref</span> pos);
+            
+            <span class="keyword">if</span> (tokens[pos].Type != <span class="type">TokenType</span>.RightParen)
+                <span class="keyword">throw new</span> <span class="type">Exception</span>(<span class="string">"Expected ')'"</span>);
+            
+            pos++;  <span class="comment">// ')' überspringen</span>
+            <span class="keyword">return</span> expr;
+        }
+        
+        <span class="keyword">throw new</span> <span class="type">Exception</span>(<span class="string">$"Unexpected: {token.Type}"</span>);
+    }
+    
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="comment">// EVALUATE: Rekursive Auswertung</span>
+    <span class="comment">// ═══════════════════════════════════════════════════════</span>
+    <span class="keyword">public</span> <span class="type">double</span> <span class="method">Evaluate</span>()
+    {
+        <span class="type">double</span> leftVal = _left.<span class="method">Evaluate</span>();
+        <span class="type">double</span> rightVal = _right.<span class="method">Evaluate</span>();
+        
+        <span class="keyword">return</span> _operator <span class="keyword">switch</span>
+        {
+            <span class="string">'+'</span> => leftVal + rightVal,
+            <span class="string">'-'</span> => leftVal - rightVal,
+            <span class="string">'*'</span> => leftVal * rightVal,
+            <span class="string">'/'</span> => leftVal / rightVal,
+            _ => <span class="keyword">throw new</span> <span class="type">InvalidOperationException</span>()
+        };
+    }
+    
+    <span class="keyword">public override</span> <span class="type">string</span> <span class="method">ToString</span>() 
+        => <span class="string">$"({_left} {_operator} {_right})"</span>;
+}</code></pre>
+                </div>
+                
+                <div class="info-box success">
+                    <strong>✨ Das Elegante:</strong> Die <code>Parse()</code>-Methode in <code>BinaryExpression</code> ist der Einstiegspunkt. Sie ruft intern <code>ParseMulDiv()</code> und <code>ParsePrimary()</code> auf, die dann wiederum <code>NumberExpression.Parse()</code> oder rekursiv <code>BinaryExpression.Parse()</code> (bei Klammern) aufrufen.
+                </div>
+            </div>
+
+            <h3>Zusammenfassung: Der Aufruf</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="lang">C#</span>
+                    <span>Verwendung</span>
+                </div>
+                <pre><code><span class="comment">// So einfach ist die Verwendung!</span>
+<span class="type">string</span> input = <span class="string">"3 + 5 * 2"</span>;
+
+<span class="comment">// 1. Tokenize (Hilfsmethode)</span>
+<span class="type">List</span>&lt;<span class="type">Token</span>&gt; tokens = <span class="type">Tokenizer</span>.<span class="method">Tokenize</span>(input);
+
+<span class="comment">// 2. Parse – direkt über die Klasse!</span>
+<span class="type">int</span> pos = <span class="number">0</span>;
+<span class="type">IExpression</span> ast = <span class="type">BinaryExpression</span>.<span class="method">Parse</span>(tokens, <span class="keyword">ref</span> pos);
+
+<span class="comment">// 3. Evaluate</span>
+<span class="type">double</span> result = ast.<span class="method">Evaluate</span>();  <span class="comment">// → 13</span></code></pre>
+            </div>
+        </section>
+
+        <!-- Section 5: Flow -->
+        <section id="ablauf">
+            <h2><span class="icon">🔄</span> Wie das Parsen funktioniert</h2>
+
+            <p>Lass uns Schritt für Schritt durchgehen, wie <code>3 + 5 * 2</code> geparst wird:</p>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="number">→</div>
+                    <h4>Die Aufruf-Kette</h4>
+                </div>
+                
+                <div class="parse-log">
+                    <div class="log-entry parse">1. BinaryExpression.Parse() startet</div>
+                    <div class="log-entry parse">2. → ruft ParseMulDiv() auf</div>
+                    <div class="log-entry parse">3. → → ruft ParsePrimary() auf</div>
+                    <div class="log-entry parse">4. → → → ruft NumberExpression.Parse() auf</div>
+                    <div class="log-entry create">5. → → → → erstellt NumberExpression(3)</div>
+                    <div class="log-entry parse">6. → → zurück in ParseMulDiv: kein * oder /</div>
+                    <div class="log-entry parse">7. → zurück in BinaryExpression.Parse: findet +</div>
+                    <div class="log-entry parse">8. → ruft ParseMulDiv() für rechte Seite auf</div>
+                    <div class="log-entry parse">9. → → ruft ParsePrimary() auf</div>
+                    <div class="log-entry parse">10. → → → ruft NumberExpression.Parse() auf</div>
+                    <div class="log-entry create">11. → → → → erstellt NumberExpression(5)</div>
+                    <div class="log-entry parse">12. → → zurück in ParseMulDiv: findet *</div>
+                    <div class="log-entry parse">13. → → ruft ParsePrimary() auf</div>
+                    <div class="log-entry parse">14. → → → ruft NumberExpression.Parse() auf</div>
+                    <div class="log-entry create">15. → → → → erstellt NumberExpression(2)</div>
+                    <div class="log-entry create">16. → → erstellt BinaryExpression(5 * 2)</div>
+                    <div class="log-entry create">17. → erstellt BinaryExpression(3 + (5*2))</div>
+                    <div class="log-entry result">18. Fertig! AST ist gebaut.</div>
+                </div>
+            </div>
+
+            <h3>Der resultierende Baum</h3>
+            <p>Das Ergebnis ist ein Abstract Syntax Tree (AST), der die Operatorpriorität korrekt abbildet:</p>
+
+            <div class="demo-container">
+                <div class="demo-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span>AST für "3 + 5 * 2"</span>
+                </div>
+                <div class="tree-container" style="text-align: center; padding: 2rem;">
+                    <svg width="400" height="200" viewBox="0 0 400 200" style="max-width: 100%;">
+                        <rect x="175" y="10" width="50" height="35" rx="6" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+                        <text x="200" y="33" text-anchor="middle" fill="#58a6ff" font-family="JetBrains Mono" font-size="14">+</text>
+                        
+                        <line x1="185" y1="45" x2="100" y2="80" stroke="#30363d" stroke-width="2"/>
+                        <line x1="215" y1="45" x2="300" y2="80" stroke="#30363d" stroke-width="2"/>
+                        
+                        <rect x="65" y="80" width="70" height="35" rx="6" fill="#21262d" stroke="#d29922" stroke-width="2"/>
+                        <text x="100" y="103" text-anchor="middle" fill="#d29922" font-family="JetBrains Mono" font-size="12">Num(3)</text>
+                        
+                        <rect x="265" y="80" width="70" height="35" rx="6" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+                        <text x="300" y="103" text-anchor="middle" fill="#58a6ff" font-family="JetBrains Mono" font-size="14">*</text>
+                        
+                        <line x1="280" y1="115" x2="220" y2="150" stroke="#30363d" stroke-width="2"/>
+                        <line x1="320" y1="115" x2="360" y2="150" stroke="#30363d" stroke-width="2"/>
+                        
+                        <rect x="185" y="150" width="70" height="35" rx="6" fill="#21262d" stroke="#d29922" stroke-width="2"/>
+                        <text x="220" y="173" text-anchor="middle" fill="#d29922" font-family="JetBrains Mono" font-size="12">Num(5)</text>
+                        
+                        <rect x="330" y="150" width="70" height="35" rx="6" fill="#21262d" stroke="#d29922" stroke-width="2"/>
+                        <text x="365" y="173" text-anchor="middle" fill="#d29922" font-family="JetBrains Mono" font-size="12">Num(2)</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="info-box success">
+                <strong>🎯 Beachte:</strong> Die Multiplikation (<code>5 * 2</code>) sitzt <em>tiefer</em> im Baum. Dadurch wird sie <em>zuerst</em> ausgewertet (von unten nach oben). Das ist genau richtig: <code>3 + (5 * 2) = 3 + 10 = 13</code>
+            </div>
+        </section>
+
+        <!-- Section 6: Interactive Demo -->
+        <section id="demo">
+            <h2><span class="icon">🎮</span> Interaktive Demo</h2>
+
+            <p>Probiere es selbst aus! Gib einen mathematischen Ausdruck ein und sieh, wie er geparst und ausgewertet wird:</p>
+
+            <div class="demo-container">
+                <div class="demo-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span>Expression Interpreter</span>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-input-group">
+                        <label for="expression">Mathematischer Ausdruck:</label>
+                        <input type="text" id="expression" class="demo-input" value="3 + 5 * 2" placeholder="z.B. 3 + 5 * 2">
+                    </div>
+                    <button class="demo-btn" onclick="parseAndEvaluate()">▶ Parsen & Auswerten</button>
+                    
+                    <div class="demo-output">
+                        <h5>Parse-Schritte & Ergebnis</h5>
+                        <div id="output" class="parse-log">
+                            <span style="color: var(--text-muted);">Klicke auf "Parsen & Auswerten" um zu starten...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>💡 Tipp:</strong> Probiere verschiedene Ausdrücke wie <code>(2 + 3) * 4</code>, <code>10 / 2 - 3</code> oder <code>2 * 3 + 4 * 5</code> um zu sehen, wie die Operatorpriorität und Klammern funktionieren!
+            </div>
+        </section>
+
+        <!-- Section 7: Pros and Cons -->
+        <section id="vorteile">
+            <h2><span class="icon">⚖️</span> Vor- und Nachteile</h2>
+
+            <div class="comparison">
+                <div class="comparison-item self-parsing">
+                    <h4>✓ Vorteile</h4>
+                    <ul>
+                        <li>Alles in einer Stelle – keine separate Parser-Klasse</li>
+                        <li>Jede Node ist für sich selbst verantwortlich</li>
+                        <li>Einfach neue Operatoren hinzufügen</li>
+                        <li>Gut für mathematische Ausdrücke und DSLs</li>
+                        <li>Sehr objektorientiert und elegant</li>
+                    </ul>
+                </div>
+                <div class="comparison-item traditional">
+                    <h4>⚠️ Nachteile</h4>
+                    <ul>
+                        <li>Skaliert schlecht bei komplexen Grammatiken</li>
+                        <li>Fehlerbehandlung kann aufwändig werden</li>
+                        <li>Statische Methoden passen nicht perfekt ins OOP</li>
+                        <li>C# 11+ für Interface-Constraint nötig</li>
+                        <li>Weniger flexibel als Parser-Generatoren</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Wann solltest du diesen Ansatz verwenden?</h3>
+            <ul>
+                <li><strong>Ja:</strong> Einfache mathematische Ausdrücke, Konfigurationssprachen, Filter-Syntax</li>
+                <li><strong>Ja:</strong> Wenn du maximale Kohäsion willst (Parse + Evaluate zusammen)</li>
+                <li><strong>Nein:</strong> Vollständige Programmiersprachen mit vielen Features</li>
+                <li><strong>Nein:</strong> Wenn Performance kritisch ist (Parser-Generatoren sind schneller)</li>
+            </ul>
+
+            <div class="info-box success">
+                <strong>🎓 Zusammenfassung:</strong> Das Interpreter Pattern mit selbst-parsenden Nodes ist ein eleganter Ansatz, bei dem jede Node-Klasse sowohl <code>Parse()</code> als auch <code>Evaluate()</code> implementiert. Das macht den Code kompakt und kohäsiv – alles, was zu einem Ausdruckstyp gehört, ist an einem Ort.
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const TokenType = {
+            Number: 'Number',
+            Plus: 'Plus',
+            Minus: 'Minus',
+            Multiply: 'Multiply',
+            Divide: 'Divide',
+            LeftParen: 'LeftParen',
+            RightParen: 'RightParen',
+            End: 'End'
+        };
+
+        let logs = [];
+        let indent = 0;
+
+        function log(message, type = 'parse') {
+            const prefix = '  '.repeat(indent);
+            logs.push({ message: prefix + message, type });
+        }
+
+        function tokenize(input) {
+            const tokens = [];
+            let i = 0;
+            
+            while (i < input.length) {
+                const char = input[i];
+                
+                if (/\s/.test(char)) {
+                    i++;
+                    continue;
+                }
+                
+                if (/\d/.test(char) || (char === '.' && /\d/.test(input[i + 1]))) {
+                    let num = '';
+                    while (i < input.length && (/\d/.test(input[i]) || input[i] === '.')) {
+                        num += input[i];
+                        i++;
+                    }
+                    tokens.push({ type: TokenType.Number, value: num });
+                    continue;
+                }
+                
+                switch (char) {
+                    case '+': tokens.push({ type: TokenType.Plus, value: '+' }); break;
+                    case '-': tokens.push({ type: TokenType.Minus, value: '-' }); break;
+                    case '*': tokens.push({ type: TokenType.Multiply, value: '*' }); break;
+                    case '/': tokens.push({ type: TokenType.Divide, value: '/' }); break;
+                    case '(': tokens.push({ type: TokenType.LeftParen, value: '(' }); break;
+                    case ')': tokens.push({ type: TokenType.RightParen, value: ')' }); break;
+                    default: throw new Error(`Unknown character: ${char}`);
+                }
+                i++;
+            }
+            
+            tokens.push({ type: TokenType.End, value: '' });
+            return tokens;
+        }
+
+        // NumberExpression - mit eigener Parse() Methode
+        class NumberExpression {
+            constructor(value) {
+                this.value = value;
+            }
+            
+            // PARSE: Statische Methode direkt in der Klasse
+            static parse(tokens, posRef) {
+                const token = tokens[posRef.pos];
+                
+                if (token.type === TokenType.Number) {
+                    posRef.pos++;
+                    const num = parseFloat(token.value);
+                    log(`NumberExpression.Parse() → erstellt Num(${num})`, 'create');
+                    return new NumberExpression(num);
+                }
+                
+                throw new Error(`Expected number, got ${token.type}`);
+            }
+            
+            // EVALUATE
+            evaluate() {
+                log(`Num(${this.value}).Evaluate() → ${this.value}`, 'eval');
+                return this.value;
+            }
+            
+            toString() {
+                return `Num(${this.value})`;
+            }
+        }
+
+        // BinaryExpression - mit eigener Parse() Methode
+        class BinaryExpression {
+            constructor(left, operator, right) {
+                this.left = left;
+                this.operator = operator;
+                this.right = right;
+            }
+            
+            // PARSE: Einstiegspunkt (+ und -)
+            static parse(tokens, posRef) {
+                log('BinaryExpression.Parse() [+/-] startet', 'parse');
+                indent++;
+                
+                let left = BinaryExpression.parseMulDiv(tokens, posRef);
+                
+                while (posRef.pos < tokens.length) {
+                    const token = tokens[posRef.pos];
+                    
+                    if (token.type !== TokenType.Plus && token.type !== TokenType.Minus)
+                        break;
+                    
+                    const op = token.type === TokenType.Plus ? '+' : '-';
+                    log(`Gefunden: ${op}`, 'parse');
+                    posRef.pos++;
+                    
+                    const right = BinaryExpression.parseMulDiv(tokens, posRef);
+                    log(`Erstelle: BinaryExpression(${left} ${op} ${right})`, 'create');
+                    left = new BinaryExpression(left, op, right);
+                }
+                
+                indent--;
+                return left;
+            }
+            
+            // ParseMulDiv: * und / (höhere Priorität)
+            static parseMulDiv(tokens, posRef) {
+                log('→ parseMulDiv() [*,/]', 'parse');
+                indent++;
+                
+                let left = BinaryExpression.parsePrimary(tokens, posRef);
+                
+                while (posRef.pos < tokens.length) {
+                    const token = tokens[posRef.pos];
+                    
+                    if (token.type !== TokenType.Multiply && token.type !== TokenType.Divide)
+                        break;
+                    
+                    const op = token.type === TokenType.Multiply ? '*' : '/';
+                    log(`Gefunden: ${op}`, 'parse');
+                    posRef.pos++;
+                    
+                    const right = BinaryExpression.parsePrimary(tokens, posRef);
+                    log(`Erstelle: BinaryExpression(${left} ${op} ${right})`, 'create');
+                    left = new BinaryExpression(left, op, right);
+                }
+                
+                indent--;
+                return left;
+            }
+            
+            // ParsePrimary: Zahlen und Klammern
+            static parsePrimary(tokens, posRef) {
+                log('→ → parsePrimary()', 'parse');
+                const token = tokens[posRef.pos];
+                
+                if (token.type === TokenType.Number) {
+                    indent++;
+                    const result = NumberExpression.parse(tokens, posRef);
+                    indent--;
+                    return result;
+                }
+                
+                if (token.type === TokenType.LeftParen) {
+                    log('Gefunden: ( → starte Unterausdruck', 'parse');
+                    posRef.pos++;
+                    
+                    indent++;
+                    const expr = BinaryExpression.parse(tokens, posRef);
+                    indent--;
+                    
+                    if (tokens[posRef.pos].type !== TokenType.RightParen) {
+                        throw new Error('Expected )');
+                    }
+                    log('Gefunden: ) → Ende Unterausdruck', 'parse');
+                    posRef.pos++;
+                    return expr;
+                }
+                
+                throw new Error(`Unexpected token: ${token.type}`);
+            }
+            
+            // EVALUATE: Rekursive Auswertung
+            evaluate() {
+                log(`(${this.left} ${this.operator} ${this.right}).Evaluate()`, 'eval');
+                indent++;
+                
+                const leftVal = this.left.evaluate();
+                const rightVal = this.right.evaluate();
+                
+                indent--;
+                
+                let result;
+                switch (this.operator) {
+                    case '+': result = leftVal + rightVal; break;
+                    case '-': result = leftVal - rightVal; break;
+                    case '*': result = leftVal * rightVal; break;
+                    case '/': result = leftVal / rightVal; break;
+                }
+                
+                log(`${leftVal} ${this.operator} ${rightVal} = ${result}`, 'result');
+                return result;
+            }
+            
+            toString() {
+                return `(${this.left} ${this.operator} ${this.right})`;
+            }
+        }
+
+        function parseAndEvaluate() {
+            const input = document.getElementById('expression').value;
+            const output = document.getElementById('output');
+            
+            logs = [];
+            indent = 0;
+            
+            try {
+                log('═══ TOKENIZING ═══', 'parse');
+                const tokens = tokenize(input);
+                log(`Tokens: ${tokens.map(t => t.type === TokenType.Number ? `Num(${t.value})` : t.type).join(', ')}`, 'parse');
+                log('', 'parse');
+                
+                log('═══ PARSING (via BinaryExpression.Parse) ═══', 'parse');
+                const posRef = { pos: 0 };
+                const ast = BinaryExpression.parse(tokens, posRef);
+                log('', 'parse');
+                log(`AST: ${ast.toString()}`, 'create');
+                log('', 'parse');
+                
+                log('═══ EVALUATING ═══', 'eval');
+                indent = 0;
+                const result = ast.evaluate();
+                log('', 'result');
+                log(`════════════════════════`, 'result');
+                log(`   ERGEBNIS: ${result}`, 'result');
+                log(`════════════════════════`, 'result');
+                
+                output.innerHTML = logs.map(l => 
+                    `<div class="log-entry ${l.type}">${escapeHtml(l.message)}</div>`
+                ).join('');
+                
+            } catch (e) {
+                output.innerHTML = `<div class="log-entry" style="color: var(--accent-red);">Fehler: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            parseAndEvaluate();
+        });
+    </script>
+</body>
+</html>
