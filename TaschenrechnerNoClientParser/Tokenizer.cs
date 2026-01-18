@@ -27,7 +27,7 @@ namespace TaschenrechnerCS
 
         public Tokenizer(string input) 
         {
-            foreach (Match m in Regex.Matches(input, @"\d+\,?\d*"))
+            foreach (Match m in Regex.Matches(input, @"\d+\,?\d+"))
             {
                 Token tok = new Token(m.Index, m.Value, TokenTypes.Number);
                 tokens.Add(tok);
