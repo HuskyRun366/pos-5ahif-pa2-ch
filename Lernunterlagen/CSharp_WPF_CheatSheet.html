@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>C# WPF Cheat Sheet - Parser, Tokenizer, Custom Widgets</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 9px;
+            line-height: 1.2;
+            background: white;
+            padding: 5px;
+            column-count: 3;
+            column-gap: 8px;
+        }
+        h1 { font-size: 14px; background: #2c3e50; color: white; padding: 3px 5px; margin-bottom: 5px; }
+        h2 { font-size: 10px; background: #3498db; color: white; padding: 2px 5px; margin: 5px 0 3px 0; }
+        h3 { font-size: 9px; background: #95a5a6; color: white; padding: 2px 5px; margin: 4px 0 2px 0; }
+        .section { break-inside: avoid; margin-bottom: 5px; border: 1px solid #ddd; padding: 3px; }
+        pre { background: #f4f4f4; padding: 3px; font-size: 8px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
+        code { background: #ffe6e6; padding: 1px 3px; font-size: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 8px; }
+        th, td { border: 1px solid #ccc; padding: 2px; text-align: left; }
+        th { background: #ecf0f1; }
+        .important { background: #fff3cd; padding: 2px; margin: 2px 0; border-left: 3px solid #ffc107; }
+        .tip { background: #d4edda; padding: 2px; margin: 2px 0; border-left: 3px solid #28a745; }
+        .red { color: #e74c3c; }
+        .blue { color: #3498db; }
+        .green { color: #27ae60; }
+        ul { margin-left: 12px; }
+        @media print {
+            body { font-size: 8px; }
+            pre { font-size: 7px; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>C# WPF CHEAT SHEET</h1>
+
+<!-- ==================== ABNF GRAMMATIK ==================== -->
+<div class="section">
+<h2>1. ABNF GRAMMATIK</h2>
+
+<h3>Operatoren</h3>
+<table>
+<tr><th>Op</th><th>Bedeutung</th><th>Beispiel</th></tr>
+<tr><td><code>=</code></td><td>Definition</td><td>name = "Hi"</td></tr>
+<tr><td><code>/</code></td><td>ODER</td><td>"a" / "b"</td></tr>
+<tr><td><code>*</code></td><td>0+ mal</td><td>*DIGIT</td></tr>
+<tr><td><code>1*</code></td><td>1+ mal</td><td>1*DIGIT</td></tr>
+<tr><td><code>[ ]</code></td><td>optional</td><td>["-"]</td></tr>
+<tr><td><code>( )</code></td><td>Gruppe</td><td>("a"/"b")"c"</td></tr>
+</table>
+
+<h3>Beispiel Grammatik</h3>
+<pre>
+program  = *element
+element  = line / circle / goal
+line     = "Line" "(" num "," num "," num "," num ")"
+circle   = "Circle" "(" num "," num "," num ")"
+goal     = "Goal" "(" num "," num "," num ")"
+num      = <span class="red">1*</span>DIGIT ["." <span class="red">1*</span>DIGIT]
+</pre>
+<div class="important">⚠️ <code>1*DIGIT</code> = mindestens 1 Ziffer<br><code>*DIGIT</code> = auch 0 (leer) erlaubt!</div>
+</div>
+
+<!-- ==================== TOKEN ==================== -->
+<div class="section">
+<h2>2. TOKEN KLASSE</h2>
+<pre>
+<span class="blue">public enum</span> TokenType
+{
+    Number, Variable, Operator,
+    LParen, RParen, <span class="red">Error</span>,
+    Line, Circle, Goal, Obstacle, Comma
+}
+
+<span class="blue">public class</span> Token
+{
+    <span class="blue">public</span> TokenType Type { get; set; }
+    <span class="blue">public</span> string Value { get; set; }
+    <span class="blue">public</span> int Position { get; set; }  <span class="green">// Für Fehler</span>
+
+    <span class="blue">public</span> Token(TokenType type, string value, int pos)
+    {
+        Type = type;
+        Value = value;
+        Position = pos;
+    }
+}
+</pre>
+</div>
+
+<!-- ==================== TOKENIZER ==================== -->
+<div class="section">
+<h2>3. TOKENIZER</h2>
+
+<h3>Regex Pattern</h3>
+<pre>
+<span class="green">// Taschenrechner:</span>
+<span class="blue">string</span> regex = <span class="red">@"\d+(\.\d+)?|[a-z]|[+\-/*^]|[()]"</span>;
+
+<span class="green">// Painter (mit benannten Gruppen):</span>
+<span class="blue">string</span> regex = <span class="red">@"(?&lt;Line&gt;Line)|(?&lt;Circle&gt;Circle)|" +
+               @"(?&lt;Goal&gt;Goal)|(?&lt;Obstacle&gt;Obstacle)|" +
+               @"(?&lt;Number&gt;\d+\.?\d*)|" +
+               @"(?&lt;LParen&gt;\()|(?&lt;RParen&gt;\))|" +
+               @"(?&lt;Comma&gt;,)|(?&lt;Error&gt;.)"</span>;
+</pre>
+
+<h3>Tokenize Methode</h3>
+<pre>
+<span class="blue">public</span> List&lt;Token&gt; Tokenize(<span class="blue">string</span> input)
+{
+    List&lt;Token&gt; tokens = <span class="blue">new</span> List&lt;Token&gt;();
+    <span class="blue">string</span> regex = <span class="red">@"\d+(\.\d+)?|[a-z]|[+\-/*^]|[()]"</span>;
+
+    <span class="blue">foreach</span> (Match m <span class="blue">in</span> Regex.Matches(input, regex))
+    {
+        <span class="blue">string</span> val = m.Value;
+        TokenType type;
+
+        <span class="blue">if</span> (<span class="blue">char</span>.IsDigit(val[0]))
+            type = TokenType.Number;
+        <span class="blue">else if</span> (<span class="blue">char</span>.IsLetter(val[0]))
+            type = TokenType.Variable;
+        <span class="blue">else if</span> (val == "+" || val == "-" || ...)
+            type = TokenType.Operator;
+        <span class="blue">else if</span> (val == "(")
+            type = TokenType.LParen;
+        <span class="blue">else if</span> (val == ")")
+            type = TokenType.RParen;
+        <span class="blue">else</span>
+            type = TokenType.Error;
+
+        tokens.Add(<span class="blue">new</span> Token(type, val, m.Index));
+    }
+    <span class="blue">return</span> tokens;
+}
+</pre>
+
+<h3>Mit benannten Gruppen</h3>
+<pre>
+<span class="blue">foreach</span> (Match m <span class="blue">in</span> Regex.Matches(input, regex))
+{
+    TokenType type;
+    <span class="blue">if</span> (m.Groups["Line"].Success)
+        type = TokenType.Line;
+    <span class="blue">else if</span> (m.Groups["Number"].Success)
+        type = TokenType.Number;
+    <span class="blue">else if</span> (m.Groups["Error"].Success)
+        type = TokenType.Error;
+    ...
+}
+</pre>
+</div>
+
+<!-- ==================== INTERPRETER PATTERN ==================== -->
+<div class="section">
+<h2>4. INTERPRETER PATTERN</h2>
+
+<h3>Interface</h3>
+<pre>
+<span class="blue">public interface</span> IExpression
+{
+    <span class="blue">double</span> Evaluate(Dictionary&lt;<span class="blue">string</span>, <span class="blue">double</span>&gt; vars);
+}
+
+<span class="green">// Oder für Grafik:</span>
+<span class="blue">public interface</span> IDrawable
+{
+    <span class="blue">void</span> Draw(DrawingContext dc);
+}
+</pre>
+
+<h3>NumberNode</h3>
+<pre>
+<span class="blue">class</span> NumberNode : IExpression
+{
+    <span class="blue">private double</span> value;
+
+    <span class="blue">public</span> NumberNode(<span class="blue">double</span> value)
+    {
+        <span class="blue">this</span>.value = value;
+    }
+
+    <span class="blue">public double</span> Evaluate(Dictionary&lt;...&gt; vars)
+    {
+        <span class="blue">return</span> value;
+    }
+}
+</pre>
+
+<h3>VariableNode</h3>
+<pre>
+<span class="blue">class</span> VariableNode : IExpression
+{
+    <span class="blue">private string</span> name;
+
+    <span class="blue">public</span> VariableNode(<span class="blue">string</span> name)
+    {
+        <span class="blue">this</span>.name = name;
+    }
+
+    <span class="blue">public double</span> Evaluate(Dictionary&lt;...&gt; vars)
+    {
+        <span class="blue">return</span> vars[name];
+    }
+}
+</pre>
+
+<h3>BinaryOpNode (abstrakt)</h3>
+<pre>
+<span class="blue">abstract class</span> BinaryOpNode : IExpression
+{
+    <span class="blue">protected</span> IExpression left;
+    <span class="blue">protected</span> IExpression right;
+
+    <span class="blue">public</span> BinaryOpNode(IExpression l, IExpression r)
+    {
+        left = l;
+        right = r;
+    }
+
+    <span class="blue">public abstract double</span> Evaluate(...);
+}
+</pre>
+
+<h3>AddNode / SubNode / MulNode / DivNode</h3>
+<pre>
+<span class="blue">class</span> AddNode : BinaryOpNode
+{
+    <span class="blue">public</span> AddNode(IExpression l, IExpression r)
+        : <span class="blue">base</span>(l, r) { }
+
+    <span class="blue">public override double</span> Evaluate(...)
+    {
+        <span class="blue">return</span> left.Evaluate(vars) <span class="red">+</span> right.Evaluate(vars);
+    }
+}
+
+<span class="green">// SubNode: - statt +</span>
+<span class="green">// MulNode: * statt +</span>
+<span class="green">// DivNode: / statt +</span>
+<span class="green">// PowerNode: Math.Pow(left, right)</span>
+</pre>
+</div>
+
+<!-- ==================== PARSER ==================== -->
+<div class="section">
+<h2>5. PARSER (Recursive Descent)</h2>
+
+<h3>Grundstruktur</h3>
+<pre>
+<span class="blue">class</span> Parser
+{
+    <span class="blue">private</span> List&lt;Token&gt; tokens;
+    <span class="blue">private int</span> position;
+
+    <span class="blue">private</span> Token CurrentToken()
+    {
+        <span class="blue">if</span> (position < tokens.Count)
+            <span class="blue">return</span> tokens[position];
+        <span class="blue">return null</span>;
+    }
+
+    <span class="blue">private void</span> Advance()
+    {
+        position++;
+    }
+
+    <span class="blue">public</span> IExpression Parse(List&lt;Token&gt; tokens)
+    {
+        <span class="blue">this</span>.tokens = tokens;
+        <span class="blue">this</span>.position = 0;
+        <span class="blue">return</span> ParseExpression();
+    }
+}
+</pre>
+
+<h3>Operator-Priorität</h3>
+<table>
+<tr><th>Prio</th><th>Operator</th><th>Methode</th></tr>
+<tr><td>1 (niedrig)</td><td>+ -</td><td>ParseExpression</td></tr>
+<tr><td>2</td><td>* /</td><td>ParseTerm</td></tr>
+<tr><td>3 (hoch)</td><td>^</td><td>ParsePower</td></tr>
+<tr><td>4</td><td>Zahl, Var, ()</td><td>ParseFactor</td></tr>
+</table>
+
+<h3>ParseExpression (+ und -)</h3>
+<pre>
+<span class="blue">private</span> IExpression ParseExpression()
+{
+    IExpression left = ParseTerm();
+
+    <span class="green">// Rekursiv ODER while-Schleife</span>
+    <span class="blue">if</span> (CurrentToken()?.Type == TokenType.Operator
+        && CurrentToken().Value == "+")
+    {
+        Advance();
+        IExpression right = <span class="red">ParseExpression()</span>;
+        <span class="blue">return new</span> AddNode(left, right);
+    }
+    <span class="blue">else if</span> (...Value == "-")
+    {
+        Advance();
+        IExpression right = <span class="red">ParseExpression()</span>;
+        <span class="blue">return new</span> SubNode(left, right);
+    }
+    <span class="blue">return</span> left;
+}
+</pre>
+
+<h3>ParseTerm (* und /)</h3>
+<pre>
+<span class="blue">private</span> IExpression ParseTerm()
+{
+    IExpression left = ParsePower();
+
+    <span class="blue">while</span> (CurrentToken()?.Type == TokenType.Operator
+           && (CurrentToken().Value == "*"
+               || CurrentToken().Value == "/"))
+    {
+        <span class="blue">string</span> op = CurrentToken().Value;
+        Advance();
+        IExpression right = ParsePower();
+
+        <span class="blue">if</span> (op == "*")
+            left = <span class="blue">new</span> MulNode(left, right);
+        <span class="blue">else</span>
+            left = <span class="blue">new</span> DivNode(left, right);
+    }
+    <span class="blue">return</span> left;
+}
+</pre>
+
+<h3>ParseFactor (Zahlen, Variablen, Klammern)</h3>
+<pre>
+<span class="blue">private</span> IExpression ParseFactor()
+{
+    Token token = CurrentToken();
+
+    <span class="blue">if</span> (token.Type == TokenType.Number)
+    {
+        Advance();
+        <span class="blue">return new</span> NumberNode(<span class="blue">double</span>.Parse(token.Value));
+    }
+    <span class="blue">else if</span> (token.Type == TokenType.Variable)
+    {
+        Advance();
+        <span class="blue">return new</span> VariableNode(token.Value);
+    }
+    <span class="blue">else if</span> (token.Type == TokenType.LParen)
+    {
+        Advance(); <span class="green">// (</span>
+        IExpression result = ParseExpression();
+        Advance(); <span class="green">// )</span>
+        <span class="blue">return</span> result;
+    }
+    <span class="blue">throw new</span> Exception(<span class="red">"Ungültiges Token"</span>);
+}
+</pre>
+</div>
+
+<!-- ==================== WPF XAML ==================== -->
+<div class="section">
+<h2>6. WPF XAML</h2>
+
+<h3>Grid Layout</h3>
+<pre>
+&lt;Grid&gt;
+    &lt;Grid.RowDefinitions&gt;
+        &lt;RowDefinition Height="Auto"/&gt;  <span class="green">&lt;!-- Inhalt --&gt;</span>
+        &lt;RowDefinition Height="*"/&gt;     <span class="green">&lt;!-- Flex --&gt;</span>
+        &lt;RowDefinition Height="2*"/&gt;    <span class="green">&lt;!-- 2x Flex --&gt;</span>
+    &lt;/Grid.RowDefinitions&gt;
+    &lt;Grid.ColumnDefinitions&gt;
+        &lt;ColumnDefinition Width="*"/&gt;
+    &lt;/Grid.ColumnDefinitions&gt;
+&lt;/Grid&gt;
+</pre>
+
+<h3>Elemente positionieren</h3>
+<pre>
+&lt;TextBox x:Name="<span class="red">InputBox</span>"
+         Grid.Row="0"
+         Grid.Column="0"
+         Grid.ColumnSpan="5"
+         FontSize="24"
+         Margin="5"/&gt;
+
+&lt;Button Content="7"
+        Grid.Row="1"
+        Grid.Column="0"
+        Click="<span class="red">Button_Click</span>"
+        Margin="2"/&gt;
+</pre>
+
+<h3>Custom Widget einbinden</h3>
+<pre>
+<span class="green">&lt;!-- xmlns:local am Window hinzufügen --&gt;</span>
+xmlns:local="clr-namespace:<span class="red">ProjektName</span>"
+
+<span class="green">&lt;!-- Widget verwenden --&gt;</span>
+&lt;local:<span class="red">Painter</span> x:Name="painter"/&gt;
+</pre>
+</div>
+
+<!-- ==================== WPF CODE-BEHIND ==================== -->
+<div class="section">
+<h2>7. WPF CODE-BEHIND</h2>
+
+<h3>Button Click Handler</h3>
+<pre>
+<span class="blue">private void</span> Button_Click(<span class="blue">object</span> sender, RoutedEventArgs e)
+{
+    Button btn = (Button)sender;
+    <span class="blue">string</span> content = btn.Content.ToString();
+    InputBox.Text += content;
+}
+
+<span class="blue">private void</span> Clear_Click(...)
+{
+    InputBox.Text = <span class="red">""</span>;
+}
+
+<span class="blue">private void</span> Evaluate_Click(...)
+{
+    <span class="blue">try</span>
+    {
+        Tokenizer tok = <span class="blue">new</span> Tokenizer();
+        List&lt;Token&gt; tokens = tok.Tokenize(InputBox.Text);
+
+        Parser parser = <span class="blue">new</span> Parser();
+        IExpression expr = parser.Parse(tokens);
+
+        <span class="blue">var</span> vars = <span class="blue">new</span> Dictionary&lt;<span class="blue">string</span>,<span class="blue">double</span>&gt;();
+        <span class="blue">double</span> result = expr.Evaluate(vars);
+
+        MessageBox.Show("Ergebnis: " + result);
+    }
+    <span class="blue">catch</span> (Exception ex)
+    {
+        MessageBox.Show("Fehler: " + ex.Message);
+    }
+}
+</pre>
+</div>
+
+<!-- ==================== FILE DIALOG ==================== -->
+<div class="section">
+<h2>8. FILE DIALOG & XML</h2>
+
+<h3>OpenFileDialog</h3>
+<pre>
+<span class="blue">using</span> Microsoft.Win32;
+
+OpenFileDialog dialog = <span class="blue">new</span> OpenFileDialog();
+dialog.Filter = <span class="red">"XML Files|*.xml"</span>;
+
+<span class="blue">if</span> (dialog.ShowDialog() == <span class="blue">true</span>)
+{
+    <span class="blue">string</span> path = dialog.FileName;
+    <span class="green">// Datei laden...</span>
+}
+</pre>
+
+<h3>XML laden mit XDocument</h3>
+<pre>
+<span class="blue">using</span> System.Xml.Linq;
+
+XDocument doc = XDocument.Load(path);
+
+<span class="blue">foreach</span> (<span class="blue">var</span> el <span class="blue">in</span> doc.Descendants(<span class="red">"Circle"</span>))
+{
+    <span class="blue">double</span> x = <span class="blue">double</span>.Parse(el.Attribute(<span class="red">"CenterX"</span>).Value);
+    <span class="blue">double</span> y = <span class="blue">double</span>.Parse(el.Attribute(<span class="red">"CenterY"</span>).Value);
+    <span class="blue">double</span> r = <span class="blue">double</span>.Parse(el.Attribute(<span class="red">"Radius"</span>).Value);
+
+    Circle c = <span class="blue">new</span> Circle(x, y, r);
+    list.Add(c);
+}
+</pre>
+
+<h3>Beispiel XML</h3>
+<pre>
+&lt;?xml version="1.0"?&gt;
+&lt;Painter&gt;
+    &lt;Circle CenterX="100" CenterY="100" Radius="30"/&gt;
+    &lt;Line StartX="0" StartY="0" EndX="200" EndY="200"/&gt;
+&lt;/Painter&gt;
+</pre>
+</div>
+
+<!-- ==================== CUSTOM WIDGET ==================== -->
+<div class="section">
+<h2>9. CUSTOM WIDGET (Zeichnen)</h2>
+
+<h3>Widget Klasse</h3>
+<pre>
+<span class="blue">public class</span> Painter : <span class="red">FrameworkElement</span>
+{
+    <span class="blue">private</span> List&lt;IDrawable&gt; drawables = <span class="blue">new</span> List&lt;...&gt;();
+
+    <span class="blue">public void</span> SetDrawables(List&lt;IDrawable&gt; items)
+    {
+        drawables = items;
+        <span class="red">InvalidateVisual();</span>  <span class="green">// Neu zeichnen!</span>
+    }
+
+    <span class="blue">public void</span> Clear()
+    {
+        drawables.Clear();
+        InvalidateVisual();
+    }
+
+    <span class="blue">protected override void</span> OnRender(DrawingContext dc)
+    {
+        <span class="blue">base</span>.OnRender(dc);
+
+        <span class="green">// Hintergrund</span>
+        dc.DrawRectangle(Brushes.White, <span class="blue">null</span>,
+            <span class="blue">new</span> Rect(0, 0, ActualWidth, ActualHeight));
+
+        <span class="green">// Alle Elemente zeichnen</span>
+        <span class="blue">foreach</span> (<span class="blue">var</span> d <span class="blue">in</span> drawables)
+        {
+            d.Draw(dc);
+        }
+    }
+}
+</pre>
+
+<h3>Circle zeichnen</h3>
+<pre>
+<span class="blue">public class</span> Circle : IDrawable
+{
+    <span class="blue">public double</span> CenterX { get; set; }
+    <span class="blue">public double</span> CenterY { get; set; }
+    <span class="blue">public double</span> Radius { get; set; }
+
+    <span class="blue">public</span> Circle(<span class="blue">double</span> x, <span class="blue">double</span> y, <span class="blue">double</span> r)
+    {
+        CenterX = x;
+        CenterY = y;
+        Radius = r;
+    }
+
+    <span class="blue">public void</span> Draw(DrawingContext dc)
+    {
+        Point center = <span class="blue">new</span> Point(CenterX, CenterY);
+        Pen pen = <span class="blue">new</span> Pen(Brushes.Black, 2);
+        dc.DrawEllipse(<span class="blue">null</span>, pen, center, Radius, Radius);
+    }
+}
+</pre>
+
+<h3>Line zeichnen</h3>
+<pre>
+<span class="blue">public void</span> Draw(DrawingContext dc)
+{
+    Point start = <span class="blue">new</span> Point(StartX, StartY);
+    Point end = <span class="blue">new</span> Point(EndX, EndY);
+    Pen pen = <span class="blue">new</span> Pen(Brushes.Black, 2);
+    dc.DrawLine(pen, start, end);
+}
+</pre>
+
+<h3>DrawingContext Methoden</h3>
+<table>
+<tr><th>Methode</th><th>Parameter</th></tr>
+<tr><td>DrawEllipse</td><td>(brush, pen, center, rX, rY)</td></tr>
+<tr><td>DrawLine</td><td>(pen, point1, point2)</td></tr>
+<tr><td>DrawRectangle</td><td>(brush, pen, rect)</td></tr>
+</table>
+</div>
+
+<!-- ==================== REGEX ==================== -->
+<div class="section">
+<h2>10. REGEX SCHNELLREFERENZ</h2>
+
+<table>
+<tr><th>Pattern</th><th>Bedeutung</th></tr>
+<tr><td><code>\d</code></td><td>Eine Ziffer</td></tr>
+<tr><td><code>\d+</code></td><td>1+ Ziffern</td></tr>
+<tr><td><code>\d*</code></td><td>0+ Ziffern</td></tr>
+<tr><td><code>\d+\.?\d*</code></td><td>Zahl (opt. Dezimal)</td></tr>
+<tr><td><code>[a-z]</code></td><td>Kleinbuchstabe</td></tr>
+<tr><td><code>[A-Za-z]</code></td><td>Buchstabe</td></tr>
+<tr><td><code>[+\-*/^]</code></td><td>Operatoren</td></tr>
+<tr><td><code>[()]</code></td><td>Klammern</td></tr>
+<tr><td><code>(?&lt;Name&gt;...)</code></td><td>Benannte Gruppe</td></tr>
+<tr><td><code>.</code></td><td>Beliebiges Zeichen</td></tr>
+<tr><td><code>\.</code></td><td>Punkt (escaped)</td></tr>
+</table>
+
+<div class="tip">💡 Minus in [...] am Anfang/Ende oder escapen: <code>[\-+]</code></div>
+</div>
+
+<!-- ==================== FEHLERBEHANDLUNG ==================== -->
+<div class="section">
+<h2>11. FEHLERBEHANDLUNG</h2>
+
+<h3>Try-Catch</h3>
+<pre>
+<span class="blue">try</span>
+{
+    <span class="green">// Riskanter Code</span>
+}
+<span class="blue">catch</span> (Exception ex)
+{
+    MessageBox.Show(<span class="red">"Fehler: "</span> + ex.Message);
+}
+</pre>
+
+<h3>Fehler-Token erkennen</h3>
+<pre>
+<span class="blue">public bool</span> HasErrors(List&lt;Token&gt; tokens)
+{
+    <span class="blue">foreach</span> (<span class="blue">var</span> t <span class="blue">in</span> tokens)
+    {
+        <span class="blue">if</span> (t.Type == TokenType.Error)
+            <span class="blue">return true</span>;
+    }
+    <span class="blue">return false</span>;
+}
+</pre>
+
+<h3>Syntax-Fehler werfen</h3>
+<pre>
+<span class="blue">if</span> (CurrentToken() == <span class="blue">null</span>)
+    <span class="blue">throw new</span> Exception(<span class="red">"Unerwartetes Ende"</span>);
+
+<span class="blue">if</span> (CurrentToken().Type != TokenType.RParen)
+    <span class="blue">throw new</span> Exception(<span class="red">"')' erwartet"</span>);
+</pre>
+</div>
+
+<!-- ==================== WICHTIGE USINGS ==================== -->
+<div class="section">
+<h2>12. WICHTIGE USINGS</h2>
+<pre>
+<span class="blue">using</span> System;
+<span class="blue">using</span> System.Collections.Generic;
+<span class="blue">using</span> System.Text.RegularExpressions;
+<span class="blue">using</span> System.Windows;
+<span class="blue">using</span> System.Windows.Controls;
+<span class="blue">using</span> System.Windows.Media;
+<span class="blue">using</span> System.Xml.Linq;
+<span class="blue">using</span> Microsoft.Win32;
+</pre>
+</div>
+
+<!-- ==================== KOLLISIONSERKENNUNG ==================== -->
+<div class="section">
+<h2>13. KOLLISIONSERKENNUNG</h2>
+
+<h3>Punkt in Kreis?</h3>
+<pre>
+<span class="blue">public bool</span> PointInCircle(Point p, Circle c)
+{
+    <span class="blue">double</span> dx = p.X - c.CenterX;
+    <span class="blue">double</span> dy = p.Y - c.CenterY;
+    <span class="blue">double</span> dist = Math.Sqrt(dx*dx + dy*dy);
+    <span class="blue">return</span> dist <= c.Radius;
+}
+</pre>
+
+<h3>Linie berührt Kreis?</h3>
+<pre>
+<span class="green">// Vereinfacht: Prüfe Start- und Endpunkt</span>
+<span class="blue">public bool</span> LineHitsCircle(Line l, Circle c)
+{
+    Point start = <span class="blue">new</span> Point(l.StartX, l.StartY);
+    Point end = <span class="blue">new</span> Point(l.EndX, l.EndY);
+
+    <span class="blue">return</span> PointInCircle(start, c)
+        || PointInCircle(end, c);
+}
+</pre>
+</div>
+
+<!-- ==================== CHECKLISTE ==================== -->
+<div class="section">
+<h2>✓ TEST CHECKLISTE</h2>
+<ul>
+<li>□ Grammatik in ABNF schreiben</li>
+<li>□ TokenType enum definieren</li>
+<li>□ Token Klasse mit Type, Value</li>
+<li>□ Tokenizer mit Regex</li>
+<li>□ IExpression/IDrawable Interface</li>
+<li>□ Node-Klassen (Number, Binary...)</li>
+<li>□ Parser mit rekursivem Abstieg</li>
+<li>□ WPF Grid Layout (*, Auto)</li>
+<li>□ Button Click Events</li>
+<li>□ Custom Widget (OnRender)</li>
+<li>□ XML laden (XDocument)</li>
+<li>□ Fehlerbehandlung</li>
+</ul>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<UserControl x:Class="SchiffeVersenken.Controls.SpielfeldControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:SchiffeVersenken.Converters">
+
+    <UserControl.Resources>
+        <converters:VorschauToColorConverter x:Key="VorschauToColorConverter"/>
+        <converters:ZustandToSimpleColorConverter x:Key="ZustandToColorConverter"/>
+        <converters:TrefferVisibilityConverter x:Key="TrefferVisibilityConverter"/>
+        <converters:DanebenVisibilityConverter x:Key="DanebenVisibilityConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- Koordinaten-Beschriftung -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>  <!-- Spaltenbeschriftung A-J -->
+            <RowDefinition Height="*"/>   <!-- Spielfeld -->
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="25"/> <!-- Zeilenbeschriftung 1-10 -->
+            <ColumnDefinition Width="*"/>  <!-- Spielfeld -->
+        </Grid.ColumnDefinitions>
+
+        <!-- Spaltenbeschriftung (A-J) -->
+        <ItemsControl Grid.Row="0" Grid.Column="1" ItemsSource="{Binding SpaltenBeschriftung}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="10"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" HorizontalAlignment="Center"
+                               VerticalAlignment="Center" FontWeight="Bold" FontSize="12"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Zeilenbeschriftung (1-10) -->
+        <ItemsControl Grid.Row="1" Grid.Column="0" ItemsSource="{Binding ZeilenBeschriftung}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="10"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" VerticalAlignment="Center"
+                               HorizontalAlignment="Center" FontWeight="Bold" FontSize="12"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- 10x10 Spielfeld -->
+        <ItemsControl Grid.Row="1" Grid.Column="1"
+                      x:Name="spielfeldGrid"
+                      ItemsSource="{Binding Zellen}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="10" Columns="10"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="Navy" BorderThickness="1" Margin="1">
+                        <Border.Background>
+                            <MultiBinding Converter="{StaticResource VorschauToColorConverter}">
+                                <Binding Path="Anzeige"/>
+                                <Binding Path="IstVorschau"/>
+                                <Binding Path="IstGueltigeVorschau"/>
+                            </MultiBinding>
+                        </Border.Background>
+                        <Border.InputBindings>
+                            <MouseBinding MouseAction="LeftClick"
+                                          Command="{Binding DataContext.ZelleKlickCommand,
+                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                          CommandParameter="{Binding}"/>
+                        </Border.InputBindings>
+                        <Grid Background="Transparent"
+                              MouseEnter="Zelle_MouseEnter"
+                              MouseLeave="Zelle_MouseLeave"
+                              MouseLeftButtonDown="Zelle_MouseLeftButtonDown"
+                              Cursor="Hand">
+                            <!-- Treffer-Symbol -->
+                            <Ellipse Width="16" Height="16" Fill="Red" Stroke="DarkRed" StrokeThickness="2"
+                                     Visibility="{Binding Anzeige, Converter={StaticResource TrefferVisibilityConverter}}"/>
+                            <!-- Daneben-Symbol -->
+                            <Ellipse Width="10" Height="10" Fill="White" Stroke="Gray" StrokeThickness="1"
+                                     Visibility="{Binding Anzeige, Converter={StaticResource DanebenVisibilityConverter}}"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

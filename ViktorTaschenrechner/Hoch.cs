@@ -17,8 +17,8 @@ namespace Russiantechnerrr
             {
                 if (Tokenlist[0].type == Token.TokenType.zahl)
                 { 
-                    Value.value = Tokenlist[0].value;
-                    Value.type = Tokenlist[0].type;
+                    Value.value = Tokenlist[0].value; // Wert der Zahl
+                    Value.type = Tokenlist[0].type; // Zahl
                     Tokenlist.RemoveAt(0);
                  }
                 else
