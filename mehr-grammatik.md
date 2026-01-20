@@ -10,9 +10,10 @@ Basierend auf den Konzepten von Taschenrechner und RobotProgramming.
 
 **ABNF:**
 ```abnf
-expression ::= term { ("AND" | "OR") term }
-term ::= factor ["NOT" factor]
-factor ::= "TRUE" | "FALSE" | variable | "(" expression ")"
+expression ::= term { "OR" term }
+term ::= factor { "AND" factor }
+factor ::= ["NOT"] atom
+atom ::= "TRUE" | "FALSE" | variable | "(" expression ")"
 variable ::= letter { letter | digit }
 ```
 
@@ -29,9 +30,62 @@ TRUE AND TRUE OR FALSE
 - Klammer-Ausdrücke
 
 **Parser-Struktur:**
-- `ParseExpression()` für OR/AND (while-loop)
-- `ParseTerm()` für NOT (if)
-- `ParseFactor()` für TRUE/FALSE/Variable/Klammern
+- `ParseExpression()` für OR (while-loop)
+- `ParseTerm()` für AND (while-loop)
+- `ParseFactor()` für NOT (if)
+- `ParseAtom()` für TRUE/FALSE/Variable/Klammern
+
+**Code-Beispiel:**
+```csharp
+// Ebene 1: OR (niedrigste Priorität)
+IExpression ParseExpression() {
+    IExpression left = ParseTerm();
+    while (Match("OR")) {
+        Consume();
+        IExpression right = ParseTerm();
+        left = new OrNode(left, right);
+    }
+    return left;
+}
+
+// Ebene 2: AND
+IExpression ParseTerm() {
+    IExpression left = ParseFactor();
+    while (Match("AND")) {
+        Consume();
+        IExpression right = ParseFactor();
+        left = new AndNode(left, right);
+    }
+    return left;
+}
+
+// Ebene 3: NOT
+IExpression ParseFactor() {
+    if (Match("NOT")) {
+        Consume();
+        IExpression operand = ParseFactor();  // Rekursion für NOT NOT ...
+        return new NotNode(operand);
+    }
+    return ParseAtom();
+}
+
+// Ebene 4: Basiselemente
+IExpression ParseAtom() {
+    if (Match("TRUE")) { Consume(); return new TrueNode(); }
+    if (Match("FALSE")) { Consume(); return new FalseNode(); }
+    if (Match("(")) {
+        Consume();
+        IExpression expr = ParseExpression();
+        Consume();  // )
+        return expr;
+    }
+    // Variable...
+}
+```
+
+**Beispiel-Parsing:** `TRUE OR FALSE AND NOT TRUE`
+→ Geparst als: `TRUE OR (FALSE AND (NOT TRUE))`
+→ Ergebnis: `TRUE OR (FALSE AND FALSE)` = `TRUE OR FALSE` = `TRUE`
 
 ---
 
@@ -78,7 +132,9 @@ if (Match(TokenTypes.Number)) {
 
 **ABNF:**
 ```abnf
-expression ::= comparison { ("AND" | "OR") comparison }
+expression ::= orTerm { "OR" orTerm }
+orTerm ::= andTerm { "AND" andTerm }
+andTerm ::= comparison
 comparison ::= term [ ("<" | ">" | "==" | "!=") term ]
 term ::= factor { ("+" | "-") factor }
 factor ::= number | variable | "(" expression ")"
@@ -97,10 +153,12 @@ a != b OR c < 5
 
 **Parser-Struktur:**
 ```
-ParseExpression()     → AND/OR
-  ParseComparison()   → <, >, ==, !=
-    ParseTerm()       → +, -
-      ParseFactor()   → Zahlen, Variablen, Klammern
+ParseExpression()     → OR
+  ParseOrTerm()       → AND
+    ParseAndTerm()    → delegiert zu ParseComparison()
+      ParseComparison() → <, >, ==, !=
+        ParseTerm()   → +, -
+          ParseFactor() → Zahlen, Variablen, Klammern
 ```
 
 ---
@@ -477,10 +535,11 @@ if (Match(Power)) {
 ### Logik + Vergleich
 | Priorität | Operatoren | Methode |
 |-----------|-----------|---------|
-| 1 (niedrig) | `AND`, `OR` | ParseExpression |
-| 2 | `<`, `>`, `==`, `!=` | ParseComparison |
-| 3 | `+`, `-` | ParseTerm |
-| 4 (hoch) | Zahlen, Variablen, `()` | ParseFactor |
+| 1 (niedrig) | `OR` | ParseExpression |
+| 2 | `AND` | ParseOrTerm |
+| 3 | `<`, `>`, `==`, `!=` | ParseComparison |
+| 4 | `+`, `-` | ParseTerm |
+| 5 (hoch) | Zahlen, Variablen, `()` | ParseFactor |
 
 ---
 
